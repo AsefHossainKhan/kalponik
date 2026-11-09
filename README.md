@@ -18,5 +18,5 @@ main branch (this checkout)
 ├── deploy/local/      Garage + nginx for local testing (mirrors production routes)
 ├── supabase/          apply-schema.sh: Readest's schema → hosted Supabase
 └── docs/
-reader branch          the Readest fork (check out as ../kalponik-reader)
+reader branch          the Readest fork (clone as ../kalponik-reader, see DEV-SETUP §1)
 ```
