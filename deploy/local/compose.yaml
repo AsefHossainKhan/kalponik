@@ -1,0 +1,44 @@
+# Kalponik local dev stack: book storage (Garage, S3-compatible) + nginx.
+#
+# Mirrors the production layout on asroy.duckdns.org, but on one port:
+#   http://localhost:8080/kalponik/        -> Readest web (runs on the host, port 3000)
+#   http://localhost:8080/kalponik-books/  -> Garage S3 API, passed through unchanged
+#
+# Auth + database are the hosted Supabase project, so they are not in here.
+# First run: `docker compose up -d && sh init-garage.sh`. See docs/DEV-SETUP.md.
+#
+# Why Garage and not MinIO: MinIO's community edition stopped publishing
+# images in Oct 2025 (quay.io now refuses anonymous pulls) and the project is
+# archived. Garage is maintained, ships an official image and is light enough
+# for the 8 GB home server.
+
+name: kalponik-local
+
+services:
+  garage:
+    image: dxflrs/garage:v2.5.0
+    restart: unless-stopped
+    environment:
+      GARAGE_RPC_SECRET: ${GARAGE_RPC_SECRET:?set GARAGE_RPC_SECRET in .env}
+      GARAGE_ADMIN_TOKEN: ${GARAGE_ADMIN_TOKEN:?set GARAGE_ADMIN_TOKEN in .env}
+    volumes:
+      - ./garage/garage.toml:/etc/garage.toml:ro
+      - garage-meta:/var/lib/garage/meta
+      - garage-data:/var/lib/garage/data
+
+  nginx:
+    image: nginx:1.29-alpine
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:8080:80"
+    volumes:
+      - ./nginx/kalponik.conf:/etc/nginx/conf.d/default.conf:ro
+    extra_hosts:
+      # Lets nginx reach the Readest web server running on the host.
+      - "host.docker.internal:host-gateway"
+    depends_on:
+      - garage
+
+volumes:
+  garage-meta:
+  garage-data:
