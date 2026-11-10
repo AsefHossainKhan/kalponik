@@ -1,3 +1,4 @@
+import { BASE_PATH, withBasePath } from '@/utils/basePath';
 import * as React from 'react';
 import type { Metadata, Viewport } from 'next';
 import Script from 'next/script';
@@ -24,7 +25,7 @@ export const metadata: Metadata = {
   },
   description,
   generator: 'Next.js',
-  manifest: '/manifest.json',
+  manifest: withBasePath('/manifest.json'),
   keywords: ['epub', 'pdf', 'ebook', 'reader', 'readest', 'pwa'],
   authors: [
     {
@@ -33,8 +34,8 @@ export const metadata: Metadata = {
     },
   ],
   icons: {
-    icon: [{ url: '/icon.png' }, { url: '/favicon.ico' }],
-    apple: [{ url: '/apple-touch-icon.png', sizes: '180x180' }],
+    icon: [{ url: withBasePath('/icon.png') }, { url: withBasePath('/favicon.ico') }],
+    apple: [{ url: withBasePath('/apple-touch-icon.png'), sizes: '180x180' }],
   },
   appleWebApp: {
     capable: true,
@@ -130,6 +131,15 @@ const devHmrPatchScript = `(${patchTauriHmrWebSocket.toString()})(${JSON.stringi
 // consumers fall back to `NEXT_PUBLIC_*` envs baked at build time on Tauri.
 const shouldInjectRuntimeConfig = process.env['NEXT_PUBLIC_APP_PLATFORM'] === 'web';
 
+// Kalponik: globals.css loads the UI font from `/fonts/...`, which misses when
+// the app is served under a base path (CSS urls are not rewritten). Declare the
+// same faces again with the prefixed urls; the later @font-face wins, so this
+// goes at the end of <body>.
+const basePathFontFaces = BASE_PATH
+  ? `@font-face{font-family:'Inter';font-style:normal;font-weight:100 900;font-display:swap;src:url('${BASE_PATH}/fonts/InterVariable.woff2') format('woff2');}` +
+    `@font-face{font-family:'Inter';font-style:italic;font-weight:100 900;font-display:swap;src:url('${BASE_PATH}/fonts/InterVariable-Italic.woff2') format('woff2');}`
+  : '';
+
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   // Browser extensions can inject attributes on <html> before React hydrates it.
   return (
@@ -140,7 +150,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     >
       <head>
         {shouldInjectRuntimeConfig ? (
-          <Script src='/runtime-config.js' strategy='beforeInteractive' />
+          <Script src={withBasePath('/runtime-config.js')} strategy='beforeInteractive' />
         ) : null}
         {shouldInjectDevHmrPatch ? (
           <script dangerouslySetInnerHTML={{ __html: devHmrPatchScript }} />
@@ -152,6 +162,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <Providers>{children}</Providers>
           </EnvProvider>
         </ViewTransitions>
+        {/* After the app stylesheets, so these faces override the unprefixed ones. */}
+        {basePathFontFaces ? (
+          <style dangerouslySetInnerHTML={{ __html: basePathFontFaces }} />
+        ) : null}
       </body>
     </html>
   );

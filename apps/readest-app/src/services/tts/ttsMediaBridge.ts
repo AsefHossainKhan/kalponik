@@ -11,6 +11,7 @@
 // playing HTMLMediaElement is required (iOS lock screen, desktop Chromium
 // media keys), and must survive hook unmount for a detached session.
 
+import { withBasePath } from '@/utils/basePath';
 import { buildTTSMediaMetadata } from '@/utils/ttsMetadata';
 import { fetchImageAsBase64 } from '@/utils/image';
 import { getMediaSession, TauriMediaSession } from '@/libs/mediaSession';
@@ -108,7 +109,7 @@ export class TTSMediaBridge {
   // cover is often a blob/tauri URL the media session can't load; a data URL
   // always resolves. The web path re-sends it on every update (each is a full
   // replace); the native path pushes it once — see #pushArtwork.
-  #coverArtwork = '/icon.png';
+  #coverArtwork = withBasePath('/icon.png');
   // Push artwork on the first native metadata write after a bind. Later mark
   // updates omit it: Swift merges into the existing nowPlayingInfo, so the
   // cover survives, and re-decoding a multi-MB base64 image per sentence does
@@ -286,10 +287,10 @@ export class TTSMediaBridge {
   ): Promise<void> {
     let artwork = '';
     try {
-      artwork = await fetchImageAsBase64(meta.coverImageUrl || '/icon.png');
+      artwork = await fetchImageAsBase64(meta.coverImageUrl || withBasePath('/icon.png'));
     } catch {
       try {
-        artwork = await fetchImageAsBase64('/icon.png');
+        artwork = await fetchImageAsBase64(withBasePath('/icon.png'));
       } catch {
         // Both the cover and the bundled fallback failed to load. Leave the
         // artwork empty rather than inheriting whatever was there before.
@@ -424,7 +425,7 @@ export class TTSMediaBridge {
       // data URL by default, and WebKit silently drops mediaSession artwork
       // whose declared type mismatches the data (the lock-screen cover stayed
       // blank with a hardcoded image/png). sizes is a hint; omit rather than lie.
-      const artworkSrc = this.#coverArtwork || '/icon.png';
+      const artworkSrc = this.#coverArtwork || withBasePath('/icon.png');
       const artworkType = /^data:(image\/[a-z+]+)/.exec(artworkSrc)?.[1];
       mediaSession.metadata = new MediaMetadata({
         title: metadata.title,

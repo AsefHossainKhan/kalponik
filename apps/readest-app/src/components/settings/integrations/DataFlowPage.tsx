@@ -1,3 +1,4 @@
+import { withBasePath } from '@/utils/basePath';
 import clsx from 'clsx';
 import Image from 'next/image';
 import React, { useEffect, useState } from 'react';
@@ -136,7 +137,7 @@ const FlowLines: React.FC<{
         className='eink-bordered border-base-200 bg-base-100 absolute flex h-9 w-9 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border rtl:translate-x-1/2'
         style={{ top: hub, insetInlineStart: middle }}
       >
-        <Image src='/icon.png' alt='' width={24} height={24} className='h-6 w-6' />
+        <Image src={withBasePath('/icon.png')} alt='' width={24} height={24} className='h-6 w-6' />
       </div>
     </div>
   );

@@ -1,5 +1,6 @@
 'use client';
 
+import { withBasePath } from '@/utils/basePath';
 import { useEffect, useState } from 'react';
 import Image from 'next/image';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
@@ -191,7 +192,7 @@ const ShareLanding = () => {
             gives the page identity at a glance. */}
         <div className='flex flex-col items-center gap-2 px-5 pb-2 pt-5 sm:px-7 sm:pb-3 sm:pt-7'>
           <Image
-            src='/icon.png'
+            src={withBasePath('/icon.png')}
             alt={_('Readest logo')}
             width={40}
             height={40}

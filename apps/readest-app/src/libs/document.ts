@@ -1,3 +1,4 @@
+import { withBasePath } from '@/utils/basePath';
 import { BookFormat } from '@/types/book';
 import { Collection, Contributor, Identifier, LanguageMap } from '@/utils/book';
 import { configureZip } from '@/utils/zip';
@@ -245,7 +246,7 @@ async function configurePDFWorker() {
 
   await import('@pdfjs/pdf.min.mjs');
   const { pdfjsLib } = globalThis as typeof globalThis & { pdfjsLib: PDFJSGlobal };
-  const workerURL = new URL('/vendor/pdfjs/pdf.worker.min.mjs', location.href).href;
+  const workerURL = new URL(withBasePath('/vendor/pdfjs/pdf.worker.min.mjs'), location.href).href;
   const prelude = [
     needsTransferPolyfill
       ? `if (!ArrayBuffer.prototype.transferToFixedLength) {

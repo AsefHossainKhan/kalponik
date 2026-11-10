@@ -1,3 +1,4 @@
+import { withBasePath } from '@/utils/basePath';
 import { findFuzzyMatches } from '@/utils/fuzzySearch';
 import { findNearbyMatches } from '@/utils/nearbySearch';
 import type {
@@ -45,7 +46,9 @@ export const createLibrarySearchWorker = () => {
 
   const getWorker = () => {
     if (worker) return worker;
-    worker = new Worker('/workers/library-search.worker.js', { type: 'module' });
+    worker = new Worker(withBasePath('/workers/library-search.worker.js'), {
+      type: 'module',
+    });
     worker.onmessage = (event: MessageEvent<LibrarySearchWorkerResponse>) => {
       const request = cleanupRequest(event.data.id);
       if (!request) return;

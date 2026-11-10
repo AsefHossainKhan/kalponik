@@ -1,3 +1,4 @@
+import { withBasePath } from '@/utils/basePath';
 import { fetch as tauriFetch } from '@tauri-apps/plugin-http';
 import { marked, type Token } from 'marked';
 import {
@@ -530,7 +531,7 @@ export class NotionClient {
             headers: nativeHeaders,
             body,
           })
-        : await globalThis.fetch(`/api/notion${path}`, {
+        : await globalThis.fetch(withBasePath(`/api/notion${path}`), {
             method,
             headers: await this.proxyHeaders(body),
             body,

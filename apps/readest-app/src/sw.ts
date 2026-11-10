@@ -9,6 +9,10 @@ declare global {
 
 declare const self: ServiceWorkerGlobalScope;
 
+// Kalponik: the app may live under a sub-path (e.g. /kalponik); the worker's
+// scope is that path, so derive routes from it rather than assuming '/'.
+const BASE = new URL(self.registration.scope).pathname.replace(/\/$/, '');
+
 const serwist = new Serwist({
   precacheEntries: self.__SW_MANIFEST,
   skipWaiting: true,
@@ -18,7 +22,7 @@ const serwist = new Serwist({
   fallbacks: {
     entries: [
       {
-        url: '/offline',
+        url: `${BASE}/offline`,
         matcher({ request }) {
           return request.destination === 'document';
         },
@@ -28,7 +32,7 @@ const serwist = new Serwist({
   runtimeCaching: [
     {
       matcher: ({ url, request }) => {
-        const clientRoutes = ['/library', '/reader'];
+        const clientRoutes = [`${BASE}/library`, `${BASE}/reader`];
         const isClientRoute = clientRoutes.some((route) => url.pathname.startsWith(route));
         return isClientRoute && request.mode === 'navigate';
       },
@@ -46,8 +50,8 @@ const serwist = new Serwist({
           {
             cacheKeyWillBeUsed: async ({ request }) => {
               const url = new URL(request.url);
-              const basePath = url.pathname.split('/')[1];
-              const cacheKey = `${url.origin}/${basePath}`;
+              const route = url.pathname.slice(BASE.length).split('/')[1];
+              const cacheKey = `${url.origin}${BASE}/${route}`;
               return cacheKey;
             },
           },

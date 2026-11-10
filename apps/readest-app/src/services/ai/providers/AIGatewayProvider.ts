@@ -1,3 +1,4 @@
+import { withBasePath } from '@/utils/basePath';
 import { createGateway } from 'ai';
 import type { LanguageModel, EmbeddingModel } from 'ai';
 import type { AIProvider, AISettings, AIProviderName } from '../types';
@@ -55,7 +56,7 @@ export class AIGatewayProvider implements AIProvider {
       const modelId = this.settings.aiGatewayModel || GATEWAY_MODELS.GEMINI_FLASH_LITE;
       aiLogger.provider.init('ai-gateway', `healthCheck starting with model: ${modelId}`);
 
-      const response = await fetch('/api/ai/chat', {
+      const response = await fetch(withBasePath('/api/ai/chat'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

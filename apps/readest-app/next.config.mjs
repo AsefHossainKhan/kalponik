@@ -14,6 +14,12 @@ if (isDev) {
 }
 
 const exportOutput = appPlatform !== 'web' && !isDev;
+// Kalponik: the web app is served under a sub-path of a shared domain
+// (https://asroy.duckdns.org/kalponik). KALPONIK_BASE_PATH sets it for web
+// builds only; the Tauri static export always stays at the root. Code that
+// builds root-relative urls by hand uses withBasePath() (src/utils/basePath.ts),
+// which reads the NEXT_PUBLIC_BASE_PATH set below.
+const basePath = appPlatform === 'web' ? process.env['KALPONIK_BASE_PATH'] || '' : '';
 // Opt-in standalone output, set only by the Docker production build
 // (Dockerfile). Every other path keeps the original behavior: Tauri `export`,
 // local `build-web` (output undefined), dev, and the Cloudflare/OpenNext
@@ -22,6 +28,8 @@ const standaloneOutput = !exportOutput && process.env['BUILD_STANDALONE'] === 't
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  basePath: basePath || undefined,
+  env: { NEXT_PUBLIC_BASE_PATH: basePath },
   // Ensure Next.js uses SSG instead of SSR
   // https://nextjs.org/docs/pages/building-your-application/deploying/static-exports
   // The Docker production image opts into a self-contained `.next/standalone`
@@ -191,7 +199,7 @@ const withPWA = pwaDisabled
       reloadOnOnline: true,
       disable: false,
       register: true,
-      scope: '/',
+      // Serwist defaults the scope (and the sw.js url) to basePath.
     });
 
 const withAnalyzer = withBundleAnalyzer({

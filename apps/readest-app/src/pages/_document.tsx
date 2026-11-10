@@ -1,3 +1,4 @@
+import { withBasePath } from '@/utils/basePath';
 import { Html, Head, Main, NextScript } from 'next/document';
 import Script from 'next/script';
 
@@ -12,7 +13,7 @@ export default function Document() {
         {/* beforeInteractive must live in _document (not _app) to guarantee the
             script runs before any client-side module evaluation. */}
         {shouldInjectRuntimeConfig ? (
-          <Script src='/runtime-config.js' strategy='beforeInteractive' />
+          <Script src={withBasePath('/runtime-config.js')} strategy='beforeInteractive' />
         ) : null}
         <Main />
         <NextScript />

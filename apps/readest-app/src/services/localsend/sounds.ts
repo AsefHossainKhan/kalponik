@@ -1,3 +1,5 @@
+import { withBasePath } from '@/utils/basePath';
+
 // The one sound Nearby BookDrop makes: a completed transfer. Per-device
 // preference like the other LocalSend prefs. Deliberately a plain <audio>
 // element — no Web Audio graph — and every play is best-effort: a webview that
@@ -6,7 +8,7 @@
 
 const SOUNDS_KEY = 'readest-localsend-sounds';
 
-const DONE_ASSET = '/assets/localsend-done.wav';
+const DONE_ASSET = withBasePath('/assets/localsend-done.wav');
 
 /** Whether the transfer cue plays on this device. Defaults to on. */
 export function isLocalSendSoundsEnabled(): boolean {

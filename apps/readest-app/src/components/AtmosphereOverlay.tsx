@@ -1,5 +1,6 @@
 'use client';
 
+import { withBasePath } from '@/utils/basePath';
 import { useEffect, useRef } from 'react';
 import { useAtmosphereStore } from '@/store/atmosphereStore';
 import { useThemeStore } from '@/store/themeStore';
@@ -11,7 +12,9 @@ const AtmosphereOverlay = () => {
   const audioRef = useRef<HTMLAudioElement>(null);
   const isInitialMount = useRef(true);
 
-  const audioSrc = isDarkMode ? '/assets/forest-crickets.mp3' : '/assets/forest-birds.mp3';
+  const audioSrc = withBasePath(
+    isDarkMode ? '/assets/forest-crickets.mp3' : '/assets/forest-birds.mp3',
+  );
 
   useEffect(() => {
     const video = videoRef.current;
@@ -43,7 +46,7 @@ const AtmosphereOverlay = () => {
         <video
           ref={videoRef}
           id='atmosphere-overlay'
-          src='/assets/komorebi.mp4'
+          src={withBasePath('/assets/komorebi.mp4')}
           loop
           muted
           playsInline

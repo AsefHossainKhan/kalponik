@@ -1,5 +1,6 @@
 'use client';
 
+import { withBasePath } from '@/utils/basePath';
 import React, { useCallback, useEffect, useState } from 'react';
 import {
   IoBookOutline,
@@ -57,7 +58,7 @@ const ShareCover: React.FC<{ token: string; alt: string }> = ({ token, alt }) =>
   return (
     // eslint-disable-next-line @next/next/no-img-element
     <img
-      src={`/api/share/${encodeURIComponent(token)}/cover`}
+      src={withBasePath(`/api/share/${encodeURIComponent(token)}/cover`)}
       alt={alt}
       onError={() => setFailed(true)}
       className='border-base-300 bg-base-200 h-14 w-10 shrink-0 rounded-sm border object-cover'

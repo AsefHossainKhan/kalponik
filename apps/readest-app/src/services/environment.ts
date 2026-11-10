@@ -1,3 +1,4 @@
+import { withBasePath } from '@/utils/basePath';
 import { AppService } from '@/types/system';
 import { READEST_NODE_BASE_URL, READEST_WEB_BASE_URL } from './constants';
 import { getRuntimeConfig } from './runtimeConfig';
@@ -42,7 +43,7 @@ const isWebDevMode = () => process.env['NODE_ENV'] === 'development' && isWebApp
 // Dev API only in development mode and web platform
 // with command `pnpm dev-web`
 // for production build or tauri app use the production Web API
-export const getAPIBaseUrl = () => (isWebDevMode() ? '/api' : `${getBaseUrl()}/api`);
+export const getAPIBaseUrl = () => (isWebDevMode() ? withBasePath('/api') : `${getBaseUrl()}/api`);
 
 // Readest Voice synthesizes on the production GPU service, which a local dev
 // server cannot reach: its routes use the production Web API even under
@@ -50,7 +51,8 @@ export const getAPIBaseUrl = () => (isWebDevMode() ? '/api' : `${getBaseUrl()}/a
 export const getReadestVoiceAPIBaseUrl = () => `${getBaseUrl()}/api`;
 
 // For Node.js API that currently not supported in some edge runtimes
-export const getNodeAPIBaseUrl = () => (isWebDevMode() ? '/api' : `${getNodeBaseUrl()}/api`);
+export const getNodeAPIBaseUrl = () =>
+  isWebDevMode() ? withBasePath('/api') : `${getNodeBaseUrl()}/api`;
 
 export interface EnvConfigType {
   getAppService: () => Promise<AppService>;

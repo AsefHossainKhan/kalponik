@@ -1,3 +1,4 @@
+import { withBasePath } from '@/utils/basePath';
 import Head from 'next/head';
 import { AppProps } from 'next/app';
 import { EnvProvider } from '@/context/EnvContext';
@@ -29,7 +30,7 @@ function MyApp({ Component, pageProps }: AppProps) {
         <meta name='format-detection' content='telephone=no' />
         <meta name='mobile-web-app-capable' content='yes' />
         <meta name='theme-color' content='white' />
-        <link rel='manifest' href='/manifest.json' />
+        <link rel='manifest' href={withBasePath('/manifest.json')} />
       </Head>
       <EnvProvider>
         <Providers>

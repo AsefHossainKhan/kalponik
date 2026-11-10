@@ -1,3 +1,4 @@
+import { withBasePath } from '@/utils/basePath';
 import i18n from 'i18next';
 import LanguageDetector from 'i18next-browser-languagedetector';
 import translatableLngs from '../../i18n-langs.json';
@@ -33,7 +34,7 @@ const initI18n = async () => {
       defaultNS: 'translation',
       ...(isBrowser && {
         backend: {
-          loadPath: '/locales/{{lng}}/{{ns}}.json',
+          loadPath: withBasePath('/locales/{{lng}}/{{ns}}.json'),
         },
       }),
       detection: {

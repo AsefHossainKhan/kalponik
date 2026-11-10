@@ -1,4 +1,5 @@
 'use client';
+import { withBasePath } from '@/utils/basePath';
 import clsx from 'clsx';
 import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
@@ -79,7 +80,7 @@ export default function AuthPage() {
   const getWebRedirectTo = () => {
     return process.env.NODE_ENV === 'production'
       ? WEB_AUTH_CALLBACK
-      : `${window.location.origin}/auth/callback`;
+      : `${window.location.origin}${withBasePath('/auth/callback')}`;
   };
 
   const tauriSignInApple = async () => {

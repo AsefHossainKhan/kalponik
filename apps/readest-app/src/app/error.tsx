@@ -1,5 +1,6 @@
 'use client';
 
+import { withBasePath } from '@/utils/basePath';
 import posthog from 'posthog-js';
 import { useEffect, useState } from 'react';
 import { useEnv } from '@/context/EnvContext';
@@ -27,7 +28,7 @@ export default function ErrorPage({ error, reset }: ErrorPageProps) {
   }, [appService, error]);
 
   const handleGoHome = () => {
-    window.location.href = '/library';
+    window.location.href = withBasePath('/library');
   };
 
   const handleGoBack = () => {
