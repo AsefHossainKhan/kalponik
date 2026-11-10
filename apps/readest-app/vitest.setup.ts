@@ -98,3 +98,19 @@ if (typeof globalThis.fetch === 'function') {
     return realFetch(input, init);
   };
 }
+
+// zip.js's BlobWriter builds its result with `new Response(stream).blob()`.
+// Under jsdom `Response` is Node's, so the result is Node's Blob, not jsdom's.
+// jsdom's Blob/File constructors don't recognise a foreign Blob as data and
+// store the string "[object Blob]" instead, so a fixture made with
+// `new File([await zipWriter.close()], name)` arrives corrupt (13 bytes) and
+// DocumentLoader/ZipReader reject it. In a browser both come from one realm,
+// so only tests need this: hand back a jsdom Blob with the same bytes.
+{
+  const { BlobWriter } = await import('@zip.js/zip.js');
+  const getData = BlobWriter.prototype.getData;
+  BlobWriter.prototype.getData = async function (this: InstanceType<typeof BlobWriter>) {
+    const blob = await getData.call(this);
+    return blob instanceof Blob ? blob : new Blob([await blob.arrayBuffer()], { type: blob.type });
+  };
+}

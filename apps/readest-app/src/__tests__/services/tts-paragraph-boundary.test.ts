@@ -29,6 +29,10 @@ vi.spyOn(console, 'log').mockImplementation(() => {});
 
 const DECODE_SEC = 0.5;
 const GAP_SEC = 0.2;
+// The short-paragraph run below steps the fake audio clock up to 2000 times
+// per paragraph, each step waiting on 20 zero-delay timers. Windows timers are
+// coarser than Linux's, so the same work takes about 2-3 minutes there.
+const SHORT_PARAGRAPHS_TIMEOUT = process.platform === 'win32' ? 300_000 : 60_000;
 const flush = async () => {
   for (let i = 0; i < 20; i++) await new Promise((r) => setTimeout(r, 0));
 };
@@ -160,48 +164,59 @@ describe('first sentences prepared ahead', () => {
     30_000,
   );
 
-  test('no gap longer than the scheduled pauses after a run of short paragraphs', async () => {
-    await makeClient();
-    client.setSentenceGap(0.1);
-    const long = (p: string, n: number) =>
-      Array.from({ length: n }, (_, i) => ({
-        name: `${p}${i}`,
-        text: `${p} long ${i}.`,
-        language: 'en',
-      }));
-    const short = (p: string) => [{ name: `${p}0`, text: `Short ${p}.`, language: 'en' }];
-    const paragraphs = [long('A', 6), short('B'), short('C'), short('D'), short('E'), long('F', 6)];
-    let ctx: FakeAudioContext | undefined;
-    for (let p = 0; p < paragraphs.length; p++) {
-      const session = await speak(paragraphs[p]!);
-      if (!ctx) {
-        await flush();
-        ctx = FakeAudioContext.instances.at(-1)!;
-        decodeSec = DECODE_SEC;
-      }
-      let preloaded = false;
-      for (let step = 0; step < 2000 && !session.codes.includes('end'); step++) {
-        if (!preloaded && session.codes.length > 0) {
-          preloaded = true;
-          void (async () => {
-            for (const next of paragraphs.slice(p + 1, p + 5)) await run(next, true).done;
-          })();
+  test(
+    'no gap longer than the scheduled pauses after a run of short paragraphs',
+    async () => {
+      await makeClient();
+      client.setSentenceGap(0.1);
+      const long = (p: string, n: number) =>
+        Array.from({ length: n }, (_, i) => ({
+          name: `${p}${i}`,
+          text: `${p} long ${i}.`,
+          language: 'en',
+        }));
+      const short = (p: string) => [{ name: `${p}0`, text: `Short ${p}.`, language: 'en' }];
+      const paragraphs = [
+        long('A', 6),
+        short('B'),
+        short('C'),
+        short('D'),
+        short('E'),
+        long('F', 6),
+      ];
+      let ctx: FakeAudioContext | undefined;
+      for (let p = 0; p < paragraphs.length; p++) {
+        const session = await speak(paragraphs[p]!);
+        if (!ctx) {
+          await flush();
+          ctx = FakeAudioContext.instances.at(-1)!;
+          decodeSec = DECODE_SEC;
         }
-        await ctx.advanceTo(ctx.currentTime + 0.05);
-        await flush();
+        let preloaded = false;
+        for (let step = 0; step < 2000 && !session.codes.includes('end'); step++) {
+          if (!preloaded && session.codes.length > 0) {
+            preloaded = true;
+            void (async () => {
+              for (const next of paragraphs.slice(p + 1, p + 5)) await run(next, true).done;
+            })();
+          }
+          await ctx.advanceTo(ctx.currentTime + 0.05);
+          await flush();
+        }
+        await session.done;
       }
-      await session.done;
-    }
-    const played = ctx!.sources
-      .filter((s) => s.startedAt !== null && s.endedFired)
-      .sort((a, b) => a.startedAt! - b.startedAt!);
-    let worst = 0;
-    for (let i = 1; i < played.length; i++) {
-      worst = Math.max(worst, played[i]!.startedAt! - played[i - 1]!.endTime);
-    }
-    expect(played.length).toBe(16);
-    expect(worst).toBeLessThanOrEqual(GAP_SEC + 0.01);
-  }, 60_000);
+      const played = ctx!.sources
+        .filter((s) => s.startedAt !== null && s.endedFired)
+        .sort((a, b) => a.startedAt! - b.startedAt!);
+      let worst = 0;
+      for (let i = 1; i < played.length; i++) {
+        worst = Math.max(worst, played[i]!.startedAt! - played[i - 1]!.endTime);
+      }
+      expect(played.length).toBe(16);
+      expect(worst).toBeLessThanOrEqual(GAP_SEC + 0.01);
+    },
+    SHORT_PARAGRAPHS_TIMEOUT,
+  );
 
   test('preload finishes without waiting for the first sentence to be prepared', async () => {
     await makeClient();
