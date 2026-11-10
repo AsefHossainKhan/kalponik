@@ -65,3 +65,8 @@ apps/readest.koplugin/native/localsend-bin/target/
 
 # Kalponik: local stack secrets (deploy/local)
 /deploy/local/.env
+
+# Kalponik: production secrets, image exports and local data (deploy/prod)
+/deploy/prod/.env
+/deploy/prod/dist/
+/deploy/prod/data/

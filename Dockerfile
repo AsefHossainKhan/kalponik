@@ -39,6 +39,9 @@ ARG NEXT_PUBLIC_API_BASE_URL
 ARG NEXT_PUBLIC_OBJECT_STORAGE_TYPE
 ARG NEXT_PUBLIC_STORAGE_FIXED_QUOTA
 ARG NEXT_PUBLIC_TRANSLATION_FIXED_QUOTA
+# Kalponik: serve the web app under a sub-path, e.g. /kalponik (empty = root).
+ARG KALPONIK_BASE_PATH=""
+ENV KALPONIK_BASE_PATH=${KALPONIK_BASE_PATH}
 COPY --from=dependencies /app/node_modules /app/node_modules
 COPY --from=dependencies /app/apps/readest-app/node_modules /app/apps/readest-app/node_modules
 COPY --from=dependencies /app/apps/readest-app/public/vendor /app/apps/readest-app/public/vendor
@@ -49,6 +52,12 @@ WORKDIR /app/apps/readest-app
 # next.config.mjs gates `output: 'standalone'` on BUILD_STANDALONE so other
 # web builds keep their default output.
 ENV BUILD_STANDALONE=true
+# Kalponik: foliate-js (a submodule we don't own) loads pdf.js from a hard-coded
+# `/vendor/pdfjs/`; prefix it with the base path in the build copy only.
+RUN if [ -n "$KALPONIK_BASE_PATH" ]; then \
+      sed -i "s#\`/vendor/pdfjs/#\`${KALPONIK_BASE_PATH}/vendor/pdfjs/#" /app/packages/foliate-js/pdf.js \
+      && grep -q "${KALPONIK_BASE_PATH}/vendor/pdfjs/" /app/packages/foliate-js/pdf.js; \
+    fi
 RUN pnpm build-web
 
 # Production runtime ships only the standalone server, its traced node_modules,

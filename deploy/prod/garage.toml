@@ -1,0 +1,22 @@
+# Garage config for the single production node. Secrets (rpc_secret, admin_token) come from
+# the GARAGE_RPC_SECRET / GARAGE_ADMIN_TOKEN env vars set in compose, so this
+# file holds none and is safe to commit.
+
+metadata_dir = "/var/lib/garage/meta"
+data_dir = "/var/lib/garage/data"
+db_engine = "sqlite"
+
+replication_factor = 1
+
+rpc_bind_addr = "[::]:3901"
+rpc_public_addr = "127.0.0.1:3901"
+
+[s3_api]
+# Readest must use the same value as S3_REGION.
+s3_region = "garage"
+api_bind_addr = "[::]:3900"
+# No root_domain: path-style only (https://host/<bucket>/<key>), which is what
+# Readest uses (forcePathStyle) and what the /kalponik-books/ route relies on.
+
+[admin]
+api_bind_addr = "[::]:3903"
