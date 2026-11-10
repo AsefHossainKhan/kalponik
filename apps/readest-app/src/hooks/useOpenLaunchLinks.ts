@@ -1,3 +1,4 @@
+import { getAppPathname } from '@/utils/basePath';
 import { useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { getCurrent } from '@tauri-apps/plugin-deep-link';
@@ -111,7 +112,7 @@ export function useOpenLaunchLinks() {
 
       // A mounted reader doesn't re-init on router.push, so switch the book in
       // place (useBooksManager focuses it if open), carrying the cfi.
-      if (window.location.pathname.startsWith('/reader')) {
+      if (getAppPathname().startsWith('/reader')) {
         eventDispatcher.dispatch('open-book-in-reader', { bookHash, cfi });
         return;
       }

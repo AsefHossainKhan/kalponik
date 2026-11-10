@@ -1,3 +1,4 @@
+import { getAppPathname } from '@/utils/basePath';
 import { create } from 'zustand';
 import { addPluginListener, type PluginListener } from '@tauri-apps/api/core';
 import { AppService } from '@/types/system';
@@ -200,7 +201,7 @@ const resolveScopedTheme = (
  * auth) shares the library scope so no route paints a third look.
  */
 export const getThemeScopeForPath = (pathname?: string): ThemeScope => {
-  const path = pathname ?? (typeof window !== 'undefined' ? window.location.pathname : '');
+  const path = pathname ?? getAppPathname();
   return path.startsWith('/reader') ? 'reader' : 'library';
 };
 

@@ -1,5 +1,6 @@
 'use client';
 import { withBasePath } from '@/utils/basePath';
+import { getRedirectParam } from '@/utils/nav';
 import clsx from 'clsx';
 import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
@@ -248,7 +249,7 @@ export default function AuthPage() {
         console.error('Failed to clear keepLogin:', error);
       }
     })();
-    const redirectTo = new URLSearchParams(window.location.search).get('redirect');
+    const redirectTo = getRedirectParam();
     if (redirectTo) {
       router.push(redirectTo);
     } else {
@@ -279,7 +280,7 @@ export default function AuthPage() {
     const { data: subscription } = supabase.auth.onAuthStateChange((_event, session) => {
       if (session?.access_token && session.user) {
         login(session.access_token, session.user);
-        const redirectTo = new URLSearchParams(window.location.search).get('redirect');
+        const redirectTo = getRedirectParam();
         const lastRedirectAtKey = 'lastRedirectAt';
         const lastRedirectAt = parseInt(localStorage.getItem(lastRedirectAtKey) || '0', 10);
         const now = Date.now();

@@ -1,3 +1,4 @@
+import { getAppPathname } from '@/utils/basePath';
 import React, { useEffect, useRef, useState } from 'react';
 import { MdArrowBack } from 'react-icons/md';
 import { LuBookA, LuTrash2 } from 'react-icons/lu';
@@ -159,7 +160,7 @@ const VocabularyDetail: React.FC<VocabularyDetailProps> = ({ entry, onBack, onOp
   const openInBook = (hash: string, cfi: string) => {
     onOpenBook?.();
     // A mounted reader doesn't re-init on router.push, so switch the book in place.
-    if (window.location.pathname.startsWith('/reader')) {
+    if (getAppPathname().startsWith('/reader')) {
       eventDispatcher.dispatch('open-book-in-reader', { bookHash: hash, cfi });
       return;
     }

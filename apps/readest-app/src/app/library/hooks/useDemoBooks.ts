@@ -6,6 +6,10 @@ import { getUserLang } from '@/utils/misc';
 import { isWebAppPlatform } from '@/services/environment';
 import { demoLibraries as libraries } from '@/services/demoBooks';
 
+// Kalponik: no sample shelf from cdn.readest.com; the library starts empty.
+// Demo rows imported before this are dropped by the library page (isDemoBook).
+const SHOW_DEMO_BOOKS = false;
+
 interface DemoBooks {
   library: string[];
 }
@@ -34,7 +38,7 @@ export const useDemoBooks = () => {
     };
 
     const demoBooksFetchedFlag = localStorage.getItem('demoBooksFetched');
-    if (isWebAppPlatform() && !demoBooksFetchedFlag) {
+    if (SHOW_DEMO_BOOKS && isWebAppPlatform() && !demoBooksFetchedFlag) {
       fetchDemoBooks();
       localStorage.setItem('demoBooksFetched', 'true');
     }

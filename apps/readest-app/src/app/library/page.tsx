@@ -57,6 +57,7 @@ import { useLibraryRefresh } from './hooks/useLibraryRefresh';
 import { useTheme } from '@/hooks/useTheme';
 import { useUICSS } from '@/hooks/useUICSS';
 import { useDemoBooks } from './hooks/useDemoBooks';
+import { isDemoBook } from '@/services/demoBooks';
 import { useBooksSync } from './hooks/useBooksSync';
 import { useLibraryFileSync } from './hooks/useLibraryFileSync';
 import { useBookTransferActions } from './hooks/useBookTransferActions';
@@ -946,6 +947,17 @@ const LibraryPageContent = ({ searchParams }: { searchParams: ReadonlyURLSearchP
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [demoBooks, libraryLoaded]);
+
+  // Kalponik: drop sample books a browser imported before the demo shelf was
+  // turned off. They are url-backed (no local file) and never synced, so
+  // removing the rows is all it takes.
+  useEffect(() => {
+    if (!libraryLoaded || !libraryBooks.some(isDemoBook)) return;
+    const kept = libraryBooks.filter((book) => !isDemoBook(book));
+    setLibrary(kept);
+    appService?.saveLibraryBooks(kept);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [libraryLoaded]);
 
   const importBooks = (
     files: SelectedFile[],

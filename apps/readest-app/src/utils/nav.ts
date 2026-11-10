@@ -1,3 +1,4 @@
+import { getAppPathname, stripBasePath } from '@/utils/basePath';
 import { redirect, useRouter } from 'next/navigation';
 import { getCurrentWindow, ScrollBarStyle } from '@tauri-apps/api/window';
 import { getAllWebviewWindows, WebviewWindow } from '@tauri-apps/api/webviewWindow';
@@ -126,14 +127,22 @@ export const navigateToReader = (
 };
 
 export const navigateToLogin = (router: ReturnType<typeof useRouter>) => {
-  const pathname = window.location.pathname;
+  const pathname = getAppPathname();
   const search = window.location.search;
   const currentPath = pathname !== '/auth' ? pathname + search : '/';
   router.push(`/auth?redirect=${encodeURIComponent(currentPath)}`);
 };
 
+// The `?redirect=` target for router.push after sign-in. Strips the base path
+// in case a link carries the browser path (/kalponik/...), which router.push
+// would otherwise prefix a second time.
+export const getRedirectParam = (): string | null => {
+  const redirect = new URLSearchParams(window.location.search).get('redirect');
+  return redirect ? stripBasePath(redirect) : null;
+};
+
 export const navigateToHardcoverConnect = (router: ReturnType<typeof useRouter>) => {
-  const redirect = encodeURIComponent(window.location.pathname + window.location.search);
+  const redirect = encodeURIComponent(getAppPathname() + window.location.search);
   router.push(`/hardcover/connect?redirect=${redirect}`);
 };
 
@@ -141,7 +150,8 @@ export const navigateToHardcoverConnect = (router: ReturnType<typeof useRouter>)
 // being read when Plans was opened from the reader settings (#6607). The
 // direction picks the slide of the route view transition (useAppRouter).
 export const navigateToProfile = (router: ReturnType<typeof useRouter>) => {
-  const { pathname, search } = window.location;
+  const { search } = window.location;
+  const pathname = getAppPathname();
   document.documentElement.setAttribute('data-nav-direction', 'forward');
   router.push(`/user?redirect=${encodeURIComponent(pathname + search)}`);
 };
@@ -200,14 +210,14 @@ export const redirectToLibrary = () => {
 };
 
 export const navigateToResetPassword = (router: ReturnType<typeof useRouter>) => {
-  const pathname = window.location.pathname;
+  const pathname = getAppPathname();
   const search = window.location.search;
   const currentPath = pathname !== '/auth' ? pathname + search : '/';
   router.push(`/auth/recovery?redirect=${encodeURIComponent(currentPath)}`);
 };
 
 export const navigateToUpdatePassword = (router: ReturnType<typeof useRouter>) => {
-  const pathname = window.location.pathname;
+  const pathname = getAppPathname();
   const search = window.location.search;
   const currentPath = pathname !== '/auth' ? pathname + search : '/';
   router.push(`/auth/update?redirect=${encodeURIComponent(currentPath)}`);

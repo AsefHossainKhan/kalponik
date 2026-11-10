@@ -1,3 +1,4 @@
+import { getAppPathname } from '@/utils/basePath';
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { getAllWindows, getCurrentWindow } from '@tauri-apps/api/window';
@@ -177,7 +178,7 @@ export function useOpenWithBooks() {
         // and the user would see the spinner hang. The user can close
         // the current book to return to the library, then re-open the
         // new one — same UX as most OS image viewers.
-        if (typeof window !== 'undefined' && window.location.pathname.startsWith('/reader')) {
+        if (typeof window !== 'undefined' && getAppPathname().startsWith('/reader')) {
           console.log('Ignoring Open-with VIEW intent: reader already active');
           return;
         }

@@ -2,6 +2,7 @@
 
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { getRedirectParam } from '@/utils/nav';
 import { useAuth } from '@/context/AuthContext';
 import { useThemeStore } from '@/store/themeStore';
 import { useTranslation } from '@/hooks/useTranslation';
@@ -33,7 +34,7 @@ export default function ResetPasswordPage() {
     const { data: subscription } = supabase.auth.onAuthStateChange((event, session) => {
       if (session?.access_token && session.user && event === 'USER_UPDATED') {
         login(session.access_token, session.user);
-        const redirectTo = new URLSearchParams(window.location.search).get('redirect');
+        const redirectTo = getRedirectParam();
         router.push(redirectTo ?? '/library');
       }
     });

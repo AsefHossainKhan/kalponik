@@ -10,3 +10,15 @@ export const BASE_PATH = process.env['NEXT_PUBLIC_BASE_PATH'] ?? '';
 
 export const withBasePath = (path: string): string =>
   BASE_PATH && path.startsWith('/') && !path.startsWith('//') ? `${BASE_PATH}${path}` : path;
+
+// The reverse: `window.location.pathname` includes the base path, but the
+// router (`router.push`) and route checks like `startsWith('/reader')` expect
+// app paths without it. Passing the raw pathname to `router.push` gives
+// /kalponik/kalponik/...
+export const stripBasePath = (pathname: string): string =>
+  BASE_PATH && (pathname === BASE_PATH || pathname.startsWith(`${BASE_PATH}/`))
+    ? pathname.slice(BASE_PATH.length) || '/'
+    : pathname;
+
+export const getAppPathname = (): string =>
+  typeof window === 'undefined' ? '' : stripBasePath(window.location.pathname);
