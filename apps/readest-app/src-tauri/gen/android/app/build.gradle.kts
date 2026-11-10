@@ -47,7 +47,10 @@ android {
                         ?.substringAfter("=")?.trim()?.trim('"', '\'')?.takeIf { it.isNotEmpty() }
                 }
             ?: ""
-        applicationId = "com.bilingify.readest"
+        // Kalponik: our own Android identity, so the app installs next to
+        // official Readest. Only the applicationId changes; the code namespace
+        // and Tauri identifier stay Readest's to keep upstream merges clean.
+        applicationId = "com.kalponik.reader"
         minSdk = 26
         targetSdk = 36
         versionCode = tauriProperties.getProperty("tauri.android.versionCode", "1").toInt()
