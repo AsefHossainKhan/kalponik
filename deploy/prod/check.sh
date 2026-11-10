@@ -27,7 +27,7 @@ check "pdf.js asset"            200 "$(code "$WEB/kalponik/vendor/pdfjs/pdf.work
 check "Garage CORS preflight"   200 "$(preflight "$S3")"
 
 echo "== public ($ORIGIN, through nginx-proxy)"
-check "redirect /kalponik"      301 "$(code "$ORIGIN/kalponik")"
+check "app root, no redirect loop" 200 "$(code -L --max-redirs 5 "$ORIGIN/kalponik/")"
 check "web app page"            200 "$(code "$ORIGIN/kalponik/library")"
 check "web runtime config"      200 "$(code "$ORIGIN/kalponik/runtime-config.js")"
 check "Garage CORS preflight"   200 "$(preflight "$ORIGIN")"
