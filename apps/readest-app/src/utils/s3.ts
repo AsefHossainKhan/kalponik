@@ -21,8 +21,19 @@ const s3ClientCredentials = {
   secretAccessKey: S3_SECRET_ACCESS_KEY,
 };
 
+// Kalponik: only add a payload checksum when the operation requires one.
+// The SDK's default ('WHEN_SUPPORTED') bakes `x-amz-checksum-crc32` into
+// presigned PUT URLs, computed over an empty body because the browser, not the
+// server, sends the file. Garage validates it and rejects every real upload
+// with 400 "Invalid digest".
+const s3ChecksumOptions = {
+  requestChecksumCalculation: 'WHEN_REQUIRED',
+  responseChecksumValidation: 'WHEN_REQUIRED',
+} as const;
+
 // Internal client used for server-side SDK calls (PutObject, CopyObject, etc.)
 export const s3Client = new S3Client({
+  ...s3ChecksumOptions,
   forcePathStyle: true,
   region: S3_REGION,
   endpoint: S3_ENDPOINT,
@@ -33,6 +44,7 @@ export const s3Client = new S3Client({
 // that browsers can reach (S3_ENDPOINT may be an internal docker hostname like
 // "minio:9000" which is not resolvable outside the docker network).
 const s3SigningClient = new S3Client({
+  ...s3ChecksumOptions,
   forcePathStyle: true,
   region: S3_REGION,
   endpoint: S3_PUBLIC_ENDPOINT,
@@ -42,6 +54,7 @@ const s3SigningClient = new S3Client({
 export const s3Storage = {
   getClient: () => {
     return new S3Client({
+      ...s3ChecksumOptions,
       forcePathStyle: true,
       region: S3_REGION,
       endpoint: S3_ENDPOINT,
