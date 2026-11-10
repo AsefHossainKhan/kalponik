@@ -44,4 +44,15 @@ fi
 
 g bucket allow --read --write --owner "$BUCKET" --key "$S3_ACCESS_KEY_ID" >/dev/null
 echo "bucket: key allowed read/write/owner on $BUCKET"
+
+# CORS. The web app and the Android app upload and download book files from
+# the browser/webview with presigned URLs, which are cross-origin requests
+# (page on :47811 or tauri.localhost, files on the nginx origin). Without a
+# CORS rule Garage answers the preflight with 403 and nothing uploads.
+# Any origin is allowed: every request still needs a valid signature, so the
+# origin list would add no protection, and the Android app's origin is not
+# ours to choose. Set through the S3 API with the official AWS CLI image.
+CORS='{"CORSRules":[{"AllowedOrigins":["*"],"AllowedMethods":["GET","PUT","HEAD","POST","DELETE"],"AllowedHeaders":["*"],"ExposeHeaders":["ETag","Content-Length","Content-Range","Accept-Ranges"],"MaxAgeSeconds":3600}]}'
+docker run --rm --network kalponik-local_default   -e AWS_ACCESS_KEY_ID="$S3_ACCESS_KEY_ID"   -e AWS_SECRET_ACCESS_KEY="$S3_SECRET_ACCESS_KEY"   -e AWS_DEFAULT_REGION="${S3_REGION:-garage}"   amazon/aws-cli:2.31.39 --endpoint-url http://garage:3900   s3api put-bucket-cors --bucket "$BUCKET" --cors-configuration "$CORS" >/dev/null
+echo "bucket: CORS rule set on $BUCKET"
 echo "Garage is ready."

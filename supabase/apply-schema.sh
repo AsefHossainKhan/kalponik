@@ -11,7 +11,8 @@
 #
 # Usage:
 #   SUPABASE_DB_URL='postgresql://postgres.<ref>:<password>@<pooler-host>:5432/postgres' \
-#     sh supabase/apply-schema.sh <path-to-reader-checkout>
+#     sh supabase/apply-schema.sh [path-to-reader-checkout]
+# The path defaults to this repo, which is the reader checkout.
 #
 # Use the *Session pooler* connection string (port 5432) from Supabase >
 # Connect: it works over IPv4, and session mode allows the statements above.
@@ -25,7 +26,7 @@
 set -eu
 export MSYS_NO_PATHCONV=1   # Git Bash on Windows: don't rewrite /paths
 
-READER="${1:?usage: apply-schema.sh <path-to-reader-checkout>}"
+READER="${1:-$(dirname "$0")/..}"
 : "${SUPABASE_DB_URL:?set SUPABASE_DB_URL (Session pooler connection string)}"
 DB_DIR="$(cd "$READER/docker/volumes/db" && pwd)"
 [ -f "$DB_DIR/init/schema.sql" ] || { echo "no schema.sql under $DB_DIR"; exit 1; }

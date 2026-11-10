@@ -27,11 +27,11 @@ aws() {
 
 # Every aws call is SigV4-signed; the endpoint sends them through nginx.
 echo "hello from kalponik" | aws s3 cp - "s3://$BUCKET/$KEY" >/dev/null
-echo "[1/3] signed upload through nginx: ok"
+echo "[1/4] signed upload through nginx: ok"
 
 GOT=$(aws s3 cp "s3://$BUCKET/$KEY" -)
 [ "$GOT" = "hello from kalponik" ] || { echo "download mismatch: $GOT"; exit 1; }
-echo "[2/3] signed download through nginx: ok"
+echo "[2/4] signed download through nginx: ok"
 
 URL=$(aws s3 presign "s3://$BUCKET/$KEY" --expires-in 300 | tr -d '\r')
 case "$URL" in
@@ -41,7 +41,13 @@ esac
 # Fetch it with no credentials, the way a browser or the app would.
 GOT=$(docker compose exec -T nginx wget -qO- "$URL")
 [ "$GOT" = "hello from kalponik" ] || { echo "presigned fetch failed: $GOT"; exit 1; }
-echo "[3/3] presigned URL (path-style under /$BUCKET/) works without credentials: ok"
+echo "[3/4] presigned URL (path-style under /$BUCKET/) works without credentials: ok"
+
+# The browser preflight that comes before every upload from the web or
+# Android app. Garage refuses it (403) unless the bucket has a CORS rule.
+CODE=$(docker compose exec -T nginx curl -s -o /dev/null -w '%{http_code}' -X OPTIONS   -H "Origin: http://localhost:47811"   -H "Access-Control-Request-Method: PUT"   "http://nginx/$BUCKET/$KEY")
+[ "$CODE" = "200" ] || { echo "CORS preflight failed: HTTP $CODE (run init-garage.sh)"; exit 1; }
+echo "[4/4] CORS preflight for a browser upload: ok"
 
 aws s3 rm "s3://$BUCKET/$KEY" >/dev/null
 echo "All storage checks passed."

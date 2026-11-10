@@ -1,8 +1,8 @@
 # Kalponik local dev stack: book storage (Garage, S3-compatible) + nginx.
 #
 # Mirrors the production layout on asroy.duckdns.org, but on one port:
-#   http://localhost:8080/kalponik/        -> Readest web (runs on the host, port 3000)
-#   http://localhost:8080/kalponik-books/  -> Garage S3 API, passed through unchanged
+#   http://localhost:47810/kalponik/        -> Readest web (runs on the host, port 47811)
+#   http://localhost:47810/kalponik-books/  -> Garage S3 API, passed through unchanged
 #
 # Auth + database are the hosted Supabase project, so they are not in here.
 # First run: `docker compose up -d && sh init-garage.sh`. See docs/DEV-SETUP.md.
@@ -30,7 +30,8 @@ services:
     image: nginx:1.29-alpine
     restart: unless-stopped
     ports:
-      - "127.0.0.1:8080:80"
+      # Host port. Deliberately uncommon; override with KALPONIK_PORT in .env.
+      - "127.0.0.1:${KALPONIK_PORT:-47810}:80"
     volumes:
       - ./nginx/kalponik.conf:/etc/nginx/conf.d/default.conf:ro
     extra_hosts:
