@@ -131,7 +131,7 @@
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
-                <data android:scheme="readest" android:host="auth-callback" />
+                <data android:scheme="kalponik" android:host="auth-callback" />
             </intent-filter>
 
             <!-- Google Drive OAuth reverse-DNS redirect (iOS-type client). Mirrors
@@ -167,7 +167,7 @@
                 <action android:name="org.chromium.arc.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
-                <data android:scheme="readest" />
+                <data android:scheme="kalponik" />
                 
                 
                 

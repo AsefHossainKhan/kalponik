@@ -12,8 +12,8 @@ describe('localSendDeviceModel', () => {
     expect(localSendDeviceModel('linux', false)).toBe('Linux');
   });
 
-  it('falls back to Readest for an unknown platform', () => {
-    expect(localSendDeviceModel('unknown', false)).toBe('Readest');
+  it('falls back to Kalponik for an unknown platform', () => {
+    expect(localSendDeviceModel('unknown', false)).toBe('Kalponik');
   });
 
   it('only splits iPad out of iOS, never other platforms', () => {

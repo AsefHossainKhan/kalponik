@@ -11,7 +11,7 @@ import ShareLanding from './ShareLanding';
 //
 // In the Tauri build (output: 'export'), this whole route is dropped because
 // rewrites and dynamic metadata require a server. Tauri intercepts the
-// readest://share/{token} deep link before /s ever loads.
+// kalponik://share/{token} deep link before /s ever loads.
 
 interface PageProps {
   searchParams: Promise<Record<string, string | string[] | undefined>>;
@@ -25,7 +25,7 @@ export async function generateMetadata({ searchParams }: PageProps): Promise<Met
   // keeps the full dynamic implementation below.
   if (process.env['NEXT_PUBLIC_APP_PLATFORM'] !== 'web') {
     return {
-      title: 'Open in Readest',
+      title: 'Open in Kalponik',
       description: 'Open-source ebook reader for everyone, on every device.',
     };
   }
@@ -36,7 +36,7 @@ export async function generateMetadata({ searchParams }: PageProps): Promise<Met
 
   if (!token) {
     return {
-      title: 'Open in Readest',
+      title: 'Open in Kalponik',
       description: 'Open-source ebook reader for everyone, on every device.',
     };
   }
@@ -44,7 +44,7 @@ export async function generateMetadata({ searchParams }: PageProps): Promise<Met
   const result = await resolveActiveShare(token);
   if (!result.ok) {
     return {
-      title: 'Share link unavailable · Readest',
+      title: 'Share link unavailable · Kalponik',
       description: 'This share link is no longer available.',
     };
   }

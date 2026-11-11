@@ -95,7 +95,7 @@ const QuoteCardDialog: React.FC<QuoteCardDialogProps> = ({
     };
   }, [isOpen, card, style]);
 
-  const filename = `${makeSafeFilename(content.title || 'Readest')}-quote.png`;
+  const filename = `${makeSafeFilename(content.title || 'Kalponik')}-quote.png`;
   const mimeType = 'image/png';
   const getBytes = async () => (await quoteCardToPng(canvasRef.current!)).arrayBuffer();
   const toast = (type: 'info' | 'error', message: string) =>

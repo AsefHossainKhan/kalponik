@@ -31,7 +31,7 @@ const DESKTOP_FALLBACK_DELAY_MS = 1000;
 
 const buildIntentUrl = (path: string, fallbackUrl: string) => {
   const cleanPath = path.replace(/^\//, '');
-  return `intent://${cleanPath}#Intent;scheme=readest;package=${ANDROID_PACKAGE};S.browser_fallback_url=${encodeURIComponent(fallbackUrl)};end`;
+  return `intent://${cleanPath}#Intent;scheme=kalponik;package=${ANDROID_PACKAGE};S.browser_fallback_url=${encodeURIComponent(fallbackUrl)};end`;
 };
 
 const buildWebReaderUrl = (bookHash: string, cfi: string | null): string => {

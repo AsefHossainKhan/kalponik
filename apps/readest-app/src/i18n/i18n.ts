@@ -3,6 +3,7 @@ import i18n from 'i18next';
 import LanguageDetector from 'i18next-browser-languagedetector';
 import translatableLngs from '../../i18n-langs.json';
 import { initReactI18next } from 'react-i18next';
+import { kalponikBrand } from './kalponikBrand';
 
 // 'en' is the source language and not listed in the translatable set.
 const SUPPORTED_LNGS = ['en', ...translatableLngs];
@@ -18,8 +19,10 @@ const initI18n = async () => {
   i18n
     .use(LanguageDetector)
     .use(initReactI18next)
+    .use(kalponikBrand)
     .init({
       supportedLngs: SUPPORTED_LNGS,
+      postProcess: [kalponikBrand.name],
       fallbackLng: {
         'zh-HK': ['zh-TW', 'en'],
         'pt-BR': ['pt', 'en'],

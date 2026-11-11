@@ -141,7 +141,7 @@ export const AboutWindow = () => {
               />
             </div>
             <div className='flex select-text flex-col items-center'>
-              <h2 className='mb-2 text-2xl font-bold'>Readest</h2>
+              <h2 className='mb-2 text-2xl font-bold'>Kalponik</h2>
               <button
                 type='button'
                 title={_('Copy')}

@@ -65,7 +65,7 @@
         <string>com.bilingify.readest</string>
         <key>CFBundleURLSchemes</key>
         <array>
-          <string>readest</string>
+          <string>kalponik</string>
         </array>
       </dict>
       <!-- Google Drive OAuth reverse-DNS redirect (iOS-type client). The

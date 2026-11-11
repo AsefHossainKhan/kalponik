@@ -55,11 +55,11 @@ const releaseLaunchLinkGate = () => useLibraryStore.getState().setCheckPendingLa
  * live ones, holds a link that needs the library until it has loaded, and keeps
  * the Library blank until it is known whether any link claimed the launch.
  *
- *   readest://book/{hash}                                  a widget or Android Auto tap
- *   readest://book/{hash}/annotation/{id}?cfi=...          a highlight (also the https form
- *   readest://annotation/{hash}/{id}                        and the legacy Readwise one)
- *   readest://widget-group/{groupBy}/{groupId}             a "browse groups" tile tap
- *   readest://widget-edit-shelf/{shelfId}                  the configure dialog's Edit button
+ *   kalponik://book/{hash}                                  a widget or Android Auto tap
+ *   kalponik://book/{hash}/annotation/{id}?cfi=...          a highlight (also the https form
+ *   kalponik://annotation/{hash}/{id}                        and the legacy Readwise one)
+ *   kalponik://widget-group/{groupBy}/{groupId}             a "browse groups" tile tap
+ *   kalponik://widget-edit-shelf/{shelfId}                  the configure dialog's Edit button
  */
 export function useOpenLaunchLinks() {
   const _ = useTranslation();
