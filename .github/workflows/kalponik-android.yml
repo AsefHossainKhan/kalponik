@@ -1,0 +1,159 @@
+# Kalponik: build the signed Android APK and attach it to a GitHub Release.
+#
+# How to release (see docs/DEPLOY.md, "Android release via GitHub"):
+#   gh release create kalponik-v0.12.21 --target reader --title "Kalponik 0.12.21" --notes "..."
+# The tag sets the app version (kalponik-vX.Y.Z -> X.Y.Z, and the Android
+# versionCode Tauri derives from it), so no version-bump commit is needed and
+# upstream merges never conflict on package.json. Each new tag must be higher
+# than the last, or Android refuses to install the update.
+#
+# This is the only workflow on `reader`; upstream's are deleted to save Actions
+# minutes. It runs only when a release is published (about 30-40 minutes on a
+# Linux runner), never on push.
+#
+# Repository secrets it needs: KALPONIK_KEYSTORE_BASE64, KALPONIK_KEYSTORE_PASSWORD,
+# KALPONIK_KEY_ALIAS, KALPONIK_SUPABASE_URL, KALPONIK_SUPABASE_ANON_KEY.
+
+name: Kalponik Android release
+
+on:
+  release:
+    types: [published]
+
+permissions:
+  contents: write
+
+concurrency:
+  group: kalponik-android-${{ github.event.release.tag_name }}
+  cancel-in-progress: true
+
+env:
+  PUBLIC_URL: https://asroy.duckdns.org/kalponik
+
+jobs:
+  apk:
+    if: startsWith(github.event.release.tag_name, 'kalponik-v')
+    runs-on: ubuntu-latest
+    timeout-minutes: 100
+    steps:
+      - name: Read the version from the tag
+        id: version
+        env:
+          TAG: ${{ github.event.release.tag_name }}
+        run: |
+          version="${TAG#kalponik-v}"
+          if ! [[ "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "::error::Tag must look like kalponik-vX.Y.Z, got $TAG"
+            exit 1
+          fi
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Initialize submodules (gstack is a dev-only skill, not needed)
+        run: |
+          git -c submodule."apps/readest-app/.claude/skills/gstack".update=none \
+            submodule update --init --recursive
+
+      - name: Set up pnpm
+        uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # v6.1.0
+
+      - name: Set up Node
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v6
+        with:
+          node-version: 24
+          cache: pnpm
+
+      - name: Set up Java
+        uses: actions/setup-java@b843ebf9b913146b38da2eaa7aeddf76074ae1ad # v6.1.0
+        with:
+          distribution: 'zulu'
+          java-version: '17'
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@be39fa834029ff78f1a44aa3bb0819b8fc2bd8fd # v4
+        with:
+          packages: 'platform-tools'
+
+      - name: Install NDK
+        run: sdkmanager "ndk;28.2.13676358"
+
+      - name: Set up Rust
+        uses: dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8 # stable
+        with:
+          targets: aarch64-linux-android
+
+      - uses: Swatinem/rust-cache@c8037a86dde8214a8310e9f54a8fc61ab362aa31 # v2
+        with:
+          key: kalponik-android-arm64
+
+      - name: Install dependencies
+        run: |
+          pnpm install --frozen-lockfile --prefer-offline
+          pnpm --filter @readest/readest-app setup-vendors
+
+      - name: Write .env.local (baked into the app)
+        working-directory: apps/readest-app
+        env:
+          SUPABASE_URL: ${{ secrets.KALPONIK_SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ secrets.KALPONIK_SUPABASE_ANON_KEY }}
+        run: |
+          {
+            echo "NEXT_PUBLIC_SUPABASE_URL=$SUPABASE_URL"
+            echo "NEXT_PUBLIC_SUPABASE_ANON_KEY=$SUPABASE_ANON_KEY"
+            echo "NEXT_PUBLIC_SELF_HOSTED=true"
+            echo "NEXT_PUBLIC_API_BASE_URL=$PUBLIC_URL"
+            echo "NEXT_PUBLIC_NODE_BASE_URL=$PUBLIC_URL"
+          } > .env.local
+
+      - name: Generate the Android project
+        working-directory: apps/readest-app
+        run: |
+          # The way Readest's CI does it: regenerate, then restore the tracked
+          # customisations (our applicationId, label and kalponik:// scheme).
+          rm -rf src-tauri/gen/android
+          pnpm tauri android init --ci
+          pnpm tauri icon ../../data/icons/readest-book.png
+          git checkout -- src-tauri
+
+      - name: Set the version from the tag
+        working-directory: apps/readest-app
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          node -e "const f='package.json',p=require('./'+f);p.version=process.env.VERSION;require('fs').writeFileSync(f,JSON.stringify(p,null,2)+'\n')"
+          grep '"version"' package.json
+
+      - name: Install the signing key
+        working-directory: apps/readest-app/src-tauri/gen/android
+        env:
+          KEYSTORE_BASE64: ${{ secrets.KALPONIK_KEYSTORE_BASE64 }}
+          KEYSTORE_PASSWORD: ${{ secrets.KALPONIK_KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KALPONIK_KEY_ALIAS }}
+        run: |
+          base64 -d <<< "$KEYSTORE_BASE64" > "$RUNNER_TEMP/kalponik-release.jks"
+          {
+            echo "keyAlias=$KEY_ALIAS"
+            echo "password=$KEYSTORE_PASSWORD"
+            echo "storeFile=$RUNNER_TEMP/kalponik-release.jks"
+          } > keystore.properties
+
+      - name: Build the APK
+        working-directory: apps/readest-app
+        timeout-minutes: 90
+        env:
+          NDK_HOME: ${{ env.ANDROID_HOME }}/ndk/28.2.13676358
+        run: npx dotenv -e .env.tauri -- pnpm tauri android build --apk -t aarch64
+
+      - name: Attach the APK to the release
+        working-directory: apps/readest-app
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ github.event.release.tag_name }}
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          apk="Kalponik_${VERSION}_arm64.apk"
+          cp src-tauri/gen/android/app/build/outputs/apk/universal/release/app-universal-release.apk "$apk"
+          apksigner="$(ls -d "$ANDROID_HOME"/build-tools/*/ | sort -V | tail -1)apksigner"
+          "$apksigner" verify --print-certs "$apk" | head -3
+          ../../.github/scripts/retry.sh gh release upload "$TAG" "$apk" --clobber
