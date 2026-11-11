@@ -1,13 +1,13 @@
 # Kalponik: build the signed Android APK and attach it to a GitHub Release.
 #
 # How to release (see docs/DEPLOY.md, "Android release via GitHub"):
-#   gh release create kalponik-v0.12.21 --target reader --title "Kalponik 0.12.21" --notes "..."
+#   gh release create kalponik-v0.12.21 --target main --title "Kalponik 0.12.21" --notes "..."
 # The tag sets the app version (kalponik-vX.Y.Z -> X.Y.Z, and the Android
 # versionCode Tauri derives from it), so no version-bump commit is needed and
 # upstream merges never conflict on package.json. Each new tag must be higher
 # than the last, or Android refuses to install the update.
 #
-# This is the only workflow on `reader`; upstream's are deleted to save Actions
+# This is the only workflow here; upstream's are deleted to save Actions
 # minutes. It runs only when a release is published (about 30-40 minutes on a
 # Linux runner), never on push.
 #

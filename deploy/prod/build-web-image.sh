@@ -3,7 +3,7 @@
 # The server (8 GB) is too small to build Next.js comfortably, so the image is
 # built here and moved over with `docker load`.
 #
-# Usage, from the repo root on the `reader` branch, submodules initialised:
+# Usage, from the repo root, submodules initialised:
 #   sh deploy/prod/build-web-image.sh
 # Then copy the .tar.gz to the server and run there:
 #   gunzip -c kalponik-web-<tag>.tar.gz | docker load
