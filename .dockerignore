@@ -52,5 +52,5 @@ Thumbs.db
 npm-debug.log*
 
 # Kalponik: Android build outputs (several GB) never belong in the web image
-apps/readest-app/src-tauri/gen/android/**/build
-apps/readest-app/src-tauri/gen/android/.gradle
+apps/kalponik-app/src-tauri/gen/android/**/build
+apps/kalponik-app/src-tauri/gen/android/.gradle

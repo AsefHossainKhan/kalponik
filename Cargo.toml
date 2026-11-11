@@ -1,11 +1,11 @@
 [workspace]
-# The readest forks under packages/ are pulled in through [patch.crates-io]
+# The kalponik forks under packages/ are pulled in through [patch.crates-io]
 # below, not listed as members: the Linux CEF build (see
-# apps/readest-app/src-tauri/.cargo/cef.toml) patches tauri and the plugins to
+# apps/kalponik-app/src-tauri/.cargo/cef.toml) patches tauri and the plugins to
 # upstream git instead, and a member fork would still sit in the graph and
 # clash on `links` with the git copy.
 members = [
-  "apps/readest-app/src-tauri"
+  "apps/kalponik-app/src-tauri"
 ]
 exclude = [
   "packages/qcms",

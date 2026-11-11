@@ -2,7 +2,7 @@
 # Applies Readest's database schema to a hosted Supabase project, the same way
 # Readest's own docker/volumes/db/apply-migrations.sh does for self-hosting:
 # base schema first, then each migration in filename order, every file in
-# autocommit mode with psql, and a ledger (readest_meta.migrations) so a re-run
+# autocommit mode with psql, and a ledger (kalponik_meta.migrations) so a re-run
 # only applies what is new. Run it again after merging upstream Readest.
 #
 # Why not the Supabase SQL editor: migration 016 uses CREATE INDEX
@@ -39,13 +39,13 @@ psql_run() {
     psql "$SUPABASE_DB_URL" -v ON_ERROR_STOP=1 --no-psqlrc -q "$@"
 }
 
-psql_run -c "CREATE SCHEMA IF NOT EXISTS readest_meta" \
-         -c "CREATE TABLE IF NOT EXISTS readest_meta.migrations (
+psql_run -c "CREATE SCHEMA IF NOT EXISTS kalponik_meta" \
+         -c "CREATE TABLE IF NOT EXISTS kalponik_meta.migrations (
                name text PRIMARY KEY,
                applied_at timestamp with time zone NOT NULL DEFAULT now())"
 
 applied() {
-  [ -n "$(psql_run -tA -c "SELECT 1 FROM readest_meta.migrations WHERE name = '$1'")" ]
+  [ -n "$(psql_run -tA -c "SELECT 1 FROM kalponik_meta.migrations WHERE name = '$1'")" ]
 }
 
 # Base schema, recorded as 000_schema.sql so it only runs once.
@@ -55,7 +55,7 @@ else
   echo "schema: applying base schema"
   grep -v -E '^ALTER FUNCTION auth\.(uid|role)\(\) OWNER TO supabase_auth_admin;' \
     "$DB_DIR/init/schema.sql" | psql_run -f -
-  psql_run -c "INSERT INTO readest_meta.migrations (name) VALUES ('000_schema.sql')"
+  psql_run -c "INSERT INTO kalponik_meta.migrations (name) VALUES ('000_schema.sql')"
 fi
 
 for f in "$DB_DIR"/migrations/*.sql; do
@@ -66,7 +66,7 @@ for f in "$DB_DIR"/migrations/*.sql; do
   fi
   echo "schema: applying $name"
   psql_run -f "/db/migrations/$name"
-  psql_run -c "INSERT INTO readest_meta.migrations (name) VALUES ('$name')"
+  psql_run -c "INSERT INTO kalponik_meta.migrations (name) VALUES ('$name')"
 done
 
-echo "schema: done ($(psql_run -tA -c 'SELECT count(*) FROM readest_meta.migrations') files recorded)"
+echo "schema: done ($(psql_run -tA -c 'SELECT count(*) FROM kalponik_meta.migrations') files recorded)"

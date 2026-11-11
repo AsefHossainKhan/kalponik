@@ -1,6 +1,6 @@
 # Contribution Guidelines
 
-When contributing to `Readest`, whether on GitHub or in other community spaces:
+When contributing to `Kalponik`, whether on GitHub or in other community spaces:
 
 - Follow our [Code of Conduct](CODE_OF_CONDUCT.md).
 - Be respectful, civil, and open-minded.
@@ -13,7 +13,7 @@ When contributing to `Readest`, whether on GitHub or in other community spaces:
 
 In order to not waste your time implementing a change that has already been declined, or is generally not needed, start by [opening an issue](https://github.com/readest/readest/issues/new/choose) describing the problem you would like to solve.
 
-For the best experience to build Readest for yourself, use a recent version of Node.js and Rust. Refer to the [Tauri documentation](https://v2.tauri.app/start/prerequisites/) for details on setting up the development environment prerequisites on different platforms.
+For the best experience to build Kalponik for yourself, use a recent version of Node.js and Rust. Refer to the [Tauri documentation](https://v2.tauri.app/start/prerequisites/) for details on setting up the development environment prerequisites on different platforms.
 
 Basically you need to install or update the following development tools:
 
@@ -29,13 +29,13 @@ rustup update
 
 ## Getting Started
 
-To get started with Readest, follow these steps to clone and build the project.
+To get started with Kalponik, follow these steps to clone and build the project.
 
 ### 1. Clone the Repository
 
 ```bash
 git clone https://github.com/readest/readest.git
-cd readest
+cd kalponik
 ```
 
 ### 2. Install Dependencies
@@ -45,7 +45,7 @@ cd readest
 git submodule update --init --recursive
 pnpm install
 # copy vendors dist libs to public directory
-pnpm --filter @readest/readest-app setup-vendors
+pnpm --filter @kalponik/kalponik-app setup-vendors
 ```
 
 To confirm that all dependencies are correctly installed, run the following command:
@@ -74,7 +74,7 @@ Then, simply run:
 
 ```bash
 # copy vendors dist libs to public directory
-pnpm --filter @readest/readest-app setup-vendors
+pnpm --filter @kalponik/kalponik-app setup-vendors
 ```
 
 ### 4. Build for Development
@@ -93,10 +93,10 @@ pnpm preview
 The following must be run once before running the Android app. Note that this is done automatically if using the nix Android devshell:
 
 ```bash
-rm apps/readest-app/src-tauri/gen/android
+rm apps/kalponik-app/src-tauri/gen/android
 pnpm tauri android init
-pnpm tauri icon ../../data/icons/readest-book.png
-git checkout apps/readest-app/src-tauri/gen/android
+pnpm tauri icon ../../data/icons/kalponik-book.png
+git checkout apps/kalponik-app/src-tauri/gen/android
 ```
 
 To run the Android app:
@@ -112,7 +112,7 @@ pnpm tauri android dev --host
 ```bash
 # Set up the iOS environment (run once)
 pnpm tauri ios init
-pnpm tauri icon ../../data/icons/readest-book.png
+pnpm tauri icon ../../data/icons/kalponik-book.png
 
 pnpm tauri ios dev
 # or if you want to dev on a real device
@@ -139,7 +139,7 @@ Now you're all setup and can start implementing your changes.
 
 ## Implement your changes
 
-This project is a monorepo. The code for the `readest-app` is in the `apps/readest-app` directory. Here are some useful scripts for developing the frontend only without compiling Tauri:
+This project is a monorepo. The code for the `kalponik-app` is in the `apps/kalponik-app` directory. Here are some useful scripts for developing the frontend only without compiling Tauri:
 
 | Command          | Description                                        |
 | ---------------- | -------------------------------------------------- |

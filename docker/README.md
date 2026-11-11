@@ -4,7 +4,7 @@
 
 | service         | Image                       | Description                                       |
 | --------------- | --------------------------- | ------------------------------------------------- |
-| **client**      | `ghcr.io/readest/readest`   | readest frontend                                  |
+| **client**      | `ghcr.io/readest/readest`   | kalponik frontend                                  |
 | **db**          | `supabase/postgres`         | psql db with supabase extensions                  |
 | **kong**        | `kong:2.8.1`                | api gateway routing requests to supabase services |
 | **auth**        | `supabase/gotrue:v2.185.0`  | auth service (email, JWT)                         |
@@ -16,7 +16,7 @@
 
 | Port   | Service          |
 | ------ | ---------------- |
-| `3000` | readest          |
+| `3000` | kalponik          |
 | `8000` | kong API gateway |
 | `9000` | MinIO S3 API     |
 | `9001` | MinIO console UI |
@@ -49,24 +49,24 @@ cd docker
 docker compose up -d
 ```
 
-this pulls `${READEST_IMAGE}` (default: `ghcr.io/readest/readest:latest`) instead of building the client locally.
+this pulls `${KALPONIK_IMAGE}` (default: `ghcr.io/readest/readest:latest`) instead of building the client locally.
 the web client now reads `SUPABASE_PUBLIC_URL`, `SUPABASE_ANON_KEY`, `API_BASE_URL`, `OBJECT_STORAGE_TYPE`, `SELF_HOSTED`, `STORAGE_FIXED_QUOTA`, and `TRANSLATION_FIXED_QUOTA` from runtime
 container env, so custom self-hosted values work with pulled images.
 
 `SELF_HOSTED` unlocks every premium feature — third-party cloud sync (WebDAV,
-Google Drive, S3, OneDrive), offline Read Aloud downloads, Send to Readest —
+Google Drive, S3, OneDrive), offline Read Aloud downloads, Send to Kalponik —
 with or without a signed-in user. the image defaults it to `true`, so a pulled
 image is unlocked even if your `compose.yaml` predates the variable. set
 `SELF_HOSTED=false` in `docker/.env` only if you run a hosted service that sells
 the plans.
 
-if you prefer Docker Hub, set `READEST_IMAGE` in `docker/.env`, for example:
+if you prefer Docker Hub, set `KALPONIK_IMAGE` in `docker/.env`, for example:
 
 ```env
-READEST_IMAGE=docker.io/your-dockerhub-username/readest:latest
+KALPONIK_IMAGE=docker.io/your-dockerhub-username/kalponik:latest
 ```
 
-replace `your-dockerhub-username` with the Docker Hub namespace that publishes your `readest` image.
+replace `your-dockerhub-username` with the Docker Hub namespace that publishes your `kalponik` image.
 for official images, use the namespace configured for this repository's Docker Hub publishing secrets.
 
 published tags:
@@ -82,11 +82,11 @@ including public hostnames that resolve to them. To reach trusted LAN catalogs,
 set an exact, comma-separated allowlist in `docker/.env`:
 
 ```env
-READEST_TRUSTED_PRIVATE_HOSTS=books.home.arpa,calibre.lan,192.168.1.20
+KALPONIK_TRUSTED_PRIVATE_HOSTS=books.home.arpa,calibre.lan,192.168.1.20
 ```
 
 Recreate the client with `docker compose up -d client` after changing it. With
-`docker run`, pass `-e READEST_TRUSTED_PRIVATE_HOSTS=books.home.arpa` instead.
+`docker run`, pass `-e KALPONIK_TRUSTED_PRIVATE_HOSTS=books.home.arpa` instead.
 This setting is read by the server at request time and works with prebuilt
 images; no rebuild or `NODE_ENV` change is needed.
 
@@ -98,9 +98,9 @@ For IPv6 literals, include brackets, for example `[fd00::20]`.
 Each redirect destination must pass the same checks. List any additional private
 hosts used for feeds, covers or downloads. Unlisted hosts keep the private-address
 and DNS checks, and credentials are still removed on cross-origin redirects.
-The allowlist applies only to OPDS, not KOSync or Send to Readest.
+The allowlist applies only to OPDS, not KOSync or Send to Kalponik.
 
-Anyone who can reach your Readest instance can use its OPDS proxy to reach the
+Anyone who can reach your Kalponik instance can use its OPDS proxy to reach the
 listed hosts. Keep the instance behind your LAN/VPN or access controls when
 allowing private services. `SELF_HOSTED=true` lets the catalog form submit LAN
 URLs, but does not grant server access by itself.
@@ -120,7 +120,7 @@ docker compose -f compose.yaml -f compose.build.yaml up --build -d
 
 ### 3. Access
 
-- Readest app: `http://localhost:3000`
+- Kalponik app: `http://localhost:3000`
 - MinIO console: `http://localhost:9001` (login with `MINIO_ROOT_USER` / `MINIO_ROOT_PASSWORD`)
 
 ### Upgrading an existing deployment
@@ -133,10 +133,10 @@ migrations yourself:
 cd docker
 docker compose pull
 docker compose up -d
-docker compose exec db /docker-entrypoint-initdb.d/zz-readest-migrations.sh
+docker compose exec db /docker-entrypoint-initdb.d/zz-kalponik-migrations.sh
 ```
 
-the script records what it applied in `readest_meta.migrations` and skips those
+the script records what it applied in `kalponik_meta.migrations` and skips those
 next time, so it is safe to repeat after every upgrade.
 
 if you had previously patched your database by hand, the script may stop on an
@@ -144,7 +144,7 @@ if you had previously patched your database by hand, the script may stop on an
 
 ```bash
 docker compose exec db psql -U supabase_admin -c \
-  "INSERT INTO readest_meta.migrations (name) VALUES ('002_add_book_shares.sql') ON CONFLICT DO NOTHING"
+  "INSERT INTO kalponik_meta.migrations (name) VALUES ('002_add_book_shares.sql') ON CONFLICT DO NOTHING"
 ```
 
 ### Hot Reload (development)
@@ -182,12 +182,12 @@ docker compose down -v
 | ----------------------------- | -------------------------------------------------------------------------- |
 | `volumes/db/init/schema.sql`  | base schema (books, book_configs, book_notes, files)                         |
 | `volumes/db/migrations/*.sql` | every schema change since, applied in filename order                         |
-| `volumes/db/apply-migrations.sh` | applies the migrations and records them in `readest_meta.migrations`      |
+| `volumes/db/apply-migrations.sh` | applies the migrations and records them in `kalponik_meta.migrations`      |
 
 on an empty database volume the supabase image runs everything under
 `/docker-entrypoint-initdb.d` in glob order: its own `migrate.sh` (supabase core
 schema plus `init-scripts/100-schema.sql`, which is `schema.sql`), then
-`zz-readest-migrations.sh`, which is `apply-migrations.sh`. it globs the mounted
+`zz-kalponik-migrations.sh`, which is `apply-migrations.sh`. it globs the mounted
 migrations directory, so adding a migration file needs no compose change.
 
 ---
@@ -199,7 +199,7 @@ resolves from outside the docker network:
 
 | variable              | what the browser uses it for                                   |
 | --------------------- | -------------------------------------------------------------- |
-| `SITE_URL`            | the readest client itself                                        |
+| `SITE_URL`            | the kalponik client itself                                        |
 | `SUPABASE_PUBLIC_URL` | kong, which routes `/auth/v1/…` and `/rest/v1/…`                 |
 | `S3_PUBLIC_ENDPOINT`  | minio, reached through path-style presigned URLs                 |
 
@@ -224,7 +224,7 @@ are truncated.
 
 ### CJK fonts on a custom domain
 
-the reader loads a few CJK webfont bundles from Readest's CDN, which only sends
+the reader loads a few CJK webfont bundles from Kalponik's CDN, which only sends
 `Access-Control-Allow-Origin` for readest.com origins, so the browser blocks them
 on a self-hosted domain. mirror
 `https://storage.readest.com/public/font/dist/<Family>/` (and the `.woff2` files it
@@ -245,7 +245,7 @@ unaffected either way.
 docker build \
   --target production-stage \
   --build-arg NEXT_PUBLIC_APP_PLATFORM=web \
-  -t readest-client \
+  -t kalponik-client \
   .
 ```
 
@@ -262,12 +262,12 @@ docker run -p 3000:3000 \
   -e S3_ENDPOINT=http://host.docker.internal:9000 \
   -e S3_PUBLIC_ENDPOINT=http://localhost:9000 \
   -e S3_REGION=us-east-1 \
-  -e S3_BUCKET_NAME=readest-files \
+  -e S3_BUCKET_NAME=kalponik-files \
   -e S3_ACCESS_KEY_ID=<minio-user> \
   -e S3_SECRET_ACCESS_KEY=<minio-password> \
   -e STORAGE_FIXED_QUOTA=1073741824 \
   -e TRANSLATION_FIXED_QUOTA=50000 \
-  readest-client
+  kalponik-client
 ```
 
 on Linux, some Docker setups do not resolve `host.docker.internal` by default.

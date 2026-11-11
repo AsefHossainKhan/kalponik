@@ -90,10 +90,10 @@ jobs:
       - name: Install dependencies
         run: |
           pnpm install --frozen-lockfile --prefer-offline
-          pnpm --filter @readest/readest-app setup-vendors
+          pnpm --filter @kalponik/kalponik-app setup-vendors
 
       - name: Write .env.local (baked into the app)
-        working-directory: apps/readest-app
+        working-directory: apps/kalponik-app
         env:
           SUPABASE_URL: ${{ secrets.KALPONIK_SUPABASE_URL }}
           SUPABASE_ANON_KEY: ${{ secrets.KALPONIK_SUPABASE_ANON_KEY }}
@@ -107,17 +107,17 @@ jobs:
           } > .env.local
 
       - name: Generate the Android project
-        working-directory: apps/readest-app
+        working-directory: apps/kalponik-app
         run: |
           # The way Readest's CI does it: regenerate, then restore the tracked
           # customisations (our applicationId, label and kalponik:// scheme).
           rm -rf src-tauri/gen/android
           pnpm tauri android init --ci
-          pnpm tauri icon ../../data/icons/readest-book.png
+          pnpm tauri icon ../../data/icons/kalponik-book.png
           git checkout -- src-tauri
 
       - name: Set the version from the tag
-        working-directory: apps/readest-app
+        working-directory: apps/kalponik-app
         env:
           VERSION: ${{ steps.version.outputs.version }}
         run: |
@@ -125,7 +125,7 @@ jobs:
           grep '"version"' package.json
 
       - name: Install the signing key
-        working-directory: apps/readest-app/src-tauri/gen/android
+        working-directory: apps/kalponik-app/src-tauri/gen/android
         env:
           KEYSTORE_BASE64: ${{ secrets.KALPONIK_KEYSTORE_BASE64 }}
           KEYSTORE_PASSWORD: ${{ secrets.KALPONIK_KEYSTORE_PASSWORD }}
@@ -139,14 +139,14 @@ jobs:
           } > keystore.properties
 
       - name: Build the APK
-        working-directory: apps/readest-app
+        working-directory: apps/kalponik-app
         timeout-minutes: 90
         env:
           NDK_HOME: ${{ env.ANDROID_HOME }}/ndk/28.2.13676358
         run: npx dotenv -e .env.tauri -- pnpm tauri android build --apk -t aarch64
 
       - name: Attach the APK to the release
-        working-directory: apps/readest-app
+        working-directory: apps/kalponik-app
         env:
           GH_TOKEN: ${{ github.token }}
           TAG: ${{ github.event.release.tag_name }}

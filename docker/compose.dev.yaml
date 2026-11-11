@@ -18,7 +18,7 @@ services:
     volumes:
       - ../:/app
       - /app/node_modules
-      - /app/apps/readest-app/node_modules
-      - /app/apps/readest-app/public/vendor
-      - /app/apps/readest-app/.next
+      - /app/apps/kalponik-app/node_modules
+      - /app/apps/kalponik-app/public/vendor
+      - /app/apps/kalponik-app/.next
       - /app/packages/foliate-js/node_modules

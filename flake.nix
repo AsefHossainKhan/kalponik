@@ -1,14 +1,14 @@
 {
-  description = "Readest development environment";
+  description = "Kalponik development environment";
 
   # Points `nix run`/`nix build` at the project's public Cachix cache so users
   # do not compile the Rust/Tauri stack and webkitgtk from source. Nix ignores
   # this for non-trusted users and otherwise prompts for consent, so the README
-  # also documents `cachix use readest` as the permanent opt-in.
+  # also documents `cachix use kalponik` as the permanent opt-in.
   nixConfig = {
-    extra-substituters = [ "https://readest.cachix.org" ];
+    extra-substituters = [ "https://kalponik.cachix.org" ];
     extra-trusted-public-keys = [
-      "readest.cachix.org-1:KvKAePcZZCZB8ytFIAOGdgN3VRdmFHGRMHqMVckbt5c="
+      "kalponik.cachix.org-1:KvKAePcZZCZB8ytFIAOGdgN3VRdmFHGRMHqMVckbt5c="
     ];
   };
 
@@ -163,7 +163,7 @@
 
           devShells = {
             default = mkCommonShell {
-              name = "readest-dev";
+              name = "kalponik-dev";
             };
 
             android =
@@ -172,12 +172,12 @@
               in
               mkCommonShell
                 rec {
-                  name = "readest-android";
+                  name = "kalponik-android";
                   postInit = ''
-                    rm -rf apps/readest-app/src-tauri/gen/android
+                    rm -rf apps/kalponik-app/src-tauri/gen/android
                     pnpm tauri android init
-                    git checkout apps/readest-app/src-tauri/gen/android
-                    pnpm tauri icon ../../data/icons/readest-book.png
+                    git checkout apps/kalponik-app/src-tauri/gen/android
+                    pnpm tauri icon ../../data/icons/kalponik-book.png
       
                     if [ ! -d "$ANDROID_AVD_HOME/${name}.avd" ]; then
                         avdmanager create avd \
@@ -208,7 +208,7 @@
                 };
           } // lib.optionalAttrs isDarwin {
             ios = mkCommonShell {
-              name = "readest-ios";
+              name = "kalponik-ios";
               extraNativeBuildInputs = [ pkgs.cocoapods ];
             };
           };

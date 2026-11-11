@@ -1,8 +1,8 @@
 packages:
   - apps/*
-  - apps/readest-app/workers/send-email
-  - apps/readest-app/workers/iap-reconcile
-  - apps/readest-app/extensions/*
+  - apps/kalponik-app/workers/send-email
+  - apps/kalponik-app/workers/iap-reconcile
+  - apps/kalponik-app/extensions/*
   - packages/foliate-js
 
 allowBuilds:

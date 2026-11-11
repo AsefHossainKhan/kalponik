@@ -1,4 +1,4 @@
-Readest is an ebook reader for people who read a lot, and who want their books, notes and reading position on whatever device is nearest.
+Kalponik is an ebook reader for people who read a lot, and who want their books, notes and reading position on whatever device is nearest.
 
 On the Mac you get room to spread out. Open several books in their own windows, keep the text and your notes in view at once, and drive the whole thing from the keyboard.
 
@@ -31,11 +31,11 @@ Listening and languages
 • Wikipedia and dictionary lookup without leaving the page
 
 Sync
-• Readest Cloud, or bring your own: iCloud, Google Drive, OneDrive, WebDAV, S3
+• Kalponik Cloud, or bring your own: iCloud, Google Drive, OneDrive, WebDAV, S3
 • KOReader sync keeps your progress in step with your e-reader
 • Mac, iPhone, iPad, all other platforms and the web
 
-Readest is open source.
+Kalponik is open source.
 
 Support: support@readest.com
 Privacy Policy: https://readest.com/privacy-policy

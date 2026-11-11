@@ -42,7 +42,7 @@ next release run. See "Uploads are ENABLED" below for exactly which lanes.
       staging/                        gitignored scratch; nothing here is read by a lane
 
 Play and F-Droid are deliberately split. F-Droid keeps the six plain unframed
-captures and the app name "Readest"; Play gets the captioned marketing
+captures and the app name "Kalponik"; Play gets the captioned marketing
 composites and the keyword title. Upload Play with:
 
     fastlane supply --metadata_path fastlane/metadata-play/android ...
@@ -103,7 +103,7 @@ Editing these files now changes the live listings on the next release run.
 
 Dry-run the Play listing without committing anything (from the repo root):
 
-    set -a && source apps/readest-app/.env.google-play.local && set +a
+    set -a && source apps/kalponik-app/.env.google-play.local && set +a
     fastlane supply \
       --metadata_path fastlane/metadata-play/android \
       --track production \
@@ -184,7 +184,7 @@ the blob and was rebuilt with the same mask technique. Captions are placed by th
 original ink box centre, so the composition is unchanged.
 
 Not reshot: an iPad Pro 13-inch (M5) simulator boots at 2064x2752 (the current
-App Store 13" size), but the dev `Readest.app` under
+App Store 13" size), but the dev `Kalponik.app` under
 `src-tauri/gen/apple/build/arm64-sim/` was gone by then, so installing failed.
 Rebuild it with `pnpm tauri ios dev` before attempting iPad captures.
 
@@ -193,7 +193,7 @@ Rebuild it with `pnpm tauri ios dev` before attempting iPad captures.
 ### Play panels
 
 Seeded from the **live listing**, not from local promo folders. That matters:
-the copies under `readest-promotions/screenshots/google-play/` were an unused
+the copies under `kalponik-promotions/screenshots/google-play/` were an unused
 revision — panels 1 and 2 there carry review cards that are not on the live
 listing (6-8% pixel difference), while panels 3-5 matched exactly. Pull the real
 assets before editing:

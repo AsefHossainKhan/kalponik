@@ -1,0 +1,26 @@
+{
+  "name": "Kalponik",
+  "short_name": "Kalponik",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "description": "Kalponik is a personal eBook reader, based on the open-source Kalponik, supporting EPUB, PDF, and sync across devices.",
+  "icons": [
+    {
+      "src": "icon.png",
+      "type": "image/png",
+      "sizes": "192x192"
+    },
+    {
+      "src": "icon.png",
+      "type": "image/png",
+      "sizes": "256x256"
+    },
+    {
+      "src": "icon.png",
+      "type": "image/png",
+      "sizes": "512x512"
+    }
+  ],
+  "splash_pages": null
+}

@@ -1,14 +1,14 @@
 <div align="center">
   <a href="https://readest.com?utm_source=github&utm_medium=referral&utm_campaign=readme" target="_blank">
-    <img src="https://github.com/readest/readest/blob/main/apps/readest-app/src-tauri/icons/icon.png?raw=true" alt="Readest Logo" width="20%" />
+    <img src="https://github.com/readest/readest/blob/main/apps/readest-app/src-tauri/icons/icon.png?raw=true" alt="Kalponik Logo" width="20%" />
   </a>
-  <h1>Readest</h1>
+  <h1>Kalponik</h1>
   <br>
 
-[Readest][link-website] is an open-source ebook reader designed for immersive and deep reading experiences. Built as a modern rewrite of [Foliate](https://github.com/johnfactotum/foliate), it leverages [Next.js 16](https://github.com/vercel/next.js) and [Tauri v2](https://github.com/tauri-apps/tauri) to deliver a smooth, cross-platform experience across macOS, Windows, Linux, Android, iOS, and the Web.
+[Kalponik][link-website] is an open-source ebook reader designed for immersive and deep reading experiences. Built as a modern rewrite of [Foliate](https://github.com/johnfactotum/foliate), it leverages [Next.js 16](https://github.com/vercel/next.js) and [Tauri v2](https://github.com/tauri-apps/tauri) to deliver a smooth, cross-platform experience across macOS, Windows, Linux, Android, iOS, and the Web.
 
 [![Website][badge-website]][link-website]
-[![Web App][badge-web-app]][link-web-readest]
+[![Web App][badge-web-app]][link-web-kalponik]
 [![OS][badge-platforms]][link-website]
 <br>
 [![Discord][badge-discord]][link-discord]
@@ -38,7 +38,7 @@
 
 <div align="center">
   <a href="https://readest.com" target="_blank">
-    <img src="./data/screenshots/landing_all_platforms.png" alt="Readest Banner" width="100%" />
+    <img src="./data/screenshots/landing_all_platforms.png" alt="Kalponik Banner" width="100%" />
   </a>
 </div>
 
@@ -55,7 +55,7 @@
 | **[Parallel Read][link-parallel-read]**    | Read two books or documents simultaneously in a split-screen view.                                                     |
 | **Customize Font and Layout**              | Adjust font, layout, theme mode, and theme colors for a personalized experience.                                       |
 | **Code Syntax Highlighting**               | Read software manuals with rich coloring of code examples.                                                             |
-| **File Association and Open With**         | Quickly open files in Readest in your file browser with one-click.                                                     |
+| **File Association and Open With**         | Quickly open files in Kalponik in your file browser with one-click.                                                     |
 | **Library Management**                     | Organize, sort, and manage your entire ebook library.                                                                  |
 | **OPDS/Calibre Integration**               | Integrate OPDS/Calibre to access online libraries and catalogs.                                                        |
 | **Web Page Clipping**                      | Open websites, sign in, and clip pages with **From Web Browser**. **From Web Novel** can reuse your browser session to import selected chapters and their images. |
@@ -103,16 +103,16 @@ Stay tuned for continuous improvements and updates! Contributions and suggestion
 <div align="center">
   <a href="https://apps.apple.com/app/id6738622779">
     <img alt="Download on the App Store" src="https://developer.apple.com/assets/elements/badges/download-on-the-app-store.svg" style="height: 50px;" /></a>&nbsp;&nbsp;&nbsp;&nbsp;
-  <a href="https://play.google.com/store/apps/details?id=com.bilingify.readest">
+  <a href="https://play.google.com/store/apps/details?id=com.kalponik.reader">
     <img alt="Get it on Google Play" src="https://upload.wikimedia.org/wikipedia/commons/7/78/Google_Play_Store_badge_EN.svg" style="height: 50px;" /></a>
 </div>
 
 ### Platform-Specific Downloads
 
-- macOS / iOS / iPadOS : Search and install **Readest** on the [App Store][link-appstore], _also_ available on TestFlight for beta test (send your Apple ID to <readestapp@gmail.com> to request access).
-- Windows / Linux / Android: Visit and download **Readest** at [https://readest.com][link-website] or the [Releases on GitHub][link-gh-releases].
-- Linux users can also install [Readest on Flathub][link-flathub].
-- Web: Visit and use **Readest for Web** at [https://web.readest.com][link-web-readest].
+- macOS / iOS / iPadOS : Search and install **Kalponik** on the [App Store][link-appstore], _also_ available on TestFlight for beta test (send your Apple ID to <kalponik.reader@gmail.com> to request access).
+- Windows / Linux / Android: Visit and download **Kalponik** at [https://readest.com][link-website] or the [Releases on GitHub][link-gh-releases].
+- Linux users can also install [Kalponik on Flathub][link-flathub].
+- Web: Visit and use **Kalponik for Web** at [https://web.readest.com][link-web-kalponik].
 
 #### Nix
 
@@ -130,7 +130,7 @@ To install it, add the input to your `flake.nix`:
 
 ```nix
 # Due to a limitation in how Nix fetches submodules, a regular GitHub input type will fail to evaluate.
-inputs.readest = {
+inputs.kalponik = {
   url = "https://github.com/readest/readest.git";
   type = "git";
   submodules = true;
@@ -143,43 +143,43 @@ system build:
 
 ```nix
 environment.systemPackages = [
-  inputs.readest.packages.${pkgs.stdenv.hostPlatform.system}.default
+  inputs.kalponik.packages.${pkgs.stdenv.hostPlatform.system}.default
 ];
 
 nix.settings = {
-  substituters = [ "https://readest.cachix.org" ];
+  substituters = [ "https://kalponik.cachix.org" ];
   trusted-public-keys = [
-    "readest.cachix.org-1:KvKAePcZZCZB8ytFIAOGdgN3VRdmFHGRMHqMVckbt5c="
+    "kalponik.cachix.org-1:KvKAePcZZCZB8ytFIAOGdgN3VRdmFHGRMHqMVckbt5c="
   ];
 };
 ```
 
 ## Documentation
 
-Guides, tutorials, and FAQs for installing and using Readest live in the official documentation:
+Guides, tutorials, and FAQs for installing and using Kalponik live in the official documentation:
 
 📖 **[https://readest.com/docs][link-docs]**
 
-Contributor references live in the repository: [architecture](./apps/readest-app/docs/architecture.md),
-[code layout](./apps/readest-app/docs/code-layout.md), and
-[testing](./apps/readest-app/docs/testing.md).
+Contributor references live in the repository: [architecture](./apps/kalponik-app/docs/architecture.md),
+[code layout](./apps/kalponik-app/docs/code-layout.md), and
+[testing](./apps/kalponik-app/docs/testing.md).
 
 ## Building from Source
 
-To build Readest from the latest commit, see [Getting Started](./CONTRIBUTING.md#getting-started).
+To build Kalponik from the latest commit, see [Getting Started](./CONTRIBUTING.md#getting-started).
 
 ## Troubleshooting
 
-### 1. Readest Won’t Launch on Windows (Missing Edge WebView2 Runtime)
+### 1. Kalponik Won’t Launch on Windows (Missing Edge WebView2 Runtime)
 
 **Symptom**
 
-- When you double-click readest.exe, nothing happens. No window appears, and Task Manager does not show the process.
+- When you double-click kalponik.exe, nothing happens. No window appears, and Task Manager does not show the process.
 - This can affect both the standard installer and the portable version.
 
 **Cause**
 
-- Microsoft Edge WebView2 Runtime is either missing, outdated, or improperly installed on your system. Readest depends on WebView2 to render the interface on Windows.
+- Microsoft Edge WebView2 Runtime is either missing, outdated, or improperly installed on your system. Kalponik depends on WebView2 to render the interface on Windows.
 
 **How to Fix**
 
@@ -188,8 +188,8 @@ To build Readest from the latest commit, see [Getting Started](./CONTRIBUTING.md
 2. Install or Update WebView2
    - Download the WebView2 Runtime directly from Microsoft: [link](https://developer.microsoft.com/en-us/microsoft-edge/webview2?form=MA13LH).
    - If you prefer an offline installer, download the offline package and run it as an Administrator.
-3. Re-run Readest
-   - After installing/updating WebView2, launch readest.exe again.
+3. Re-run Kalponik
+   - After installing/updating WebView2, launch kalponik.exe again.
    - If you still encounter problems, reboot your PC and try again.
 
 **Additional Tips**
@@ -211,10 +211,10 @@ On Niri, install `xwayland-satellite` 0.7 or later using your distribution's pac
 and restart your Niri session. Niri 25.08 and later can start it on demand and
 set `DISPLAY` for applications. See [Niri's XWayland setup instructions](https://niri-wm.github.io/niri/Xwayland.html).
 
-From a terminal in that session, check `printenv DISPLAY`, then launch Readest:
+From a terminal in that session, check `printenv DISPLAY`, then launch Kalponik:
 
 ```sh
-flatpak run com.bilingify.readest
+flatpak run com.kalponik.reader
 ```
 
 The Flatpak already requests the X11 socket. If you have customized its sandbox
@@ -225,7 +225,7 @@ and WebKitGTK environment variables do not affect CEF.
 
 ## Contributors
 
-Readest is open-source, and contributions are welcome! Feel free to open issues, suggest features, or submit pull requests. Please **review our [contributing guidelines](CONTRIBUTING.md) and [Code of Conduct](CODE_OF_CONDUCT.md) before you start**. We also welcome you to join our [Discord][link-discord] community for either support or contributing guidance.
+Kalponik is open-source, and contributions are welcome! Feel free to open issues, suggest features, or submit pull requests. Please **review our [contributing guidelines](CONTRIBUTING.md) and [Code of Conduct](CODE_OF_CONDUCT.md) before you start**. We also welcome you to join our [Discord][link-discord] community for either support or contributing guidance.
 
 <a href="https://github.com/readest/readest/graphs/contributors">
   <p align="left">
@@ -235,19 +235,19 @@ Readest is open-source, and contributions are welcome! Feel free to open issues,
 
 ## Support
 
-If Readest has been useful to you, consider supporting its development at [donate.readest.com](https://donate.readest.com), where you'll find all available donation methods, including GitHub Sponsors, PayPal, card payments, and crypto. Your contribution helps us fix bugs faster, improve performance, and keep building great features.
+If Kalponik has been useful to you, consider supporting its development at [donate.readest.com](https://donate.readest.com), where you'll find all available donation methods, including GitHub Sponsors, PayPal, card payments, and crypto. Your contribution helps us fix bugs faster, improve performance, and keep building great features.
 
 ### Sponsors
 
 <p align="center">
-  <a title="Browser testing via TestMu AI" href="https://www.testmuai.com/?utm_medium=sponsor&utm_source=readest" target="_blank">
-    <img src="https://raw.githubusercontent.com/readest/readest/refs/heads/main/data/sponsors/testmu-ai-logo.png" style="vertical-align: middle;" width="250" />
+  <a title="Browser testing via TestMu AI" href="https://www.testmuai.com/?utm_medium=sponsor&utm_source=kalponik" target="_blank">
+    <img src="https://raw.githubusercontent.com/kalponik/kalponik/refs/heads/main/data/sponsors/testmu-ai-logo.png" style="vertical-align: middle;" width="250" />
   </a>
 </p>
 
 ## License
 
-Readest is free software: you can redistribute it and/or modify it under the terms of the [GNU Affero General Public License](https://www.gnu.org/licenses/agpl-3.0.html) as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version. See the [LICENSE](LICENSE) file for details.
+Kalponik is free software: you can redistribute it and/or modify it under the terms of the [GNU Affero General Public License](https://www.gnu.org/licenses/agpl-3.0.html) as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version. See the [LICENSE](LICENSE) file for details.
 
 The following libraries and frameworks are used in this software:
 
@@ -270,26 +270,26 @@ We would also like to thank the [Web Chinese Fonts Plan](https://chinese-font.ne
 
 ---
 
-<div align="center" style="color: gray;">Happy reading with Readest!</div>
+<div align="center" style="color: gray;">Happy reading with Kalponik!</div>
 
 [badge-website]: https://img.shields.io/badge/website-readest.com-orange
 [badge-web-app]: https://img.shields.io/badge/read%20online-web.readest.com-orange
 [badge-license]: https://img.shields.io/badge/license-AGPL--3.0-teal
-[badge-release]: https://img.shields.io/github/v/release/readest/readest?color=green
+[badge-release]: https://img.shields.io/github/v/release/kalponik/kalponik?color=green
 [badge-platforms]: https://img.shields.io/badge/platforms-macOS%2C%20Windows%2C%20Linux%2C%20Android%2C%20iOS%2C%20Web%2C%20PWA-green
-[badge-last-commit]: https://img.shields.io/github/last-commit/readest/readest?color=blue
-[badge-commit-activity]: https://img.shields.io/github/commit-activity/m/readest/readest?color=blue
+[badge-last-commit]: https://img.shields.io/github/last-commit/kalponik/kalponik?color=blue
+[badge-commit-activity]: https://img.shields.io/github/commit-activity/m/kalponik/kalponik?color=blue
 [badge-discord]: https://img.shields.io/discord/1314226120886976544?color=5865F2&label=discord&labelColor=black&logo=discord&logoColor=white&style=flat-square
 [badge-hellogithub]: https://abroad.hellogithub.com/v1/widgets/recommend.svg?rid=8a5b6ade2aee461a8bd94e59200682a7&claim_uid=eRLUbPOy2qZtDgw&theme=small
 [badge-donate]: https://donate.readest.com/badge.svg
 [badge-deepwiki]: https://img.shields.io/badge/Ask-DeepWiki-blue
-[badge-reddit]: https://img.shields.io/reddit/subreddit-subscribers/readest?style=flat&logo=reddit&color=F37E41
+[badge-reddit]: https://img.shields.io/reddit/subreddit-subscribers/kalponik?style=flat&logo=reddit&color=F37E41
 [badge-language-coverage]: https://img.shields.io/badge/coverage-53%25%20population%20🌍-green
 [link-donate]: https://donate.readest.com/?tickers=btc%2Ceth%2Csol%2Cusdc
 [link-appstore]: https://apps.apple.com/app/apple-store/id6738622779?pt=127463130&ct=github&mt=8
 [link-website]: https://readest.com?utm_source=github&utm_medium=referral&utm_campaign=readme
-[link-flathub]: https://flathub.org/en/apps/com.bilingify.readest
-[link-web-readest]: https://web.readest.com
+[link-flathub]: https://flathub.org/en/apps/com.kalponik.reader
+[link-web-kalponik]: https://web.readest.com
 [link-docs]: https://readest.com/docs
 [link-gh-releases]: https://github.com/readest/readest/releases
 [link-gh-commits]: https://github.com/readest/readest/commits/main
@@ -299,9 +299,9 @@ We would also like to thank the [Web Chinese Fonts Plan](https://chinese-font.ne
 [link-parallel-read]: https://readest.com/#parallel-read
 [link-koreader]: https://github.com/koreader/koreader
 [link-hellogithub]: https://hellogithub.com/repository/8a5b6ade2aee461a8bd94e59200682a7
-[link-deepwiki]: https://deepwiki.com/readest/readest
+[link-deepwiki]: https://deepwiki.com/kalponik/kalponik
 [link-locales]: https://github.com/readest/readest/tree/main/apps/readest-app/public/locales
 [link-kosync-wiki]: https://github.com/readest/readest/wiki/Sync-with-Koreader-devices
 [link-readalong]: https://github.com/readest/readest/blob/main/apps/readest-app/docs/read-along-narration.md
 [link-storyteller]: https://storyteller-platform.dev/
-[link-reddit]: https://reddit.com/r/readest/
+[link-reddit]: https://reddit.com/r/kalponik/

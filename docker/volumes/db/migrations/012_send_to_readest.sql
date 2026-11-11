@@ -1,7 +1,7 @@
--- Migration 012: Send to Readest — inbound capture (email / web / extension).
+-- Migration 012: Send to Kalponik — inbound capture (email / web / extension).
 --
 -- Out-of-app channels (email, browser extension) drop a raw payload into
--- `send_inbox`; any Readest client drains it through the normal import
+-- `send_inbox`; any Kalponik client drains it through the normal import
 -- pipeline. `send_inbox` state transitions go ONLY through the SECURITY
 -- DEFINER RPCs below — clients have SELECT but no write policy, so a client
 -- cannot forge `done`/`failed` or reset another device's claim.
