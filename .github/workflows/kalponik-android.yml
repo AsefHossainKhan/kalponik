@@ -157,3 +157,7 @@ jobs:
           apksigner="$(ls -d "$ANDROID_HOME"/build-tools/*/ | sort -V | tail -1)apksigner"
           "$apksigner" verify --print-certs "$apk" | head -3
           ../../.github/scripts/retry.sh gh release upload "$TAG" "$apk" --clobber
+          # A copy under a fixed name, so .../releases/latest/download/Kalponik_arm64.apk
+          # (the invite page's download link) always gets the newest release.
+          cp "$apk" Kalponik_arm64.apk
+          ../../.github/scripts/retry.sh gh release upload "$TAG" Kalponik_arm64.apk --clobber

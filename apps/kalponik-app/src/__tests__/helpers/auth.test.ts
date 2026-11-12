@@ -100,7 +100,22 @@ describe('handleAuthCallback', () => {
 
     // Wait for the async finalizeSession to complete
     await vi.waitFor(() => {
-      expect(mockNavigate).toHaveBeenCalledWith('/auth/error');
+      expect(mockNavigate).toHaveBeenCalledWith('/auth/error?error_code=some_error');
+    });
+  });
+
+  // Kalponik: an OAuth sign-in for an address with no account comes back as
+  // `signup_disabled`; the error page needs the code to explain invite-only.
+  it('passes the provider error code on to the error page', async () => {
+    handleAuthCallback({
+      login: mockLogin,
+      navigate: mockNavigate,
+      error: 'access_denied',
+      errorCode: 'signup_disabled',
+    });
+
+    await vi.waitFor(() => {
+      expect(mockNavigate).toHaveBeenCalledWith('/auth/error?error_code=signup_disabled');
     });
 
     expect(mockLogin).not.toHaveBeenCalled();

@@ -67,32 +67,19 @@ describe('EmailPasswordAuth autofill (#5499)', () => {
     expect(password.type).toBe('password');
   });
 
-  it('signs up with autofilled credentials and a new-password hint', async () => {
+  // Kalponik is invite-only: Supabase sign-up is off, so the form offers no
+  // sign-up and sends people to "Request access" instead.
+  it('offers Request access instead of sign-up', () => {
     const { client, auth } = createSupabaseMock();
-    const { container, getByText } = render(
-      <EmailPasswordAuth
-        supabaseClient={client}
-        redirectTo='https://web.readest.com/auth/callback'
-      />,
+    const onRequestAccess = vi.fn();
+    const { getByText, queryByText } = render(
+      <EmailPasswordAuth supabaseClient={client} onRequestAccess={onRequestAccess} />,
     );
 
-    fireEvent.click(getByText("Don't have an account? Sign up"));
-
-    const email = container.querySelector('input[name="email"]') as HTMLInputElement;
-    const password = container.querySelector('input[name="password"]') as HTMLInputElement;
-    expect(password.getAttribute('autocomplete')).toBe('new-password');
-
-    autofill(email, 'new@example.com');
-    autofill(password, 'freshpassw0rd');
-    fireEvent.submit(container.querySelector('form') as HTMLFormElement);
-
-    await waitFor(() => {
-      expect(auth.signUp).toHaveBeenCalledWith({
-        email: 'new@example.com',
-        password: 'freshpassw0rd',
-        options: { emailRedirectTo: 'https://web.readest.com/auth/callback' },
-      });
-    });
+    expect(queryByText("Don't have an account? Sign up")).toBeNull();
+    fireEvent.click(getByText("Don't have an account? Request access"));
+    expect(onRequestAccess).toHaveBeenCalledTimes(1);
+    expect(auth.signUp).not.toHaveBeenCalled();
   });
 
   it('sends a magic link and a reset email with the FormData email', async () => {

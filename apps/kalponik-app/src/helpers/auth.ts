@@ -48,10 +48,15 @@ export function handleAuthCallback({
   type,
   next = '/',
   error,
+  errorCode,
 }: UseAuthCallbackOptions) {
   async function finalizeSession() {
     if (error) {
-      navigate('/auth/error');
+      // The error page explains the common case: an OAuth sign-in refused
+      // because sign-up is off and no invite created the account
+      // (`signup_disabled`).
+      const code = errorCode || error;
+      navigate(code ? `/auth/error?error_code=${encodeURIComponent(code)}` : '/auth/error');
       return;
     }
 

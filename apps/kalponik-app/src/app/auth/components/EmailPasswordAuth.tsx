@@ -8,6 +8,11 @@ interface EmailPasswordAuthProps {
   supabaseClient: SupabaseClient;
   redirectTo?: string;
   magicLink?: boolean;
+  /**
+   * Kalponik is invite-only: Supabase sign-up is off, so the form offers
+   * "Request access" (this callback) where Readest offered "Sign up".
+   */
+  onRequestAccess?: () => void;
 }
 
 const FORM_IDS: Record<AuthView, string> = {
@@ -24,6 +29,7 @@ export default function EmailPasswordAuth({
   supabaseClient,
   redirectTo,
   magicLink = false,
+  onRequestAccess,
 }: EmailPasswordAuthProps) {
   const _ = useTranslation();
   const [view, setView] = useState<AuthView>('sign_in');
@@ -203,9 +209,13 @@ export default function EmailPasswordAuth({
             <button type='button' className={LINK_CLASS} onClick={switchView('forgotten_password')}>
               {_('Forgot your password?')}
             </button>
-            <button type='button' className={LINK_CLASS} onClick={switchView('sign_up')}>
-              {_("Don't have an account? Sign up")}
-            </button>
+            {/* Kalponik is invite-only: Supabase sign-up is off, and accounts
+                come from an invite link or an approved request. */}
+            {onRequestAccess && (
+              <button type='button' className={LINK_CLASS} onClick={onRequestAccess}>
+                {_("Don't have an account? Request access")}
+              </button>
+            )}
           </>
         )}
         {view !== 'sign_in' && (

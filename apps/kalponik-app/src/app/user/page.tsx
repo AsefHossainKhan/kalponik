@@ -43,6 +43,7 @@ import UserInfo from './components/UserInfo';
 import UsageStats from './components/UsageStats';
 import PlansComparison from './components/PlansComparison';
 import AccountActions from './components/AccountActions';
+import AdminInvitesEntry from './components/AdminInvitesEntry';
 import StorageManager from './components/StorageManager';
 import SharedLinksSection from './components/SharedLinksSection';
 import { SyncPassphraseSection } from './components/SyncPassphraseSection';
@@ -387,6 +388,7 @@ const ProfilePage = () => {
                       />
                     </div>
                     <div className='flex flex-col gap-y-8 px-6'>
+                      <AdminInvitesEntry token={token} onOpen={() => router.push('/admin')} />
                       <AccountActions
                         userEmail={userEmail}
                         planName={_(userPlanDetails.name)}

@@ -14,6 +14,7 @@ interface AuthPanelProps {
   redirectTo?: string;
   magicLink?: boolean;
   onProviderSignIn: (provider: OAuthProvider) => Promise<void>;
+  onRequestAccess?: () => void;
 }
 
 export default function AuthPanel({
@@ -21,6 +22,7 @@ export default function AuthPanel({
   redirectTo,
   magicLink = false,
   onProviderSignIn,
+  onRequestAccess,
 }: AuthPanelProps) {
   const _ = useTranslation();
   // `signInWithOAuth` redirects the whole page on web, which can cut off the
@@ -84,6 +86,7 @@ export default function AuthPanel({
         supabaseClient={supabaseClient}
         redirectTo={redirectTo}
         magicLink={magicLink}
+        onRequestAccess={onRequestAccess}
       />
       <KalponikCloudOptIn
         onPendingWrite={(write) => {

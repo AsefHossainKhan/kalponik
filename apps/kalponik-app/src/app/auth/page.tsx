@@ -372,6 +372,7 @@ export default function AuthPage() {
             magicLink={true}
             redirectTo={getTauriRedirectTo(false)}
             onProviderSignIn={tauriProviderSignIn}
+            onRequestAccess={() => router.push('/request-access')}
           />
         </div>
       </div>
@@ -390,6 +391,7 @@ export default function AuthPage() {
         magicLink={true}
         redirectTo={getWebRedirectTo()}
         onProviderSignIn={webProviderSignIn}
+        onRequestAccess={() => router.push('/request-access')}
       />
     </div>
   );

@@ -40,6 +40,9 @@ services:
       OBJECT_STORAGE_TYPE: s3
       SELF_HOSTED: "true"
       STORAGE_FIXED_QUOTA: ${STORAGE_FIXED_QUOTA:-107374182400}
+      # Invite-only sign-up: the root admin(s), who can always open /kalponik/admin
+      # (comma-separated emails or user ids). More admins are added in the app.
+      KALPONIK_ADMINS: ${KALPONIK_ADMINS:?set KALPONIK_ADMINS in .env}
     depends_on:
       - garage
     networks:
