@@ -42,7 +42,10 @@ const USE_APPLE_SIGN_IN = process.env['NEXT_PUBLIC_USE_APPLE_SIGN_IN'] === 'true
 export default function AuthPage() {
   const _ = useTranslation();
   const router = useRouter();
-  const { login } = useAuth();
+  const { login, user } = useAuth();
+  // Kalponik: the app needs an account, so a signed-out visitor has nowhere to
+  // go back to; the Back button only shows when already signed in.
+  const canGoBack = !!user;
   const { envConfig, appService } = useEnv();
   const { safeAreaInsets, isRoundedWindow, isIPhoneDuo } = useThemeStore();
   const { isTrafficLightVisible } = useTrafficLightStore();
@@ -343,13 +346,17 @@ export default function AuthPage() {
               : {}),
           }}
         >
-          <button
-            aria-label={_('Go Back')}
-            onClick={handleGoBack}
-            className={clsx('btn btn-ghost h-12 min-h-12 w-12 p-0 sm:h-8 sm:min-h-8 sm:w-8')}
-          >
-            <IoArrowBack className='text-base-content' />
-          </button>
+          {canGoBack ? (
+            <button
+              aria-label={_('Go Back')}
+              onClick={handleGoBack}
+              className={clsx('btn btn-ghost h-12 min-h-12 w-12 p-0 sm:h-8 sm:min-h-8 sm:w-8')}
+            >
+              <IoArrowBack className='text-base-content' />
+            </button>
+          ) : (
+            <span />
+          )}
 
           {appService?.hasWindowBar && (
             <WindowButtons
@@ -379,13 +386,15 @@ export default function AuthPage() {
     </div>
   ) : (
     <div className='bg-base-100 flex min-h-screen flex-col items-center overflow-y-auto px-6 pb-12 pt-20'>
-      <button
-        aria-label={_('Go Back')}
-        onClick={handleGoBack}
-        className='btn btn-ghost fixed start-6 top-6 h-8 min-h-8 w-8 p-0'
-      >
-        <IoArrowBack className='text-base-content' />
-      </button>
+      {canGoBack && (
+        <button
+          aria-label={_('Go Back')}
+          onClick={handleGoBack}
+          className='btn btn-ghost fixed start-6 top-6 h-8 min-h-8 w-8 p-0'
+        >
+          <IoArrowBack className='text-base-content' />
+        </button>
+      )}
       <AuthPanel
         supabaseClient={supabase}
         magicLink={true}

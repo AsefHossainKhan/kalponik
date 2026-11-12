@@ -2,7 +2,9 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { IoArrowBack } from 'react-icons/io5';
 import { useTranslation } from '@/hooks/useTranslation';
+import { useUserActions } from '@/hooks/useUserActions';
 import { getAccessToken } from '@/utils/access';
 import { getAPIBaseUrl } from '@/services/environment';
 import InviteShell, {
@@ -63,6 +65,7 @@ const formatDate = (iso: string | null) =>
 export default function AdminPage() {
   const _ = useTranslation();
   const router = useRouter();
+  const { handleLogout } = useUserActions();
   const [state, setState] = useState<LoadState>('loading');
   const [list, setList] = useState<AdminList>({ pending: [], active: [], recent: [] });
   const [busyId, setBusyId] = useState<string | null>(null);
@@ -204,9 +207,27 @@ export default function AdminPage() {
     }
   };
 
+  const topBar = (
+    <>
+      <button
+        className='btn btn-ghost h-10 min-h-10 gap-1.5 rounded-lg px-2'
+        onClick={() => router.push('/user')}
+      >
+        <IoArrowBack className='h-5 w-5' />
+        {_('Account')}
+      </button>
+      <button
+        className='btn btn-ghost eink-bordered border-base-300 h-10 min-h-10 rounded-lg px-3'
+        onClick={handleLogout}
+      >
+        {_('Sign Out')}
+      </button>
+    </>
+  );
+
   if (state !== 'ready') {
     return (
-      <InviteShell title={_('Invites and requests')}>
+      <InviteShell title={_('Admin')} topBar={state === 'signed_out' ? undefined : topBar}>
         {state === 'loading' && (
           <div className='flex justify-center py-6'>
             <span className='loading loading-spinner loading-md' aria-label={_('Loading')} />
@@ -235,7 +256,7 @@ export default function AdminPage() {
   const canShare = typeof navigator !== 'undefined' && typeof navigator.share === 'function';
 
   return (
-    <InviteShell title={_('Invites and requests')} wide>
+    <InviteShell title={_('Admin')} wide topBar={topBar}>
       {actionError && <Notice tone='error'>{actionError}</Notice>}
 
       <section className='flex flex-col gap-3'>
@@ -419,7 +440,7 @@ export default function AdminPage() {
           {_('Refresh')}
         </button>
         <button className={LINK_CLASS} onClick={() => router.push('/library')}>
-          {_('Back to library')}
+          {_('Library')}
         </button>
       </div>
     </InviteShell>

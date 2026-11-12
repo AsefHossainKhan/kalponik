@@ -355,6 +355,8 @@ const ProfilePage = () => {
                     planDetails={userPlanDetails}
                   />
 
+                  <AdminInvitesEntry onOpen={() => router.push('/admin')} />
+
                   {!showStorageManager && !showSharedLinksManager && !showSyncManager && (
                     <UsageStats quotas={quotas} />
                   )}
@@ -388,7 +390,6 @@ const ProfilePage = () => {
                       />
                     </div>
                     <div className='flex flex-col gap-y-8 px-6'>
-                      <AdminInvitesEntry token={token} onOpen={() => router.push('/admin')} />
                       <AccountActions
                         userEmail={userEmail}
                         planName={_(userPlanDetails.name)}

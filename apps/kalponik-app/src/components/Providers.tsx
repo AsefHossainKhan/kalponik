@@ -5,6 +5,7 @@ import i18n from '@/i18n/i18n';
 import { useEffect, useState } from 'react';
 import { IconContext } from 'react-icons';
 import { AuthProvider } from '@/context/AuthContext';
+import SignInGate from '@/components/SignInGate';
 import { useEnv } from '@/context/EnvContext';
 import WindowResizeHandles from '@/components/WindowResizeHandles';
 import WindowOutline from '@/components/WindowOutline';
@@ -269,7 +270,7 @@ const Providers = ({ children }: { children: React.ReactNode }) => {
                   aria-hidden={appShellHidden}
                   style={appShellHidden ? { display: 'none' } : undefined}
                 >
-                  {children}
+                  <SignInGate>{children}</SignInGate>
                   <CommandPalette />
                   <AtmosphereOverlay />
                   <PassphrasePrompt />

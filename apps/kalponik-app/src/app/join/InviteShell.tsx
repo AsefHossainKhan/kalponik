@@ -36,11 +36,14 @@ export default function InviteShell({
   title,
   subtitle,
   wide = false,
+  topBar,
   children,
 }: {
   title: string;
   subtitle?: ReactNode;
   wide?: boolean;
+  /** Buttons above the icon, such as Back and Sign out. */
+  topBar?: ReactNode;
   children: ReactNode;
 }) {
   useTheme({ systemUIVisible: false });
@@ -50,11 +53,12 @@ export default function InviteShell({
     <div
       className='bg-base-100 text-base-content flex min-h-screen w-full justify-center overflow-y-auto px-4'
       style={{
-        paddingTop: `${(safeAreaInsets?.top ?? 0) + 48}px`,
+        paddingTop: `${(safeAreaInsets?.top ?? 0) + (topBar ? 12 : 48)}px`,
         paddingBottom: `${(safeAreaInsets?.bottom ?? 0) + 32}px`,
       }}
     >
       <div className={`flex w-full flex-col gap-6 ${wide ? 'max-w-2xl' : 'max-w-sm'}`}>
+        {topBar && <div className='flex items-center justify-between gap-2'>{topBar}</div>}
         <div className='flex flex-col items-center gap-3 text-center'>
           <Image
             src={withBasePath('/icon.png')}

@@ -1,6 +1,13 @@
 import clsx from 'clsx';
 import React, { useEffect, useState } from 'react';
-import { PiUserCircle, PiUserCircleCheck, PiGear, PiChartBar, PiCardsThree } from 'react-icons/pi';
+import {
+  PiUserCircle,
+  PiUserCircleCheck,
+  PiGear,
+  PiChartBar,
+  PiCardsThree,
+  PiShieldCheck,
+} from 'react-icons/pi';
 import { PiSun, PiMoon } from 'react-icons/pi';
 import { TbSunMoon } from 'react-icons/tb';
 import { MdCloudSync, MdSync, MdSyncProblem, MdOutlineSensors } from 'react-icons/md';
@@ -16,6 +23,7 @@ import { useAuth } from '@/context/AuthContext';
 import { useEnv } from '@/context/EnvContext';
 import { useThemeStore } from '@/store/themeStore';
 import { useQuotaStats } from '@/hooks/useQuotaStats';
+import { useAdminStatus } from '@/hooks/useAdminStatus';
 import { isKalponikCloudEnabled } from '@/services/sync/cloudSyncProvider';
 import { useLibraryStore } from '@/store/libraryStore';
 import { useSettingsStore } from '@/store/settingsStore';
@@ -53,6 +61,7 @@ const SettingsMenu: React.FC<SettingsMenuProps> = ({ onPullLibrary, setIsDropdow
   const { envConfig, appService } = useEnv();
   const { user } = useAuth();
   const { userProfilePlan, quotas } = useQuotaStats(true);
+  const adminStatus = useAdminStatus();
   const { themeMode, setThemeMode } = useThemeStore();
   const { settings, setSettingsDialogOpen } = useSettingsStore();
   const [isAlwaysOnTop, setIsAlwaysOnTop] = useState(settings.alwaysOnTop);
@@ -119,6 +128,11 @@ const SettingsMenu: React.FC<SettingsMenuProps> = ({ onPullLibrary, setIsDropdow
 
   const handleUserProfile = () => {
     navigateToProfile(router);
+    setIsDropdownOpen?.(false);
+  };
+
+  const openAdmin = () => {
+    router.push('/admin');
     setIsDropdownOpen?.(false);
   };
 
@@ -355,6 +369,18 @@ const SettingsMenu: React.FC<SettingsMenuProps> = ({ onPullLibrary, setIsDropdow
         </MenuItem>
       ) : (
         <MenuItem label={_('Sign In')} Icon={PiUserCircle} onClick={handleUserLogin}></MenuItem>
+      )}
+      {user && adminStatus.isAdmin && (
+        <MenuItem
+          label={_('Admin')}
+          Icon={PiShieldCheck}
+          description={
+            adminStatus.pending > 0
+              ? _('{{count}} waiting', { count: adminStatus.pending })
+              : undefined
+          }
+          onClick={openAdmin}
+        />
       )}
 
       <MenuItem
