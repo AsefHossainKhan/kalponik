@@ -70,3 +70,24 @@ apps/kalponik.koplugin/native/localsend-bin/target/
 /deploy/prod/.env
 /deploy/prod/dist/
 /deploy/prod/data/
+
+# Kalponik: keys, signing material and env backups never belong in the repo
+*.jks
+*.keystore
+*.p12
+*.pfx
+keystore.properties
+id_rsa*
+id_ed25519*
+.env.bak*
+.env.*.bak*
+*.env.bak*
+/supabase/.env
+
+# Kalponik: the owner's private notes stay local (copies outside the repo)
+/CLAUDE.md
+/KALPONIK.md
+/docs/DEPLOY.md
+/docs/DEV-SETUP.md
+/docs/PLAN.md
+/docs/SUPABASE.md
