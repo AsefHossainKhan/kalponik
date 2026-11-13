@@ -14,9 +14,9 @@ describe('supabase session storage key', () => {
     vi.unstubAllEnvs();
   });
 
-  it('defaults to the Kalponik Cloud project URL', () => {
+  it("ships a placeholder default, never Readest's project URL", () => {
     expect(atob(process.env['NEXT_PUBLIC_DEFAULT_SUPABASE_URL_BASE64']!)).toBe(
-      'https://vbsyxfusjjqdxkjqlysc.supabase.co',
+      'https://example.supabase.co',
     );
   });
 
