@@ -17,3 +17,10 @@ describe('privacyPolicyUrl', () => {
     expect(requiresSignIn('/privacy')).toBe(false);
   });
 });
+
+describe('SOURCE_CODE_URL', () => {
+  it("offers Kalponik's own source, not Readest's", async () => {
+    const legal = await import('@/utils/legal');
+    expect(legal.SOURCE_CODE_URL).toBe('https://github.com/AsefHossainKhan/kalponik');
+  });
+});

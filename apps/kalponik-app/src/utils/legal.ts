@@ -11,3 +11,7 @@ export const PRIVACY_PATH = '/privacy';
  */
 export const privacyPolicyUrl = (isTauri: boolean, webBaseUrl: string): string =>
   isTauri ? `${webBaseUrl.replace(/\/+$/, '')}${PRIVACY_PATH}` : withBasePath(PRIVACY_PATH);
+
+// Kalponik's source code. AGPL-3.0 (section 13) requires offering it to
+// everyone who uses the app, web users included.
+export const SOURCE_CODE_URL = 'https://github.com/AsefHossainKhan/kalponik';
