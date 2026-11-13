@@ -1,7 +1,10 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { createSupabaseAdminClient } from '@/utils/supabase';
 import { validateUserAndToken } from '@/utils/access';
-import type { AccountCreator, InviteRow, InviteStore } from '@/libs/invites';
+import type { AccountService, InviteDeps, InviteRow, InviteStore } from '@/libs/invites';
+import { KALPONIK_APK_URL, type InviteLinks } from '@/libs/inviteMail';
+import { createSmtpMailer } from '@/libs/mailer';
+import { getBaseUrl } from '@/services/environment';
 import {
   isAdmin,
   type AdminRow,
@@ -10,8 +13,9 @@ import {
   type UserDirectory,
 } from '@/libs/admins';
 
-// The Supabase side of invite-only sign-up: the `invites` and `admins`
-// tables (migrations 034, 035) and accounts through the Auth admin API.
+// The Supabase side of invite-only sign-up: the `invites`, `admins` and
+// `admin_prefs` tables (migrations 034-036) and accounts through the Auth
+// admin API.
 // Server only: all of it needs the service-role key.
 
 /** The server setting naming the root admin(s): emails or user ids, comma-separated. */
@@ -117,10 +121,39 @@ export const createSupabaseInviteStore = (): InviteStore => {
       if (error) fail('lookup', error);
       return (data as InviteRow | null) ?? null;
     },
+    async findByVerifyHash(hash) {
+      const { data, error } = await db
+        .from(TABLE)
+        .select('*')
+        .eq('verify_hash', hash)
+        .maybeSingle();
+      if (error) fail('lookup', error);
+      return (data as InviteRow | null) ?? null;
+    },
     async findById(id) {
       const { data, error } = await db.from(TABLE).select('*').eq('id', id).maybeSingle();
       if (error) fail('lookup', error);
       return (data as InviteRow | null) ?? null;
+    },
+    async update(id, patch) {
+      const { data, error } = await db
+        .from(TABLE)
+        .update(patch)
+        .eq('id', id)
+        .select('*')
+        .maybeSingle();
+      if (error) fail('update', error);
+      return (data as InviteRow | null) ?? null;
+    },
+    async claimActivation(id, at) {
+      const { data, error } = await db
+        .from(TABLE)
+        .update({ activated_at: at })
+        .eq('id', id)
+        .is('activated_at', null)
+        .select('id');
+      if (error) fail('activate', error);
+      return (data ?? []).length > 0;
     },
     async updateIfStatus(id, expected, patch) {
       const { data, error } = await db
@@ -163,16 +196,21 @@ export const createSupabaseInviteStore = (): InviteStore => {
   };
 };
 
-export const createSupabaseAccountCreator = (): AccountCreator => {
+// Ten years: Supabase Auth has no "locked" flag, so a long ban stands in.
+const LOCKED = '87600h';
+
+export const createSupabaseAccountService = (): AccountService => {
   const db = createSupabaseAdminClient();
   return {
-    async createUser({ email, password }) {
-      // email_confirm: the invite stands in for email confirmation. A Google
-      // sign-in with the same verified address later links to this account.
+    async createLocked({ email, password }) {
+      // Locked and unconfirmed until the email is verified and the invite
+      // approved (invites.ts). A Google sign-in with the same verified
+      // address later links to this account.
       const { data, error } = await db.auth.admin.createUser({
         email,
         password,
-        email_confirm: true,
+        email_confirm: false,
+        ban_duration: LOCKED,
       });
       if (error || !data.user) {
         const code = (error as { code?: string } | null)?.code;
@@ -185,8 +223,86 @@ export const createSupabaseAccountCreator = (): AccountCreator => {
       }
       return { ok: true, userId: data.user.id };
     },
+    async activate(userId) {
+      const { error } = await db.auth.admin.updateUserById(userId, {
+        ban_duration: 'none',
+        email_confirm: true,
+      });
+      if (error) console.error('invites: unlocking the account failed', error.message);
+      return !error;
+    },
+    async remove(userId) {
+      const { error } = await db.auth.admin.deleteUser(userId);
+      if (error) console.error('invites: removing the locked account failed', error.message);
+    },
   };
 };
+
+/** Each admin's own settings (migration 036). */
+export interface AdminPrefs {
+  notifyRequests: boolean;
+}
+
+export const createSupabaseAdminPrefs = () => {
+  const db = createSupabaseAdminClient();
+  return {
+    async get(userId: string): Promise<AdminPrefs> {
+      const { data, error } = await db
+        .from('admin_prefs')
+        .select('notify_requests')
+        .eq('user_id', userId)
+        .maybeSingle();
+      if (error) fail('read admin prefs', error);
+      return { notifyRequests: !!data?.notify_requests };
+    },
+    async set(userId: string, prefs: AdminPrefs) {
+      const { error } = await db.from('admin_prefs').upsert({
+        user_id: userId,
+        notify_requests: prefs.notifyRequests,
+        updated_at: new Date().toISOString(),
+      });
+      if (error) fail('save admin prefs', error);
+    },
+    async watcherIds(): Promise<string[]> {
+      const { data, error } = await db
+        .from('admin_prefs')
+        .select('user_id')
+        .eq('notify_requests', true);
+      if (error) fail('list admin prefs', error);
+      return (data ?? []).map((r) => r.user_id as string);
+    },
+  };
+};
+
+/** Emails of the admins who turned on "Email me about new requests". */
+const requestWatchers = async () => {
+  const ids = await createSupabaseAdminPrefs().watcherIds();
+  const directory = createSupabaseUserDirectory();
+  const admins = createSupabaseAdminStore();
+  const emails: string[] = [];
+  for (const id of ids) {
+    const user = await directory.getById(id);
+    // Someone who stopped being an admin keeps their row; skip them.
+    if (user?.email && (await isAdmin(admins, user, getRootAdminsSetting()))) {
+      emails.push(user.email);
+    }
+  }
+  return emails;
+};
+
+/** Where the emails point: the web app the API is served from (API_BASE_URL). */
+export const getInviteLinks = (): InviteLinks => ({
+  webUrl: getBaseUrl().replace(/\/+$/, ''),
+  apkUrl: KALPONIK_APK_URL,
+});
+
+export const createInviteDeps = (): InviteDeps => ({
+  store: createSupabaseInviteStore(),
+  accounts: createSupabaseAccountService(),
+  mailer: createSmtpMailer(),
+  links: getInviteLinks(),
+  requestWatchers,
+});
 
 /**
  * The client's address as nginx saw it. nginx appends that address to

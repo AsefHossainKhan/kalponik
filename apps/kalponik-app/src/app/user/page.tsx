@@ -44,6 +44,7 @@ import UsageStats from './components/UsageStats';
 import PlansComparison from './components/PlansComparison';
 import AccountActions from './components/AccountActions';
 import AdminInvitesEntry from './components/AdminInvitesEntry';
+import LinkGoogleEntry from './components/LinkGoogleEntry';
 import StorageManager from './components/StorageManager';
 import SharedLinksSection from './components/SharedLinksSection';
 import { SyncPassphraseSection } from './components/SyncPassphraseSection';
@@ -356,6 +357,8 @@ const ProfilePage = () => {
                   />
 
                   <AdminInvitesEntry onOpen={() => router.push('/admin')} />
+
+                  <LinkGoogleEntry />
 
                   {!showStorageManager && !showSharedLinksManager && !showSyncManager && (
                     <UsageStats quotas={quotas} />

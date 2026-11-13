@@ -192,6 +192,7 @@
     "music-metadata": "12.1.0",
     "nanoid": "^5.1.6",
     "next": "16.4.2",
+    "nodemailer": "10.2.1",
     "nunjucks": "^3.2.4",
     "overlayscrollbars": "^2.11.4",
     "overlayscrollbars-react": "^0.5.6",

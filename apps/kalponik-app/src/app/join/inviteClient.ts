@@ -11,12 +11,16 @@ export interface InviteStatus {
   state: InviteState;
   email: string | null;
   expiresAt: string | null;
+  /** The account this invite created, while it exists (locked until verified and approved). */
+  account: { verified: boolean; approved: boolean; active: boolean } | null;
+  /** Whether the server sends email (verification links, "you're in"). */
+  mail: boolean;
 }
 
-/** The newest Android release. Stable name, attached by the release workflow. */
-export const KALPONIK_APK_URL =
-  process.env['NEXT_PUBLIC_KALPONIK_APK_URL'] ||
-  'https://github.com/AsefHossainKhan/kalponik/releases/latest/download/Kalponik_arm64.apk';
+export const MIN_PASSWORD_LENGTH = 8;
+export const MAX_PASSWORD_LENGTH = 72;
+
+export { KALPONIK_APK_URL } from '@/libs/inviteMail';
 
 /** Where a requester's code is kept, so they can find their status page again. */
 export const REQUEST_CODE_KEY = 'kalponik-access-request-code';
@@ -46,11 +50,31 @@ const call = async <T>(path: string, init?: RequestInit) => {
 export const fetchInviteStatus = (code: string) =>
   call<InviteStatus>(`/invites/status?code=${encodeURIComponent(code)}`, { cache: 'no-store' });
 
-export const postAccessRequest = (input: { email: string; note: string; website: string }) =>
-  call<{ code: string }>('/invites/request', { method: 'POST', body: JSON.stringify(input) });
+export const postAccessRequest = (input: {
+  email: string;
+  password: string;
+  note: string;
+  website: string;
+}) =>
+  call<{ code: string; verificationSent: boolean }>('/invites/request', {
+    method: 'POST',
+    body: JSON.stringify(input),
+  });
 
-export const postJoin = (input: { code: string; email: string; password?: string }) =>
-  call<{ email: string }>('/invites/join', { method: 'POST', body: JSON.stringify(input) });
+export const postJoin = (input: { code: string; email: string; password: string }) =>
+  call<{ email: string; active: boolean }>('/invites/join', {
+    method: 'POST',
+    body: JSON.stringify(input),
+  });
+
+export const postVerifyEmail = (token: string) =>
+  call<{ email: string | null; approved: boolean; active: boolean }>('/invites/verify', {
+    method: 'POST',
+    body: JSON.stringify({ token }),
+  });
+
+export const postResendVerification = (code: string) =>
+  call<{ ok: boolean }>('/invites/resend', { method: 'POST', body: JSON.stringify({ code }) });
 
 export const readSavedRequestCode = () => {
   try {
@@ -75,11 +99,19 @@ export const inviteErrorMessage = (_: TranslationFunc, error: string | undefined
     case 'email_mismatch':
       return _('Use the email address you asked for access with.');
     case 'weak_password':
-      return _('Choose a password of at least 8 characters.');
+      return _('Choose a password of 8 to 72 characters.');
     case 'note_too_long':
       return _('Please keep the note under 500 characters.');
     case 'account_exists':
-      return _('There is already an account with this email. Sign in instead.');
+      return _(
+        'There is already an account or a request for this email. Sign in, or open the status page of your request.',
+      );
+    case 'already_verified':
+      return _('Your email is already verified.');
+    case 'mail_off':
+      return _('This server does not send email.');
+    case 'too_soon':
+      return _('An email was sent a moment ago. Please wait a minute before asking again.');
     case 'rate_limited':
       return _('Too many requests from your network. Please try again in an hour.');
     case 'too_many_pending':
@@ -87,7 +119,7 @@ export const inviteErrorMessage = (_: TranslationFunc, error: string | undefined
     case 'used':
       return _('This invite has already been used.');
     case 'expired':
-      return _('This invite has expired. Ask for a new one.');
+      return _('This link has expired. Ask for a new one.');
     case 'revoked':
       return _('This invite was cancelled. Ask for a new one.');
     case 'declined':

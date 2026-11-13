@@ -9,6 +9,7 @@ import InviteShell, {
   Notice,
   PRIMARY_BUTTON_CLASS,
 } from '@/app/join/InviteShell';
+import PasswordFields from '@/app/join/PasswordFields';
 import {
   inviteErrorMessage,
   postAccessRequest,
@@ -16,14 +17,18 @@ import {
   saveRequestCode,
 } from '@/app/join/inviteClient';
 
-// /request-access  Ask for an account. No account is created here: the
-// request waits on the admin page, and the visitor's status page
-// (/join?code=...) turns into the sign-up page once it is approved.
+// /request-access  Ask for an account. The account is created here, with the
+// password chosen here, but stays locked until the email is verified (a link
+// we email) and an admin approves the request. The visitor's status page
+// (/join?code=...) shows how far along it is; once it is unlocked they get an
+// email and simply sign in.
 
 export default function RequestAccessPage() {
   const _ = useTranslation();
   const router = useRouter();
   const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirm, setConfirm] = useState('');
   const [note, setNote] = useState('');
   const [website, setWebsite] = useState('');
   const [submitting, setSubmitting] = useState(false);
@@ -35,9 +40,13 @@ export default function RequestAccessPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+    if (password !== confirm) {
+      setError(_('The passwords do not match.'));
+      return;
+    }
     setSubmitting(true);
     try {
-      const { ok, body } = await postAccessRequest({ email, note, website });
+      const { ok, body } = await postAccessRequest({ email, password, note, website });
       if (!ok || !body.code) {
         setError(inviteErrorMessage(_, body.error));
         return;
@@ -55,7 +64,7 @@ export default function RequestAccessPage() {
     <InviteShell
       title={_('Request access')}
       subtitle={_(
-        'Kalponik is invite-only. Leave your email and a short note; requests are approved by hand.',
+        'Kalponik is invite-only. Choose your email and password now; requests are approved by hand, and you get an email once your account is ready.',
       )}
     >
       {savedCode && (
@@ -76,15 +85,19 @@ export default function RequestAccessPage() {
           <input
             className={INPUT_CLASS}
             type='email'
+            name='email'
             autoComplete='email'
             required
             value={email}
             onChange={(e) => setEmail(e.target.value)}
           />
         </label>
-        <p className='text-base-content/70 -mt-1 text-xs leading-relaxed'>
-          {_('To sign in with Google later, use your Gmail address.')}
-        </p>
+        <PasswordFields
+          password={password}
+          confirm={confirm}
+          onPassword={setPassword}
+          onConfirm={setConfirm}
+        />
         <label className='flex flex-col gap-1.5 text-sm'>
           {_('Who are you? (optional)')}
           <textarea
@@ -94,6 +107,11 @@ export default function RequestAccessPage() {
             onChange={(e) => setNote(e.target.value)}
           />
         </label>
+        <p className='text-base-content/70 -mt-1 text-xs leading-relaxed'>
+          {_(
+            'With a Gmail address, Sign in with Google also works once your account is ready. Any other address can link Google later on the account page.',
+          )}
+        </p>
         {/* Bots fill every field; people never see this one. */}
         <input
           className='hidden'

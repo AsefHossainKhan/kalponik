@@ -1,13 +1,13 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 import { corsAllMethods, runMiddleware } from '@/utils/cors';
 import { createInviteLink, decideInvite, listInvitesForAdmin } from '@/libs/invites';
-import { createSupabaseInviteStore, requireAdmin } from '@/libs/invitesStore';
+import { createInviteDeps, requireAdmin } from '@/libs/invitesStore';
 
 // The admin side of invite-only sign-up. Admins are the root admin(s) named
 // in KALPONIK_ADMINS on the server plus admins added on the admin page; the
 // server decides, not the app.
 //
-// GET                                  -> { pending, active, recent }
+// GET                                  -> { pending, waiting, active, recent }
 // POST { action: 'create', note? }     -> { code }
 // POST { action: 'approve' | 'decline' | 'revoke', id } -> { ok }
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
@@ -22,7 +22,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
   if (!admin) return;
 
-  const store = createSupabaseInviteStore();
+  const deps = createInviteDeps();
+  const { store } = deps;
   const now = new Date();
   try {
     if (req.method === 'GET') {
@@ -44,7 +45,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       (action === 'approve' || action === 'decline' || action === 'revoke') &&
       typeof id === 'string'
     ) {
-      const result = await decideInvite(store, id, action, now);
+      const result = await decideInvite(deps, id, action, now);
       if (!result.ok) return res.status(result.error === 'not_found' ? 404 : 409).json(result);
       return res.status(200).json({ ok: true });
     }

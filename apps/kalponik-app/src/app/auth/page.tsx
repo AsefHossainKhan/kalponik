@@ -380,6 +380,7 @@ export default function AuthPage() {
             redirectTo={getTauriRedirectTo(false)}
             onProviderSignIn={tauriProviderSignIn}
             onRequestAccess={() => router.push('/request-access')}
+            onOpenRequestStatus={(code) => router.push(`/join?code=${encodeURIComponent(code)}`)}
           />
         </div>
       </div>
@@ -401,6 +402,7 @@ export default function AuthPage() {
         redirectTo={getWebRedirectTo()}
         onProviderSignIn={webProviderSignIn}
         onRequestAccess={() => router.push('/request-access')}
+        onOpenRequestStatus={(code) => router.push(`/join?code=${encodeURIComponent(code)}`)}
       />
     </div>
   );

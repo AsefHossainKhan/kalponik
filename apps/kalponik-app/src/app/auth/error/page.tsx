@@ -8,10 +8,14 @@ import InviteShell, {
   PRIMARY_BUTTON_CLASS,
   SECONDARY_BUTTON_CLASS,
 } from '@/app/join/InviteShell';
+import { readSavedRequestCode } from '@/app/join/inviteClient';
+import { isLockedAccountError, kalponikAuthErrorMessage } from '../utils/kalponikAuthErrors';
 
-// Where a failed sign-in lands. Kalponik is invite-only, so the usual reason
-// is a Google sign-in for an account that doesn't exist yet: Supabase answers
-// `signup_disabled`. Say so, instead of bouncing back to the sign-in page.
+// Where a failed sign-in lands. Kalponik is invite-only, so the usual reasons
+// are a Google sign-in for an account that doesn't exist yet (Supabase
+// answers `signup_disabled`) or for one that isn't unlocked yet
+// (`user_banned`: not yet verified and approved), and refused Google linking
+// from the account page. Say so, instead of bouncing back to sign-in.
 
 const readErrorCode = () => {
   if (typeof window === 'undefined') return '';
@@ -28,6 +32,32 @@ export default function AuthErrorPage() {
   useEffect(() => setCode(readErrorCode()), []);
 
   const noAccount = code === 'signup_disabled' || code === 'user_not_found';
+  const explained = kalponikAuthErrorMessage(_, code);
+  const savedRequest = isLockedAccountError(code) ? readSavedRequestCode() : null;
+
+  if (explained) {
+    return (
+      <InviteShell
+        title={isLockedAccountError(code) ? _('Not ready yet') : _('Sign-in did not work')}
+        subtitle={explained}
+      >
+        {savedRequest && (
+          <button
+            className={SECONDARY_BUTTON_CLASS}
+            onClick={() => router.push(`/join?code=${encodeURIComponent(savedRequest)}`)}
+          >
+            {_('See its status')}
+          </button>
+        )}
+        <button
+          className={PRIMARY_BUTTON_CLASS}
+          onClick={() => router.push(isLockedAccountError(code) ? '/auth' : '/user')}
+        >
+          {isLockedAccountError(code) ? _('Back to sign in') : _('Account')}
+        </button>
+      </InviteShell>
+    );
+  }
 
   return (
     <InviteShell
@@ -41,7 +71,7 @@ export default function AuthErrorPage() {
       {noAccount && (
         <Notice tone='info'>
           {_(
-            'If you have an invite link, open it to create your account first. If you were invited with Google, sign in with the same Google account you gave. Otherwise, ask for access.',
+            'If you have an invite link, open it to create your account first. Google sign-in works once your account is ready, with the same Gmail address. Otherwise, ask for access.',
           )}
         </Notice>
       )}

@@ -31,12 +31,21 @@ interface AdminInvite {
   expiresAt: string | null;
   decidedAt: string | null;
   usedAt: string | null;
+  hasAccount: boolean;
+  verified: boolean;
+  active: boolean;
 }
 
 interface AdminList {
   pending: AdminInvite[];
+  waiting: AdminInvite[];
   active: AdminInvite[];
   recent: AdminInvite[];
+}
+
+interface AdminPrefs {
+  notifyRequests: boolean;
+  mail: boolean;
 }
 
 type LoadState = 'loading' | 'ready' | 'signed_out' | 'not_admin' | 'error';
@@ -48,7 +57,7 @@ interface AdminEntry {
   addedAt: string | null;
 }
 
-const adminCall = async (init?: RequestInit, route: 'invites' | 'admins' = 'invites') => {
+const adminCall = async (init?: RequestInit, route: 'invites' | 'admins' | 'prefs' = 'invites') => {
   const token = await getAccessToken();
   if (!token) return { status: 401, body: {} as Record<string, unknown> };
   const response = await fetch(`${getAPIBaseUrl()}/admin/${route}`, {
@@ -67,7 +76,14 @@ export default function AdminPage() {
   const router = useRouter();
   const { handleLogout } = useUserActions();
   const [state, setState] = useState<LoadState>('loading');
-  const [list, setList] = useState<AdminList>({ pending: [], active: [], recent: [] });
+  const [list, setList] = useState<AdminList>({
+    pending: [],
+    waiting: [],
+    active: [],
+    recent: [],
+  });
+  const [prefs, setPrefs] = useState<AdminPrefs | null>(null);
+  const [prefsError, setPrefsError] = useState('');
   const [busyId, setBusyId] = useState<string | null>(null);
   const [actionError, setActionError] = useState('');
   const [note, setNote] = useState('');
@@ -80,15 +96,17 @@ export default function AdminPage() {
 
   const load = useCallback(async () => {
     try {
-      const [invites, team] = await Promise.all([
+      const [invites, team, mine] = await Promise.all([
         adminCall(),
         adminCall(undefined, 'admins').catch(() => null),
+        adminCall(undefined, 'prefs').catch(() => null),
       ]);
       const { status, body } = invites;
       if (status === 401) return setState('signed_out');
       if (status === 403) return setState('not_admin');
       if (status !== 200) return setState('error');
       setList(body as unknown as AdminList);
+      if (mine?.status === 200) setPrefs(mine.body as unknown as AdminPrefs);
       if (team?.status === 200) {
         setAdmins((team.body['admins'] as AdminEntry[]) ?? []);
         setMe((team.body['me'] as string) ?? null);
@@ -146,6 +164,26 @@ export default function AdminPage() {
   useEffect(() => {
     load();
   }, [load]);
+
+  const setNotifyRequests = async (notifyRequests: boolean) => {
+    setBusyId('prefs');
+    setPrefsError('');
+    try {
+      const { status, body } = await adminCall(
+        { method: 'POST', body: JSON.stringify({ notifyRequests }) },
+        'prefs',
+      );
+      if (status !== 200) {
+        setPrefsError(_('Could not save the setting.'));
+        return;
+      }
+      setPrefs(body as unknown as AdminPrefs);
+    } catch {
+      setPrefsError(_('Could not reach the server. Check your connection and try again.'));
+    } finally {
+      setBusyId(null);
+    }
+  };
 
   const act = async (id: string, action: 'approve' | 'decline' | 'revoke') => {
     setBusyId(id);
@@ -271,7 +309,14 @@ export default function AdminPage() {
             key={r.id}
             className='eink-bordered border-base-300 flex flex-col gap-2 rounded-lg border p-3'
           >
-            <div className='break-all font-medium'>{r.email}</div>
+            <div className='flex flex-wrap items-center gap-2'>
+              <span className='break-all font-medium'>{r.email}</span>
+              {r.hasAccount && (
+                <span className={`badge badge-sm ${r.verified ? 'badge-success' : 'badge-ghost'}`}>
+                  {r.verified ? _('Email verified') : _('Email not verified yet')}
+                </span>
+              )}
+            </div>
             {r.note && <p className='text-sm whitespace-pre-wrap'>{r.note}</p>}
             <div className='text-base-content/60 text-xs'>{formatDate(r.createdAt)}</div>
             <div className='grid grid-cols-2 gap-2'>
@@ -293,6 +338,36 @@ export default function AdminPage() {
           </div>
         ))}
       </section>
+
+      {list.waiting.length > 0 && (
+        <section className='flex flex-col gap-3'>
+          <h2 className='text-base font-semibold'>{_('Waiting for their email')}</h2>
+          <p className='text-base-content/70 text-sm'>
+            {_('Approved or invited, with an account that opens once they verify their email.')}
+          </p>
+          {list.waiting.map((r) => (
+            <div
+              key={r.id}
+              className='eink-bordered border-base-300 flex items-center gap-3 rounded-lg border p-3'
+            >
+              <div className='min-w-0 flex-1'>
+                <div className='truncate text-sm font-medium'>{r.email}</div>
+                <div className='text-base-content/60 text-xs'>
+                  {r.kind === 'request' ? _('Approved request') : r.note || _('Invite link')} ·{' '}
+                  {formatDate(r.usedAt)}
+                </div>
+              </div>
+              <button
+                className='btn btn-ghost btn-sm eink-bordered border-base-300 rounded-lg'
+                disabled={busyId === r.id}
+                onClick={() => act(r.id, 'revoke')}
+              >
+                {_('Cancel')}
+              </button>
+            </div>
+          ))}
+        </section>
+      )}
 
       <section className='flex flex-col gap-3'>
         <h2 className='text-base font-semibold'>{_('New invite link')}</h2>
@@ -434,6 +509,30 @@ export default function AdminPage() {
         </form>
         {adminError && <Notice tone='error'>{adminError}</Notice>}
       </section>
+
+      {prefs && (
+        <section className='flex flex-col gap-2'>
+          <h2 className='text-base font-semibold'>{_('Notifications')}</h2>
+          <label className='flex cursor-pointer items-center justify-between gap-3 text-sm'>
+            <span>{_('Email me when someone asks for access')}</span>
+            <input
+              type='checkbox'
+              className='toggle'
+              checked={prefs.notifyRequests}
+              disabled={busyId === 'prefs' || (!prefs.mail && !prefs.notifyRequests)}
+              onChange={(e) => setNotifyRequests(e.target.checked)}
+            />
+          </label>
+          {!prefs.mail && (
+            <p className='text-base-content/70 text-xs leading-relaxed'>
+              {_(
+                'The server has no email set up yet, so it sends no email: no verification links, no notices.',
+              )}
+            </p>
+          )}
+          {prefsError && <Notice tone='error'>{prefsError}</Notice>}
+        </section>
+      )}
 
       <div className='flex justify-center gap-4 text-sm'>
         <button className={LINK_CLASS} onClick={load}>

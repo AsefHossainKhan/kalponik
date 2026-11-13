@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { useTranslation } from '@/hooks/useTranslation';
+import { readSavedRequestCode } from '@/app/join/inviteClient';
+import { isLockedAccountError, kalponikAuthErrorMessage } from '../utils/kalponikAuthErrors';
 
 type AuthView = 'sign_in' | 'sign_up' | 'magic_link' | 'forgotten_password';
 
@@ -13,6 +15,8 @@ interface EmailPasswordAuthProps {
    * "Request access" (this callback) where Readest offered "Sign up".
    */
   onRequestAccess?: () => void;
+  /** Opens the status page of this device's access request (/join?code=...). */
+  onOpenRequestStatus?: (code: string) => void;
 }
 
 const FORM_IDS: Record<AuthView, string> = {
@@ -30,9 +34,13 @@ export default function EmailPasswordAuth({
   redirectTo,
   magicLink = false,
   onRequestAccess,
+  onOpenRequestStatus,
 }: EmailPasswordAuthProps) {
   const _ = useTranslation();
   const [view, setView] = useState<AuthView>('sign_in');
+  // Kalponik: the status page of this device's access request, shown when
+  // the account is still locked (not yet verified and approved).
+  const [lockedStatusCode, setLockedStatusCode] = useState<string | null>(null);
   const [defaultEmail, setDefaultEmail] = useState('');
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
@@ -94,11 +102,15 @@ export default function EmailPasswordAuth({
     const password = String(formData.get('password') || '');
     setError('');
     setMessage('');
+    setLockedStatusCode(null);
     setLoading(true);
     try {
       if (view === 'sign_in') {
         const { error } = await supabaseClient.auth.signInWithPassword({ email, password });
-        if (error) setError(error.message);
+        if (error) {
+          setError(kalponikAuthErrorMessage(_, error.code) ?? error.message);
+          if (isLockedAccountError(error.code)) setLockedStatusCode(readSavedRequestCode());
+        }
       } else if (view === 'sign_up') {
         const {
           data: { user, session },
@@ -196,6 +208,18 @@ export default function EmailPasswordAuth({
       {error && (
         <div className='eink-bordered border-error/30 bg-error/5 text-error rounded-lg border px-3 py-2.5 text-center text-sm leading-relaxed'>
           {error}
+          {lockedStatusCode && onOpenRequestStatus && (
+            <>
+              {' '}
+              <button
+                type='button'
+                className='underline underline-offset-2'
+                onClick={() => onOpenRequestStatus(lockedStatusCode)}
+              >
+                {_('See its status')}
+              </button>
+            </>
+          )}
         </div>
       )}
       <div className='flex flex-col items-center gap-2.5 pt-1 text-sm'>

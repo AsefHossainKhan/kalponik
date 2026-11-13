@@ -3,29 +3,24 @@
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
-import { handleAuthCallback } from '@/helpers/auth';
+import { handleAuthCallback, parseOAuthCallbackUrl } from '@/helpers/auth';
 
 export default function AuthCallback() {
   const router = useRouter();
   const { login } = useAuth();
 
   useEffect(() => {
-    const hash = window.location.hash || '';
-    const params = new URLSearchParams(hash.slice(1));
-
-    const accessToken = params.get('access_token');
-    const refreshToken = params.get('refresh_token');
-    const type = params.get('type');
-    const next = params.get('next') ?? '/';
-    const error = params.get('error');
-    const errorDescription = params.get('error_description');
-    const errorCode = params.get('error_code');
+    // Tokens come in the fragment; `next` (e.g. back to the account page
+    // after linking Google) and some errors come in the query string.
+    const { accessToken, refreshToken, type, next, error, errorCode, errorDescription } =
+      parseOAuthCallbackUrl(window.location.href);
 
     handleAuthCallback({
       accessToken,
       refreshToken,
       type,
-      next,
+      // Only a path in this app: never send a fresh session elsewhere.
+      next: next && next.startsWith('/') && !next.startsWith('//') ? next : '/',
       error,
       errorCode,
       errorDescription,
