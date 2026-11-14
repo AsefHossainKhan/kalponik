@@ -17,6 +17,13 @@ describe('root layout metadata', () => {
     expect(JSON.stringify(metadata)).not.toMatch(/readest\.com/);
   });
 
+  it("uses Kalponik's own tagline, not Readest's slogan", () => {
+    const text = JSON.stringify([metadata.title, metadata.description, metadata.openGraph]);
+    expect(text).not.toMatch(/Digest and Get Insight/);
+    expect(metadata.description).toMatch(/^Your imagination, synced across your devices\./);
+    expect(metadata.openGraph?.description).toBe(metadata.description);
+  });
+
   it("serves the preview image from Kalponik's own public folder", () => {
     expect(metadata.openGraph?.images).toEqual(['/images/og-preview.png']);
     expect(metadata.twitter?.images).toEqual(['/images/og-preview.png']);

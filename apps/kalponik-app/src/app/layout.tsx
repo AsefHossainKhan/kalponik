@@ -12,12 +12,11 @@ import '../styles/globals.css';
 // Kalponik's public address, base path included.
 const siteOrigin = 'https://asroy.duckdns.org';
 const url = `${siteOrigin}${BASE_PATH}/`;
-const title = 'Kalponik — Where You Read, Digest and Get Insight';
+const title = 'Kalponik — Get lost in a story';
 const description =
-  'Discover Kalponik, the ultimate online ebook reader for immersive and organized reading. ' +
-  'Enjoy seamless access to your digital library, powerful tools for highlighting, bookmarking, ' +
-  'and note-taking, and support for multiple book views. ' +
-  'Perfect for deep reading, analysis, and understanding. Explore now!';
+  'Your imagination, synced across your devices. ' +
+  'Kalponik is a personal ebook reader for EPUB, PDF and more, on the web and Android: ' +
+  'highlights, notes and your place in every book follow you from one device to the next.';
 // Relative to metadataBase, which already ends in the base path: Next.js joins
 // the two paths, so this one must not carry /kalponik itself.
 const previewImage = '/images/og-preview.png';

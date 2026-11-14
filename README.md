@@ -1,11 +1,18 @@
 <div align="center">
-  <a href="https://readest.com?utm_source=github&utm_medium=referral&utm_campaign=readme" target="_blank">
-    <img src="https://github.com/readest/readest/blob/main/apps/readest-app/src-tauri/icons/icon.png?raw=true" alt="Kalponik Logo" width="20%" />
-  </a>
-  <h1>Kalponik</h1>
-  <br>
+  <img src="./apps/kalponik-app/public/icon.png" alt="Kalponik logo" width="20%" />
+  <h1>Kalponik · কাল্পনিক</h1>
+  <p><em>Get lost in a story. Your imagination, synced across your devices.</em></p>
 
-[Kalponik][link-website] is an open-source ebook reader designed for immersive and deep reading experiences. Built as a modern rewrite of [Foliate](https://github.com/johnfactotum/foliate), it leverages [Next.js 16](https://github.com/vercel/next.js) and [Tauri v2](https://github.com/tauri-apps/tauri) to deliver a smooth, cross-platform experience across macOS, Windows, Linux, Android, iOS, and the Web.
+Kalponik (Bengali for "imaginary") is a personal, self-hosted ebook reader for
+the web and Android, with your library, highlights and reading position synced
+between them.
+
+**Kalponik is built on [Readest](https://github.com/readest/readest)**, the
+open-source ebook reader by the Readest team and contributors, itself a modern
+rewrite of [Foliate](https://github.com/johnfactotum/foliate) on
+[Next.js](https://github.com/vercel/next.js) and
+[Tauri v2](https://github.com/tauri-apps/tauri). Nearly everything that makes
+it a good reader comes from their work; see [Built on Readest](#built-on-readest).
 
 [![Website][badge-website]][link-website]
 [![Web App][badge-web-app]][link-web-kalponik]
@@ -34,6 +41,7 @@
   <a href="./SELF-HOSTING.md">Host Your Own</a> •
   <a href="#troubleshooting">Troubleshooting</a> •
   <a href="#support">Support</a> •
+  <a href="#built-on-readest">Built on Readest</a> •
   <a href="#license">License</a>
 </p>
 
@@ -251,6 +259,16 @@ If Kalponik has been useful to you, consider supporting its development at [dona
     <img src="https://raw.githubusercontent.com/kalponik/kalponik/refs/heads/main/data/sponsors/testmu-ai-logo.png" style="vertical-align: middle;" width="250" />
   </a>
 </p>
+
+## Built on Readest
+
+Kalponik is a fork of [Readest](https://github.com/readest/readest)
+([readest.com](https://readest.com)). The reader itself, its formats, its
+sync design and most of this repository's history are the Readest team's and
+contributors' work. Kalponik adds self-hosting on a free Supabase project and
+your own S3 storage, invite-only sign-up, public and private shelves, and its
+own name and look. If you want a polished reader with official apps for every
+platform, use and support [Readest](https://readest.com).
 
 ## License
 
