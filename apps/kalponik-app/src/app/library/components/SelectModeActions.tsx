@@ -10,6 +10,8 @@ import {
   MdWifiTethering,
   MdLabelOutline,
   MdOutlineArchive,
+  MdPublic,
+  MdPublicOff,
 } from 'react-icons/md';
 import { IoShareSocialOutline } from 'react-icons/io5';
 import { LuFolderPlus } from 'react-icons/lu';
@@ -47,6 +49,11 @@ interface SelectModeActionsProps {
   sendNearbyEnabled?: boolean;
   onSendNearby?: () => void;
   onPack?: () => void;
+  // Kalponik: one selected book can go on the public shelf ('share'), or a
+  // public book its sharer or an admin selected can come off ('unshare').
+  // Absent when neither applies to the selection.
+  publicShelfAction?: 'share' | 'unshare';
+  onPublicShelf?: () => void;
   onDelete: () => void;
   onCancel: () => void;
   // Reports the popup's rendered height (including its safe-area padding) so the
@@ -70,6 +77,8 @@ const SelectModeActions: React.FC<SelectModeActionsProps> = ({
   sendNearbyEnabled = false,
   onSendNearby,
   onPack,
+  publicShelfAction,
+  onPublicShelf,
   onDelete,
   onCancel,
   onHeightChange,
@@ -211,6 +220,20 @@ const SelectModeActions: React.FC<SelectModeActionsProps> = ({
           >
             <MdOutlineArchive />
             <div>{_('Pack')}</div>
+          </button>
+        )}
+        {publicShelfAction && onPublicShelf && (
+          <button
+            onClick={onPublicShelf}
+            title={
+              publicShelfAction === 'share'
+                ? _('Share on public shelf')
+                : _('Take off public shelf')
+            }
+            className='flex flex-col items-center justify-center gap-1'
+          >
+            {publicShelfAction === 'share' ? <MdPublic /> : <MdPublicOff />}
+            <div>{publicShelfAction === 'share' ? _('Public') : _('Take off')}</div>
           </button>
         )}
         <button

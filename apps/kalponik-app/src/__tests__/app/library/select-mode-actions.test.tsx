@@ -172,3 +172,30 @@ describe('SelectModeActions pack', () => {
     expect(getAction('Pack').className).toContain('btn-disabled');
   });
 });
+
+describe('Kalponik public shelf action', () => {
+  it('offers Public for a book you can share, and Take off for one you can take off', () => {
+    const onPublicShelf = vi.fn();
+    const { rerender } = render(
+      <SelectModeActions {...baseProps} publicShelfAction='share' onPublicShelf={onPublicShelf} />,
+    );
+    fireEvent.click(screen.getByText('Public'));
+    expect(onPublicShelf).toHaveBeenCalledOnce();
+
+    rerender(
+      <SelectModeActions
+        {...baseProps}
+        publicShelfAction='unshare'
+        onPublicShelf={onPublicShelf}
+      />,
+    );
+    expect(screen.getByText('Take off')).toBeTruthy();
+    expect(screen.queryByText('Public')).toBeNull();
+  });
+
+  it('is absent when the selection has nothing to share or take off', () => {
+    render(<SelectModeActions {...baseProps} onPublicShelf={noop} />);
+    expect(screen.queryByText('Public')).toBeNull();
+    expect(screen.queryByText('Take off')).toBeNull();
+  });
+});

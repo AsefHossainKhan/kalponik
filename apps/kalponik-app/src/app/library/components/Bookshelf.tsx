@@ -29,6 +29,7 @@ import {
   expandBookshelfSelection,
   getCommonGroupName,
   findSelectedManualGroup,
+  getBookContextMenuItemIds,
   resolveCurrentShelfBooks,
   selectAbsOfflineBooks,
   selectDownloadableBooks,
@@ -69,6 +70,7 @@ import SetStatusAlert from './SetStatusAlert';
 import { useOpenBook } from '../hooks/useOpenBook';
 import LibrarySearchResults from './LibrarySearchResults';
 import PublicShelfAlert from './PublicShelfAlert';
+import { usePublicShelfStore } from '@/store/publicShelfStore';
 import { applyFinishedFilter, splitSearchResults } from '../utils/shelves';
 import {
   DEFAULT_BOOKSHELF_ID,
@@ -603,6 +605,36 @@ const Bookshelf: React.FC<BookshelfProps> = ({
   const showStatusSelection = () => {
     setShowSelectModeActions(false);
     setShowStatusAlert(true);
+  };
+
+  // Kalponik: on a phone, holding a book opens this select bar, not the book
+  // menu, so sharing on (or taking off) the public shelf is offered here too,
+  // for one selected book, under the same rules as the menu.
+  const publicShelfBooks = usePublicShelfStore((s) => s.books);
+  const selectedPublicShelfBook = (() => {
+    const ids = getSelectedBooks();
+    if (ids.length !== 1) return null;
+    const book = allVisibleBooks.find((b) => b.hash === ids[0]);
+    if (!book) return null;
+    const libraryEntry = useLibraryStore.getState().getBookByHash(book.hash);
+    const publicEntry = publicShelfBooks.find((b) => b.hash === book.hash);
+    const menu = getBookContextMenuItemIds(book, {
+      publicShelf: {
+        inLibrary: !!libraryEntry && !libraryEntry.deletedAt,
+        canRemove: !!publicEntry?.canRemove,
+      },
+    });
+    if (menu.includes('sharePublic')) return { book, action: 'share' as const };
+    if (menu.includes('unsharePublic')) return { book, action: 'unshare' as const };
+    return null;
+  })();
+  const togglePublicShelfForSelected = () => {
+    if (!selectedPublicShelfBook) return;
+    const { book, action } = selectedPublicShelfBook;
+    handleSetSelectMode(false);
+    eventDispatcher.dispatch(action === 'share' ? 'public-shelf-share' : 'public-shelf-unshare', {
+      book,
+    });
   };
 
   const sendSelectedBook = async () => {
@@ -1172,6 +1204,8 @@ const Bookshelf: React.FC<BookshelfProps> = ({
           onDownload={downloadSelectedBooks}
           onSend={sendSelectedBook}
           onPack={handlePackSelectedBooks}
+          publicShelfAction={selectedPublicShelfBook?.action}
+          onPublicShelf={togglePublicShelfForSelected}
           onDelete={deleteSelectedBooks}
           onCancel={() => handleSetSelectMode(false)}
         />
