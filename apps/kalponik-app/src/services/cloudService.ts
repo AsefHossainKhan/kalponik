@@ -19,6 +19,12 @@ import {
 import { ClosableFile } from '@/utils/file';
 import { ProgressHandler } from '@/utils/transfer';
 import { CLOUD_BOOKS_SUBDIR, CLOUD_REPLICAS_SUBDIR } from './constants';
+
+// Kalponik: a public-shelf book is stored once for everyone, under the shared
+// prefix rather than the reader's own (see src/libs/publicShelf.ts).
+export const SHARED_CLOUD_BOOKS_SUBDIR = `shared/${CLOUD_BOOKS_SUBDIR}`;
+export const getCloudBooksSubdir = (book: Book) =>
+  book.shelf === 'public' ? SHARED_CLOUD_BOOKS_SUBDIR : CLOUD_BOOKS_SUBDIR;
 import { isBookFileContentSource, resolveBookContentSource } from './bookContent';
 import { getAbsOfflineDir } from '@/utils/audiobook';
 import { isBookDataFileKey } from '@/utils/bookDataKey';
@@ -213,6 +219,8 @@ export async function uploadBook(
   book: Book,
   onProgress?: ProgressHandler,
 ): Promise<void> {
+  // A public book's file is the shared copy; it is never uploaded from here.
+  if (book.shelf === 'public') return;
   const completedFiles = { count: 0 };
   const coverExist = await fs.exists(getCoverFilename(book), 'Books');
 
@@ -272,6 +280,7 @@ export async function uploadBookCover(
   book: Book,
   onProgress?: ProgressHandler,
 ): Promise<void> {
+  if (book.shelf === 'public') return;
   if (!(await fs.exists(getCoverFilename(book), 'Books'))) return;
   const completedFiles = { count: 0 };
   const handleProgress = createProgressHandler(1, completedFiles, onProgress);
@@ -306,7 +315,7 @@ export async function downloadBookCovers(
   );
   const filePaths = books.map((book) => ({
     lfp: getCoverFilename(book),
-    cfp: `${CLOUD_BOOKS_SUBDIR}/${getCoverFilename(book)}`,
+    cfp: `${getCloudBooksSubdir(book)}/${getCoverFilename(book)}`,
   }));
   const downloadUrls = await batchGetDownloadUrls(filePaths);
   await Promise.all(
@@ -369,7 +378,7 @@ export async function downloadBook(
   try {
     if (needDownCover) {
       const lfp = getCoverFilename(book);
-      const cfp = `${CLOUD_BOOKS_SUBDIR}/${lfp}`;
+      const cfp = `${getCloudBooksSubdir(book)}/${lfp}`;
       await downloadCloudFile(appService, localBooksDir, lfp, cfp, handleProgress);
       bookCoverDownloaded = true;
     }
@@ -384,7 +393,7 @@ export async function downloadBook(
 
   if (needDownBook) {
     const lfp = getLocalBookFilename(book);
-    const cfp = `${CLOUD_BOOKS_SUBDIR}/${getRemoteBookFilename(book)}`;
+    const cfp = `${getCloudBooksSubdir(book)}/${getRemoteBookFilename(book)}`;
     await downloadCloudFile(appService, localBooksDir, lfp, cfp, handleProgress);
     const localFullpath = `${localBooksDir}/${lfp}`;
     bookDownloaded = await fs.exists(localFullpath, 'None');

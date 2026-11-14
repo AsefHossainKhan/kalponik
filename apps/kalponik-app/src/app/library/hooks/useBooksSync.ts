@@ -296,6 +296,9 @@ export const useBooksSync = () => {
         mergedBook.groupId = group.groupId;
         mergedBook.groupName = group.groupName;
         mergedBook.groupUpdatedAt = group.groupUpdatedAt;
+        // Kalponik: only the server moves a book on or off the public shelf
+        // (sharing, taking it off), so its shelf wins whatever the row clock.
+        if ('shelf' in matchingBook) mergedBook.shelf = matchingBook.shelf;
         // Same story for the metadata blob, which carries the description: a
         // cloud row whose `metadata` column is null arrives as `metadata: null`
         // and the spread clears the local copy. An absent blob always means

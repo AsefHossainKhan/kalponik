@@ -14,6 +14,7 @@ import {
 import { isSyncCategoryEnabled } from '@/services/sync/syncCategories';
 import { runFileBookDownload, runFileBookUpload } from '@/services/sync/file/runLibrarySync';
 import { recordFlow } from '@/services/sync/dataFlow/log';
+import { addPublicBookToLibrary } from '@/store/publicShelfStore';
 
 /**
  * One throttle runs per in-flight transfer, and every emit re-renders the
@@ -149,8 +150,14 @@ export const useBookTransferActions = (
   );
 
   const handleBookDownload = useCallback(
-    async (book: Book, downloadOptions: BookDownloadOptions = {}) => {
+    async (requested: Book, downloadOptions: BookDownloadOptions = {}) => {
       const { redownload = false, queued = false, silent = false } = downloadOptions;
+      // Kalponik: a public book joins your library before its first download,
+      // so the download has an entry to mark and your progress somewhere to live.
+      const book =
+        requested.shelf === 'public'
+          ? await addPublicBookToLibrary(envConfig, requested)
+          : requested;
       const settingsNow = useSettingsStore.getState().settings;
       const backends = getActiveFileSyncBackends(settingsNow);
       const kalponik = isKalponikCloudEnabled(settingsNow);
@@ -159,7 +166,8 @@ export const useBookTransferActions = (
       // Try the enabled file mirrors first so a metadata-only shelf row is not
       // misrouted into Kalponik Cloud. When none has the file, fall through to
       // the native, resumable path if that backend is also enabled (#5009).
-      if (backends.length > 0) {
+      // A public book's file is the shared Kalponik copy, never on a file mirror.
+      if (backends.length > 0 && book.shelf !== 'public') {
         const tracker = trackProgress(book.hash);
         let ok = false;
         try {

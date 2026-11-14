@@ -20,6 +20,11 @@ const API_ENDPOINTS = {
   purge: getAPIBaseUrl() + '/storage/purge',
 };
 
+// Kalponik: a public-shelf book lives under the shared prefix (`shared/...`),
+// which is already a full storage key; every other path is under the user's own.
+export const toFileKey = (userId: string, cloudPath: string) =>
+  cloudPath.startsWith('shared/') ? cloudPath : `${userId}/${cloudPath}`;
+
 export const createProgressHandler = (
   totalFiles: number,
   completedFilesRef: { count: number },
@@ -127,7 +132,7 @@ export const batchGetDownloadUrls = async (files: { lfp: string; cfp: string }[]
       throw new Error('Not authenticated');
     }
     const filePaths = files.map((file) => file.cfp);
-    const fileKeys = filePaths.map((path) => `${userId}/${path}`);
+    const fileKeys = filePaths.map((path) => toFileKey(userId, path));
     const response = await fetchWithAuth(`${API_ENDPOINTS.download}`, {
       method: 'POST',
       headers: {
@@ -138,7 +143,7 @@ export const batchGetDownloadUrls = async (files: { lfp: string; cfp: string }[]
 
     const { downloadUrls } = await response.json();
     return files.map((file) => {
-      const fileKey = `${userId}/${file.cfp}`;
+      const fileKey = toFileKey(userId, file.cfp);
       return {
         lfp: file.lfp,
         cfp: file.cfp,
@@ -179,7 +184,7 @@ export const downloadFile = async ({
       if (!userId) {
         throw new Error('Not authenticated');
       }
-      const fileKey = `${userId}/${cfp}`;
+      const fileKey = toFileKey(userId, cfp);
       const response = await fetchWithAuth(
         `${API_ENDPOINTS.download}?fileKey=${encodeURIComponent(fileKey)}`,
         {

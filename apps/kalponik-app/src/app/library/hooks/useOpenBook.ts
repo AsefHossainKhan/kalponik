@@ -8,6 +8,7 @@ import { hasFileSyncMirror, useMakeBookAvailable } from '@/hooks/useMakeBookAvai
 import { eventDispatcher } from '@/utils/event';
 import { navigateToReader, showReaderWindow } from '@/utils/nav';
 import { isAbsEbook, isAudiobook } from '@/utils/audiobook';
+import { addPublicBookToLibrary } from '@/store/publicShelfStore';
 
 interface UseOpenBookOptions {
   setLoading: Dispatch<SetStateAction<boolean>>;
@@ -27,12 +28,17 @@ interface UseOpenBookOptions {
 export const useOpenBook = ({ setLoading, handleBookDownload }: UseOpenBookOptions) => {
   const _ = useTranslation();
   const router = useAppRouter();
-  const { appService } = useEnv();
+  const { appService, envConfig } = useEnv();
   const { settings } = useSettingsStore();
   const makeBookAvailable = useMakeBookAvailable({ setLoading, handleBookDownload });
 
   const openBook = useCallback(
-    async (book: Book, cfi?: string, options?: { highlightSearchResult?: boolean }) => {
+    async (requested: Book, cfi?: string, options?: { highlightSearchResult?: boolean }) => {
+      // Kalponik: a public book you haven't opened yet joins your library first.
+      const book =
+        requested.shelf === 'public' && envConfig
+          ? await addPublicBookToLibrary(envConfig, requested)
+          : requested;
       // A streaming audiobook has no local file and no document loader path -
       // it opens in the full-screen player instead of the reader. Short-circuit
       // before any of the file-availability logic below, which assumes a real
