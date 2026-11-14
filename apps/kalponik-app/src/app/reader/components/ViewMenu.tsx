@@ -40,6 +40,13 @@ import { eventDispatcher } from '@/utils/event';
 import { getCurrentRendererLayout, useDuoPose } from '@/hooks/useDuoPose';
 import { nextThemeMode } from '@/utils/ambientLight';
 import { saveViewSettings } from '@/helpers/settings';
+import { updateReadingSet } from '@/services/readingSets/actions';
+import {
+  getReadingGroup,
+  switchToSlot,
+  type ReadingGroup,
+  type SlotIndex,
+} from '@/services/readingSets/model';
 import { canToggleFullScreen, toggleFullScreen } from '@/utils/window';
 import { setCoverSpread } from '@/utils/spread';
 import MenuItem from '@/components/MenuItem';
@@ -61,6 +68,7 @@ const ViewMenu: React.FC<ViewMenuProps> = ({
   const { user } = useAuth();
   const { envConfig, appService } = useEnv();
   const { setSettingsDialogOpen, setSettingsDialogBookKey } = useSettingsStore();
+  const readingSets = useSettingsStore((state) => state.settings.readingSets);
   const { getView, getViewSettings, getViewState, getProgress, setViewSettings, recreateViewer } =
     useReaderStore();
   const config = useBookConfig(bookKey)!;
@@ -109,6 +117,23 @@ const ViewMenu: React.FC<ViewMenuProps> = ({
   const decreaseContrast = () =>
     setContrast((prev) => Math.max(prev - CONTRAST_STEP, MIN_CONTRAST));
   const resetContrast = () => setContrast(100);
+  const readingSetGroup: ReadingGroup | null = bookData?.book
+    ? bookData.isFixedLayout
+      ? 'fixed'
+      : getReadingGroup(bookData.book)
+    : null;
+  const readingSetState = readingSetGroup ? readingSets?.[readingSetGroup] : undefined;
+  const readingSetSlots = (readingSetState?.slots ?? []).flatMap((slot, index) =>
+    slot
+      ? [{ index: index as SlotIndex, name: slot.name, active: readingSetState?.active === index }]
+      : [],
+  );
+  const handleSwitchReadingSet = (index: SlotIndex) => {
+    setIsDropdownOpen?.(false);
+    if (readingSetGroup)
+      void updateReadingSet(envConfig, readingSetGroup, (s) => switchToSlot(s, index));
+  };
+
   const toggleScrolledMode = () => setScrolledMode(!isScrolledMode);
   const toggleWebtoonMode = () => setWebtoonMode(!webtoonMode);
   const toggleLockHorizontalPan = () => setLockHorizontalPan(!lockHorizontalPan);
@@ -541,6 +566,24 @@ const ViewMenu: React.FC<ViewMenuProps> = ({
       )}
 
       <hr aria-hidden='true' className='border-base-300 my-1' />
+
+      {/* Kalponik: switch between this kind of book's saved reading sets. */}
+      {readingSetSlots.length > 0 && (
+        <>
+          <div className='text-base-content/60 px-4 pt-1 text-xs' aria-hidden='true'>
+            {_('Reading set')}
+          </div>
+          {readingSetSlots.map(({ index, name, active }) => (
+            <MenuItem
+              key={index}
+              label={name}
+              Icon={active ? MdCheck : undefined}
+              onClick={() => handleSwitchReadingSet(index)}
+            />
+          ))}
+          <hr aria-hidden='true' className='border-base-300 my-1' />
+        </>
+      )}
 
       {bookData.isFixedLayout ? (
         <MenuItem label={_('Webtoon Mode')} toggled={webtoonMode} onClick={toggleWebtoonMode} />

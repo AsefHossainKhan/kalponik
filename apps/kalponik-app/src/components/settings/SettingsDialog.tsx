@@ -33,6 +33,9 @@ import LangPanel from './LangPanel';
 import MiscPanel from './MiscPanel';
 import AIPanel from './AIPanel';
 import TTSPanel from './TTSPanel';
+import ReadingSetStrip from './ReadingSetStrip';
+
+const READING_SET_PANELS: ReadonlySet<string> = new Set(['Font', 'Layout', 'Theme', 'Control']);
 
 export type SettingsPanelType =
   | 'Font'
@@ -67,6 +70,8 @@ type TabConfig = {
 
 const SettingsDialog: React.FC<{ bookKey: string }> = ({ bookKey }) => {
   const _ = useTranslation();
+  // Kalponik: bumped when a reading set replaces the values, so panels reload.
+  const [lookRevision, setLookRevision] = useState(0);
   const { appService } = useEnv();
   const closeIconSize = useResponsiveSize(16);
   const [isRtl] = useState(() => getDirFromUILanguage() === 'rtl');
@@ -560,7 +565,12 @@ const SettingsDialog: React.FC<{ bookKey: string }> = ({ bookKey }) => {
         </div>
       }
     >
+      {/* Kalponik: reading sets sit above the reading-look panels. */}
+      {READING_SET_PANELS.has(activePanel) && (
+        <ReadingSetStrip bookKey={bookKey} onLookChanged={() => setLookRevision((n) => n + 1)} />
+      )}
       <div
+        key={lookRevision}
         ref={panelRef}
         role='group'
         aria-label={`${_(currentPanel?.label || '')} - ${_('Settings')}`}

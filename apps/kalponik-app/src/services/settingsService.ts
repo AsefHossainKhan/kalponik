@@ -66,7 +66,9 @@ export interface Context {
   isAppDataSandbox: boolean;
 }
 
-export function getDefaultViewSettings(ctx: Context): ViewSettings {
+export function getDefaultViewSettings(
+  ctx: Pick<Context, 'isMobile' | 'isEink'> & Partial<Context>,
+): ViewSettings {
   return {
     ...DEFAULT_BOOK_LAYOUT,
     ...DEFAULT_BOOK_STYLE,
