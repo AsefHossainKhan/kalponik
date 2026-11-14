@@ -70,6 +70,7 @@ import {
   KALPONIK_NODE_BASE_URL,
   KALPONIK_UPDATER_FILE,
   KALPONIK_CHANGELOG_FILE,
+  KALPONIK_NIGHTLY_UPDATER_FILE,
   KALPONIK_PUBLIC_STORAGE_BASE_URL,
   KALPONIK_OPDS_USER_AGENT,
   SYNC_PROGRESS_INTERVAL_SEC,
@@ -908,6 +909,16 @@ describe('services/constants', () => {
     it('KALPONIK_CHANGELOG_FILE is a URL ending with .json', () => {
       expect(KALPONIK_CHANGELOG_FILE).toMatch(/^https:\/\//);
       expect(KALPONIK_CHANGELOG_FILE).toMatch(/\.json$/);
+    });
+
+    it("update files come from Kalponik's own latest GitHub release, never Readest's", () => {
+      const latest = 'https://github.com/AsefHossainKhan/kalponik/releases/latest/download/';
+      expect(KALPONIK_UPDATER_FILE).toBe(`${latest}latest.json`);
+      expect(KALPONIK_CHANGELOG_FILE).toBe(`${latest}release-notes.json`);
+      expect(KALPONIK_NIGHTLY_UPDATER_FILE).toBe('');
+      for (const url of [KALPONIK_UPDATER_FILE, KALPONIK_CHANGELOG_FILE]) {
+        expect(url).not.toMatch(/readest/i);
+      }
     });
 
     it('KALPONIK_PUBLIC_STORAGE_BASE_URL is a valid URL', () => {

@@ -1013,13 +1013,20 @@ export const SHARE_TOKEN_LENGTH = 22;
 export const SHARE_PRESIGN_TTL_SECONDS = 300;
 export const SHARE_CFI_MAX_LENGTH = 512;
 
-const LATEST_DOWNLOAD_BASE_URL = 'https://download.readest.com/releases';
+// Kalponik's own GitHub releases. `releases/latest/download/<file>` always
+// serves the asset from the newest published release; the Android release
+// workflow (.github/workflows/kalponik-android.yml) uploads both files there.
+export const KALPONIK_RELEASES_URL = 'https://github.com/AsefHossainKhan/kalponik/releases';
+
+const LATEST_DOWNLOAD_BASE_URL = `${KALPONIK_RELEASES_URL}/latest/download`;
 
 export const KALPONIK_UPDATER_FILE = `${LATEST_DOWNLOAD_BASE_URL}/latest.json`;
 
 export const KALPONIK_CHANGELOG_FILE = `${LATEST_DOWNLOAD_BASE_URL}/release-notes.json`;
 
-export const KALPONIK_NIGHTLY_UPDATER_FILE = 'https://download.readest.com/nightly/latest.json';
+// Kalponik publishes no nightly builds. Empty means "no nightly channel": the
+// Nightly Builds switch is hidden and a saved 'nightly' setting checks stable.
+export const KALPONIK_NIGHTLY_UPDATER_FILE = '';
 
 // Public (verification) key, identical to src-tauri/tauri.conf.json `updater.pubkey`.
 // Used to verify nightly artifacts in the custom install flows (portable /

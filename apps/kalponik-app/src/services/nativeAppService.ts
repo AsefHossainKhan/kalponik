@@ -39,6 +39,7 @@ import {
 } from '@/types/system';
 import type { Book } from '@/types/book';
 import { needsQueryRangeReads } from '@/utils/ua';
+import { isUpdaterDisabledByEnv } from '@/utils/updaterChannel';
 import { getOSPlatform, isContentURI, isFileURI, isValidURL } from '@/utils/misc';
 import { getDirPath, getFilename, getPathFilename, getURLFilename } from '@/utils/path';
 import { NativeFile, RemoteFile } from '@/utils/file';
@@ -604,7 +605,7 @@ export class NativeAppService extends BaseAppService {
   override hasHaptics = OS_TYPE === 'ios' || OS_TYPE === 'android';
   override hasUpdater =
     OS_TYPE !== 'ios' &&
-    !process.env['NEXT_PUBLIC_DISABLE_UPDATER'] &&
+    !isUpdaterDisabledByEnv(OS_TYPE, process.env['NEXT_PUBLIC_DISABLE_UPDATER']) &&
     !window.__KALPONIK_UPDATER_DISABLED;
   // orientation lock is not supported on iPad
   override hasOrientationLock =

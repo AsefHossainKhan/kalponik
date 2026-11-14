@@ -8,6 +8,7 @@ import { TranslationFunc } from '@/hooks/useTranslation';
 import { setUpdaterWindowVisible } from '@/components/UpdaterWindow';
 import { isTauriAppPlatform } from '@/services/environment';
 import { getAppVersion, isUpdateNewer } from '@/utils/version';
+import { isNightlyChannelAvailable } from '@/utils/updaterChannel';
 import {
   CHECK_UPDATE_INTERVAL_SEC,
   KALPONIK_CHANGELOG_FILE,
@@ -112,7 +113,9 @@ export const resolveNightlyUpdate = async (
   fetchFn: FetchFn,
 ): Promise<ResolvedNightlyUpdate | null> => {
   const [nightly, stable] = await Promise.all([
-    fetchManifest(fetchFn, KALPONIK_NIGHTLY_UPDATER_FILE),
+    isNightlyChannelAvailable()
+      ? fetchManifest(fetchFn, KALPONIK_NIGHTLY_UPDATER_FILE)
+      : Promise.resolve(null),
     fetchManifest(fetchFn, KALPONIK_UPDATER_FILE),
   ]);
   const sources: Array<[UpdateManifest | null, string]> = [
@@ -153,11 +156,14 @@ export const checkForAppUpdates = async (
     return false;
   localStorage.setItem(LAST_CHECK_KEY, now.toString());
 
-  console.log('Checking for updates', { updateChannel });
+  // Without a nightly feed (Kalponik publishes none), a saved 'nightly'
+  // choice falls back to the stable channel instead of never finding updates.
+  const channel = isNightlyChannelAvailable() ? updateChannel : 'stable';
+  console.log('Checking for updates', { updateChannel: channel });
   const OS_TYPE = osType();
 
   try {
-    if (updateChannel === 'nightly') {
+    if (channel === 'nightly') {
       const platformKey = getNightlyPlatformKey(
         OS_TYPE,
         osArch(),

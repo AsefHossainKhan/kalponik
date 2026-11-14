@@ -7,6 +7,11 @@
 # upstream merges never conflict on package.json. Each new tag must be higher
 # than the last, or Android refuses to install the update.
 #
+# After the APK it attaches latest.json and release-notes.json, which the
+# Android in-app updater reads through .../releases/latest/download/ (built by
+# apps/kalponik-app/scripts/kalponik-release-manifest.mjs from the release list
+# and each release's notes). Write release notes as one change per line.
+#
 # This is the only workflow here; upstream's are deleted to save Actions
 # minutes. It runs only when a release is published (about 30-40 minutes on a
 # Linux runner), never on push.
@@ -161,3 +166,29 @@ jobs:
           # (the invite page's download link) always gets the newest release.
           cp "$apk" Kalponik_arm64.apk
           ../../.github/scripts/retry.sh gh release upload "$TAG" Kalponik_arm64.apk --clobber
+
+      # The in-app updater (Android) reads these two files from
+      # .../releases/latest/download/, so they go up only after the APK is
+      # attached: a phone never sees a version whose APK isn't there yet.
+      # Plain JSON, no updater signing key: the stable Android path downloads
+      # the APK and hands it to Android's installer, which checks that it is
+      # signed with the same release key as the installed app.
+      - name: Attach the update manifest (latest.json, release-notes.json)
+        working-directory: apps/kalponik-app
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ github.event.release.tag_name }}
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          # Each attempt rewrites the file, so a failed try leaves no partial list.
+          ../../.github/scripts/retry.sh bash -c 'gh api --paginate \
+            "repos/$GITHUB_REPOSITORY/releases?per_page=100" \
+            --jq ".[] | {tag_name, published_at, created_at, body, draft, prerelease}" \
+            > "$RUNNER_TEMP/releases.ndjson"'
+          node scripts/kalponik-release-manifest.mjs \
+            --version "$VERSION" \
+            --apk-url "https://github.com/$GITHUB_REPOSITORY/releases/download/$TAG/Kalponik_${VERSION}_arm64.apk" \
+            --releases "$RUNNER_TEMP/releases.ndjson" \
+            --out-dir "$RUNNER_TEMP/manifest"
+          ../../.github/scripts/retry.sh gh release upload "$TAG" \
+            "$RUNNER_TEMP/manifest/latest.json" "$RUNNER_TEMP/manifest/release-notes.json" --clobber

@@ -61,6 +61,10 @@ vi.mock('@/utils/telemetry', () => ({ optInTelemetry: vi.fn(), optOutTelemetry: 
 vi.mock('@/components/settings/PageTurnerSettings', () => ({ default: () => null }));
 vi.mock('@/utils/style', () => ({ getStyles: () => '' }));
 vi.mock('@/app/reader/hooks/useCapturedTurn', () => ({ applyPageTurnAttributes: vi.fn() }));
+const nightlyFeed = vi.hoisted(() => ({ available: true }));
+vi.mock('@/utils/updaterChannel', () => ({
+  isNightlyChannelAvailable: () => nightlyFeed.available,
+}));
 
 const autoCheckSwitch = () =>
   screen.getByRole<HTMLInputElement>('checkbox', { name: /^Check Updates on Start/ });
@@ -135,6 +139,17 @@ describe('Behavior update settings reset', () => {
     expect(autoCheckSwitch().checked).toBe(true);
     expect(nightlySwitch().checked).toBe(false);
     expect(savedSettings()).toMatchObject({ autoCheckUpdates: true, updateChannel: 'stable' });
+  });
+
+  it('hides the Nightly Builds switch when there is no nightly feed', () => {
+    nightlyFeed.available = false;
+    try {
+      render(<ControlPanel bookKey='' onRegisterReset={vi.fn()} />);
+      expect(autoCheckSwitch()).toBeTruthy();
+      expect(screen.queryByRole('checkbox', { name: /^Nightly Builds/ })).toBeNull();
+    } finally {
+      nightlyFeed.available = true;
+    }
   });
 
   it('leaves update preferences alone when the app has no updater', async () => {

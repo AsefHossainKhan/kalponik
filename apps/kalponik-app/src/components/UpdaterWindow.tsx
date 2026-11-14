@@ -26,6 +26,7 @@ import {
   KALPONIK_UPDATER_FILE,
   KALPONIK_CHANGELOG_FILE,
   KALPONIK_UPDATER_PUBKEY,
+  KALPONIK_RELEASES_URL,
 } from '@/services/constants';
 import Dialog from '@/components/Dialog';
 import Link from './Link';
@@ -622,7 +623,7 @@ export const UpdaterContent = ({
 
                     {appService?.isAndroidApp && (
                       <Link
-                        href='https://play.google.com/store/apps/details?id=com.kalponik.reader'
+                        href={`${KALPONIK_RELEASES_URL}/latest`}
                         target='_blank'
                         rel='noopener noreferrer'
                         className='btn btn-primary btn-sm'

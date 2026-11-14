@@ -31,6 +31,7 @@ import { DEFAULT_ANNOTATION_TOOLBAR_ITEMS } from '@/utils/annotationToolbar';
 import { canShareText } from '@/utils/share';
 import { useEinkRefreshSupported } from '@/hooks/useEinkRefreshSupported';
 import { optInTelemetry, optOutTelemetry } from '@/utils/telemetry';
+import { isNightlyChannelAvailable } from '@/utils/updaterChannel';
 import KeyboardShortcutsSettings from './KeyboardShortcutsSettings';
 
 const ControlPanel: React.FC<SettingsPanelPanelProp> = ({ bookKey, onRegisterReset }) => {
@@ -845,13 +846,15 @@ const ControlPanel: React.FC<SettingsPanelPanelProp> = ({ bookKey, onRegisterRes
             checked={isAutoCheckUpdates}
             onChange={toggleAutoCheckUpdates}
           />
-          <SettingsSwitchRow
-            label={_('Nightly Builds')}
-            description={isNightlyChannel ? _('Early daily builds') : ''}
-            checked={isNightlyChannel}
-            onChange={toggleNightlyChannel}
-            data-setting-id='settings.control.nightlyChannel'
-          />
+          {isNightlyChannelAvailable() && (
+            <SettingsSwitchRow
+              label={_('Nightly Builds')}
+              description={isNightlyChannel ? _('Early daily builds') : ''}
+              checked={isNightlyChannel}
+              onChange={toggleNightlyChannel}
+              data-setting-id='settings.control.nightlyChannel'
+            />
+          )}
         </BoxedList>
       )}
 
