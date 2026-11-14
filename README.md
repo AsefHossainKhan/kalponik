@@ -32,7 +32,7 @@ it a good reader comes from their work; see [Built on Readest](#built-on-readest
 </p>
 
 <div align="center">
-  <img src="./data/kalponik-banner.png" alt="Kalponik: get lost in a story. Your imagination, synced across your devices." width="100%" />
+  <img src="./data/kalponik-banner.png" alt="Kalponik: your imagination, synced. Get lost in a book, then pick it up anywhere." width="100%" />
 </div>
 
 ## Features
