@@ -31,6 +31,10 @@ it a good reader comes from their work; see [Built on Readest](#built-on-readest
   <a href="#license">License</a>
 </p>
 
+<div align="center">
+  <img src="./data/kalponik-banner.png" alt="Kalponik: get lost in a story. Your imagination, synced across your devices." width="100%" />
+</div>
+
 ## Features
 
 What Kalponik adds:
