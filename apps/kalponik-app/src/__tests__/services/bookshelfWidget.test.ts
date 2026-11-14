@@ -166,7 +166,7 @@ describe('buildBookshelfWidgetSnapshot', () => {
     });
     expect(hashesOf(snapshot.items)).toEqual(['r4', 'r3', 'r2']);
     // Heading visibility is a native-only setting (showShelfName); the snapshot always carries a name.
-    expect(snapshot.sectionTitle).toBe('t:Recently read');
+    expect(snapshot.sectionTitle).toBe('t:Currently reading');
     expect(snapshot.shelfId).toBe(RECENT_BOOKSHELF_ID);
     expect(snapshot.emptyTitle).toBe('Empty');
   });
@@ -182,7 +182,7 @@ describe('buildBookshelfWidgetSnapshot', () => {
         emptyTitle: '',
       });
     expect((await build(sciFi.id)).sectionTitle).toBe('Sci-fi');
-    expect((await build('default')).sectionTitle).toBe('t:Default');
+    expect((await build('default')).sectionTitle).toBe('t:My books');
   });
 
   it('echoes the requested shelf id even when it fell back to Recently read', async () => {
@@ -219,7 +219,7 @@ describe('buildBookshelfWidgetSnapshot', () => {
 describe('buildBookshelfWidgetCatalog', () => {
   it('lists every shelf in Library order, naming built-ins in the UI language', () => {
     const catalog = buildBookshelfWidgetCatalog(settingsWith(sciFi), _);
-    expect(catalog.shelves[0]).toEqual({ id: RECENT_BOOKSHELF_ID, name: 't:Recently read' });
+    expect(catalog.shelves[0]).toEqual({ id: RECENT_BOOKSHELF_ID, name: 't:Currently reading' });
     expect(catalog.shelves).toContainEqual({ id: sciFi.id, name: 'Sci-fi' });
     expect(catalog.shelves).toContainEqual({ id: FINISHED_BOOKSHELF_ID, name: 't:Finished books' });
     expect(catalog.labels.save).toBe('t:Save');

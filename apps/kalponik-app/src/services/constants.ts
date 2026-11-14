@@ -269,7 +269,8 @@ export const DEFAULT_SYSTEM_SETTINGS: Partial<SystemSettings> = {
   libraryColumns: 6,
   librarySkeuomorphicCovers: false,
   libraryHideCovers: false,
-  libraryRecentShelfEnabled: false,
+  // Kalponik: Currently reading leads the library.
+  libraryRecentShelfEnabled: true,
 
   metadataSeriesCollapsed: false,
   metadataOthersCollapsed: false,

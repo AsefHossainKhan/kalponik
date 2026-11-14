@@ -3,7 +3,7 @@ import { bookshelfReplicaSchema, mergeBookshelfRows } from './replica';
 import type { BookshelfDefinition, BookshelfState, BookshelfReplicaRow } from '@/types/bookshelf';
 import type { LibraryCoverFitType, SystemSettings } from '@/types/settings';
 import type { Hlc, ReplicaRow } from '@/types/replica';
-import { hlcPack } from '@/libs/crdt';
+import { hlcPack, hlcParse } from '@/libs/crdt';
 import {
   bookshelfSchema,
   defaultBookshelves,
@@ -225,4 +225,39 @@ export const applyBookshelfDraft = (
   if (!readBookshelves({ ...settings, bookshelves: next }).some((s) => s.enabled))
     throw new Error(_('Keep at least one bookshelf enabled.'));
   return { state: next, operations };
+};
+
+/**
+ * Kalponik: Currently reading (the recent shelf) is on by default and leads
+ * the library. Readest shipped it off, and the one-time migration above
+ * froze that default into a row stamped at clock zero ("initial defaults,
+ * not user edits"). Turn such an untouched row on; a shelf someone turned
+ * off themselves carries a real clock and stays off. Returns true when the
+ * settings changed.
+ */
+export const enableUntouchedRecentShelf = (settings: SystemSettings): boolean => {
+  const current = mergeBookshelfStates(settings.bookshelves);
+  const row = current.rows[RECENT_BOOKSHELF_ID];
+  const field = row?.fields_jsonb['definition'];
+  const definition = field?.v as BookshelfDefinition | undefined;
+  if (!row || !field || !definition || definition.enabled) return false;
+  try {
+    if (hlcParse(field.t).physicalMs !== 0) return false;
+  } catch {
+    return false;
+  }
+  settings.bookshelves = {
+    ...current,
+    rows: {
+      ...current.rows,
+      [RECENT_BOOKSHELF_ID]: {
+        ...row,
+        fields_jsonb: {
+          ...row.fields_jsonb,
+          definition: { ...field, v: { ...definition, enabled: true } },
+        },
+      },
+    },
+  };
+  return true;
 };

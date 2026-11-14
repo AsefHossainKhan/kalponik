@@ -95,7 +95,9 @@ describe('one-time bookshelf settings migration', () => {
                 skeuomorphicCovers: skeuomorphic,
               });
             }
-            expect(readBookshelves(settings).find((s) => s.id === 'recent')?.enabled).toBe(recent);
+            // Kalponik: Currently reading is turned on even when the legacy flag
+            // was off (enableUntouchedRecentShelf).
+            expect(readBookshelves(settings).find((s) => s.id === 'recent')?.enabled).toBe(true);
           });
         }
       }
@@ -113,7 +115,7 @@ describe('one-time bookshelf settings migration', () => {
     const settings = await loadSettings(ctx);
     expect(settings.bookshelves?.legacySettingsMigrated).toBe(true);
     expect(readBookshelves(settings).find((s) => s.id === 'recent')).toMatchObject({
-      enabled: false,
+      enabled: true, // Kalponik: Currently reading leads the library.
       hideCovers: false,
       coverFit: 'crop',
       skeuomorphicCovers: false,

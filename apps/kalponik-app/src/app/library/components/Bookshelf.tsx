@@ -70,7 +70,11 @@ import { useOpenBook } from '../hooks/useOpenBook';
 import LibrarySearchResults from './LibrarySearchResults';
 import PublicShelfAlert from './PublicShelfAlert';
 import { applyFinishedFilter, splitSearchResults } from '../utils/shelves';
-import { DEFAULT_BOOKSHELF_ID, PUBLIC_BOOKSHELF_ID } from '@/services/bookshelves/definitions';
+import {
+  DEFAULT_BOOKSHELF_ID,
+  PUBLIC_BOOKSHELF_ID,
+  RECENT_BOOKSHELF_ID,
+} from '@/services/bookshelves/definitions';
 
 export interface ContentSearchRequest {
   query: string;
@@ -381,8 +385,14 @@ const Bookshelf: React.FC<BookshelfProps> = ({
           // Kalponik: every section is named (My books, Public books), except
           // a lone default shelf, which needs no heading.
           hideHeading: definition.id === DEFAULT_BOOKSHELF_ID && results.length === 1,
+          // A strip with more than a phone row of books gets "See all";
+          // Currently reading stays a quick-resume strip.
           seeAll:
-            !onlyShelf && !groupId && definition.layout === 'carousel' && result.books.length > 0
+            !onlyShelf &&
+            !groupId &&
+            definition.layout === 'carousel' &&
+            definition.id !== RECENT_BOOKSHELF_ID &&
+            result.books.length > 3
               ? definition.id
               : undefined,
           items: presentBookshelf(

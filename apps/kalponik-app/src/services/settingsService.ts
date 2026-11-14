@@ -1,4 +1,8 @@
-import { mergeBookshelfStates, migrateBookshelfSettings } from '@/services/bookshelves/state';
+import {
+  enableUntouchedRecentShelf,
+  mergeBookshelfStates,
+  migrateBookshelfSettings,
+} from '@/services/bookshelves/state';
 import { readPendingBookshelves } from '@/services/bookshelves/journal';
 import { FileSystem } from '@/types/system';
 import { LibrarySecondarySortByType, ReadSettings, SystemSettings } from '@/types/settings';
@@ -227,7 +231,10 @@ export async function loadSettings(ctx: Context): Promise<SystemSettings> {
     await saveSettings(ctx.fs, settings);
   }
 
-  if (migrateBookshelfSettings(settings)) {
+  const shelvesMigrated = migrateBookshelfSettings(settings);
+  // Kalponik: Currently reading on, unless someone turned it off themselves.
+  const recentEnabled = enableUntouchedRecentShelf(settings);
+  if (shelvesMigrated || recentEnabled) {
     await saveSettings(ctx.fs, settings);
   }
 
