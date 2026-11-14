@@ -609,6 +609,8 @@ export interface SystemSettings {
    * its own library on a device, so a different account starts from zero.
    */
   syncCursorsAccount?: string;
+  /** Kalponik: the library's filter chips: all books, hide finished, or finished only. */
+  libraryFinishedFilter?: 'all' | 'hide' | 'only';
 
   /**
    * App-lock PIN. When `pinCodeEnabled` is true, the user must enter

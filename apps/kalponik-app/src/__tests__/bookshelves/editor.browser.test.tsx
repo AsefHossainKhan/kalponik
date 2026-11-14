@@ -105,7 +105,7 @@ describe('bookshelf editor responsive layout', () => {
         await waitFor(expectCenteredRows);
         await waitFor(() => expect(getByLabelText('Bookshelf status').textContent).toBe('Saved'));
         expectCenteredRows();
-        fireEvent.click(getByRole('button', { name: 'Default' }));
+        fireEvent.click(getByRole('button', { name: 'My books' }));
         await waitFor(expectCenteredRows);
       });
     }
@@ -123,8 +123,8 @@ describe('bookshelf editor responsive layout', () => {
       ),
     );
     expect(tops.size).toBe(1);
-    fireEvent.click(getByRole('button', { name: 'Default' }));
-    const title = getByText('Default', { selector: '[data-bookshelf-title]' });
+    fireEvent.click(getByRole('button', { name: 'My books' }));
+    const title = getByText('My books', { selector: '[data-bookshelf-title]' });
     expect(title.getBoundingClientRect().bottom).toBeLessThanOrEqual(
       tabs.getBoundingClientRect().top,
     );
@@ -222,7 +222,7 @@ describe('bookshelf editor responsive layout', () => {
       await act(async () => {
         await eventDispatcher.dispatch('show-bookshelves');
       });
-      await userEvent.click(getByRole('button', { name: 'Default' }));
+      await userEvent.click(getByRole('button', { name: 'My books' }));
       await userEvent.click(getByRole('button', { name: 'Add condition' }));
       await userEvent.selectOptions(getByLabelText('Filter field'), 'created');
       await userEvent.selectOptions(getByLabelText('Filter comparison'), 'withinLast');
@@ -281,7 +281,7 @@ describe('bookshelf editor responsive layout', () => {
     await act(async () => {
       await eventDispatcher.dispatch('show-bookshelves');
     });
-    await userEvent.click(getByRole('button', { name: 'Default' }));
+    await userEvent.click(getByRole('button', { name: 'My books' }));
     await userEvent.click(getByRole('button', { name: 'Add condition' }));
     const options = () =>
       Array.from((getByLabelText('Filter value') as HTMLInputElement).list?.options ?? []).map(
@@ -412,7 +412,7 @@ describe('bookshelf editor responsive layout', () => {
       await waitFor(() =>
         expect(saveDraft.mock.calls.at(-1)?.[2][0]).toMatchObject({ coverFit: 'fit' }),
       );
-      await userEvent.click(getByRole('button', { name: 'Default' }));
+      await userEvent.click(getByRole('button', { name: 'My books' }));
       expect((coverSizing as HTMLSelectElement).value).toBe('crop');
       await waitFor(() => expect(preview.querySelector('.crop-cover-img')).toBeTruthy());
     });
@@ -450,8 +450,8 @@ describe('bookshelf editor responsive layout', () => {
     await act(async () => {
       await eventDispatcher.dispatch('show-bookshelves');
     });
-    const defaultTab = getByRole('button', { name: 'Default' });
-    const recent = getByRole('button', { name: /^Recently read/ });
+    const defaultTab = getByRole('button', { name: 'My books' });
+    const recent = getByRole('button', { name: /^Currently reading/ });
     const finished = getByRole('button', { name: /^Finished books/ });
     await waitFor(() => expect(defaultTab.getBoundingClientRect().width).toBeGreaterThan(44));
     expect(finished.getBoundingClientRect().width).toBeGreaterThan(44);
@@ -488,16 +488,17 @@ describe('bookshelf editor responsive layout', () => {
       await act(async () => {
         await eventDispatcher.dispatch('show-bookshelves');
       });
-      const inactive = getByRole('button', { name: 'Default' });
+      const inactive = getByRole('button', { name: 'My books' });
       if (width < 600) expect(inactive.getBoundingClientRect().width).toBe(44);
       else expect(inactive.getBoundingClientRect().width).toBeGreaterThan(44);
-      expect(inactive.title).toContain('Default');
+      expect(inactive.title).toContain('My books');
       expect(getByRole('button', { name: 'Add bookshelf' }).getBoundingClientRect().width).toBe(44);
       await userEvent.click(inactive);
       if (width < 600) expect(inactive.getBoundingClientRect().width).toBe(44);
       else expect(inactive.getBoundingClientRect().width).toBeGreaterThan(44);
-      const recentWidth = getByRole('button', { name: /^Recently read/ }).getBoundingClientRect()
-        .width;
+      const recentWidth = getByRole('button', {
+        name: /^Currently reading/,
+      }).getBoundingClientRect().width;
       if (width < 600) expect(recentWidth).toBe(44);
       else expect(recentWidth).toBeGreaterThan(44);
       await userEvent.click(getByRole('button', { name: 'Rename bookshelf' }));
@@ -510,7 +511,7 @@ describe('bookshelf editor responsive layout', () => {
       await userEvent.type(input, 'Cancelled name');
       await userEvent.keyboard('{Escape}');
       expect(container.querySelector('dialog')?.open).toBe(true);
-      expect(getByRole('button', { name: 'Default' })).toBeTruthy();
+      expect(getByRole('button', { name: 'My books' })).toBeTruthy();
       await userEvent.click(getByRole('button', { name: 'Rename bookshelf' }));
       await userEvent.clear(getByLabelText('Bookshelf name'));
       await userEvent.type(getByLabelText('Bookshelf name'), 'All my books');
@@ -569,6 +570,7 @@ describe('bookshelf editor responsive layout', () => {
           'audiobooks',
           'podcasts',
           'default',
+          'public',
           'finished',
         ]),
       );
@@ -676,7 +678,7 @@ describe('bookshelf editor responsive layout', () => {
           .getAllByRole('button')
           .filter((tab) => tab.hasAttribute('aria-pressed'))
           .map((tab) => tab.textContent),
-      ).toEqual(['B', 'A', 'Audiobooks', 'Podcasts', 'Default', 'Finished books(Disabled)']),
+      ).toEqual(['B', 'A', 'Audiobooks', 'Podcasts', 'My books', 'Finished books(Disabled)']),
     );
     expect(container.querySelector('dialog')?.open).toBe(true);
     await waitFor(() =>
@@ -876,8 +878,8 @@ describe('bookshelf editor responsive layout', () => {
         expect(getByText('0 displayed · 24 matching · 24 excluded')).toBeTruthy(),
       );
       const shelf = getByRole('button', { name: 'My shelf' });
-      const recent = getByRole('button', { name: 'Recently read' });
-      const defaultTab = getByRole('button', { name: 'Default' });
+      const recent = getByRole('button', { name: 'Currently reading' });
+      const defaultTab = getByRole('button', { name: 'My books' });
       const order = () =>
         within(getByRole('group', { name: 'Bookshelves' }))
           .getAllByRole('button')
@@ -887,10 +889,10 @@ describe('bookshelf editor responsive layout', () => {
       await waitFor(() =>
         expect(order()).toEqual([
           'My shelf',
-          'Recently read',
+          'Currently reading',
           'Audiobooks',
           'Podcasts',
-          'Default',
+          'My books',
           'Finished books(Disabled)',
         ]),
       );
@@ -900,9 +902,9 @@ describe('bookshelf editor responsive layout', () => {
       await userEvent.dragAndDrop(defaultTab, shelf, { steps: 10 });
       await waitFor(() =>
         expect(order()).toEqual([
-          'Default',
+          'My books',
           'My shelf',
-          'Recently read',
+          'Currently reading',
           'Audiobooks',
           'Podcasts',
           'Finished books(Disabled)',
@@ -911,8 +913,8 @@ describe('bookshelf editor responsive layout', () => {
       fireEvent.keyDown(shelf, { key: dir === 'rtl' ? 'ArrowLeft' : 'ArrowRight', altKey: true });
       await waitFor(() =>
         expect(order()).toEqual([
-          'Default',
-          'Recently read',
+          'My books',
+          'Currently reading',
           'My shelf',
           'Audiobooks',
           'Podcasts',
@@ -922,8 +924,8 @@ describe('bookshelf editor responsive layout', () => {
       for (let i = 0; i < 3; i++)
         fireEvent.keyDown(shelf, { key: dir === 'rtl' ? 'ArrowLeft' : 'ArrowRight', altKey: true });
       expect(order()).toEqual([
-        'Default',
-        'Recently read',
+        'My books',
+        'Currently reading',
         'Audiobooks',
         'Podcasts',
         'Finished books(Disabled)',
@@ -931,8 +933,8 @@ describe('bookshelf editor responsive layout', () => {
       ]);
       fireEvent.keyDown(shelf, { key: dir === 'rtl' ? 'ArrowLeft' : 'ArrowRight', altKey: true });
       expect(order()).toEqual([
-        'Default',
-        'Recently read',
+        'My books',
+        'Currently reading',
         'Audiobooks',
         'Podcasts',
         'Finished books(Disabled)',

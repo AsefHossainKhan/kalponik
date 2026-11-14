@@ -149,6 +149,13 @@ export const BOOKSHELF_FIELDS: BookshelfField[] = [
     read: (b) => AUDIO_FORMATS.includes(b.format) && !absMediaType(b),
   },
   {
+    // Kalponik: a book on the public shelf (shared copy, your own progress).
+    id: 'publicShelf',
+    label: _('Public book'),
+    kind: 'boolean',
+    read: (b) => b.shelf === 'public',
+  },
+  {
     id: 'mediaType',
     choices: [
       { value: 'ebook', label: _('Ebook') },

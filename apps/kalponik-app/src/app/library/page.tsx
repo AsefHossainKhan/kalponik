@@ -4,8 +4,8 @@ import BookshelvesDialog from './components/BookshelvesDialog';
 
 import clsx from 'clsx';
 import * as React from 'react';
-import { MdChevronRight } from 'react-icons/md';
-import { useState, useRef, useEffect, Suspense, useCallback } from 'react';
+import { MdChevronLeft, MdChevronRight } from 'react-icons/md';
+import { useState, useRef, useEffect, Suspense, useCallback, useMemo } from 'react';
 import { ReadonlyURLSearchParams, useSearchParams } from 'next/navigation';
 
 import { Book, BooksGroup, type LibrarySearchConfig } from '@/types/book';
@@ -136,6 +136,10 @@ import DropIndicator from '@/components/DropIndicator';
 import SettingsDialog from '@/components/settings/SettingsDialog';
 import ModalPortal from '@/components/ModalPortal';
 import TransferQueuePanel from './components/TransferQueuePanel';
+import FinishedFilterChips from './components/FinishedFilterChips';
+import { mergePublicShelf } from './utils/shelves';
+import { usePublicShelfStore } from '@/store/publicShelfStore';
+import { PUBLIC_BOOKSHELF_ID } from '@/services/bookshelves/definitions';
 
 /** Skip tiny non-book artifacts during folder auto-scan (matches the manual import dialog default). */
 const AUTO_IMPORT_MIN_SIZE_BYTES = 20 * 1024;
@@ -394,7 +398,34 @@ const LibraryPageContent = ({ searchParams }: { searchParams: ReadonlyURLSearchP
   useWebBrowserDownloads();
   useTransferQueue(libraryLoaded);
 
-  const { pullLibrary, pushLibrary } = useBooksSync();
+  const { pullLibrary: pullBooks, pushLibrary } = useBooksSync();
+  // Kalponik: the public shelf, merged into the library the shelves show.
+  // Pull-to-refresh and sign-in refresh it with the books.
+  const publicBooks = usePublicShelfStore((s) => s.books);
+  const publicLoaded = usePublicShelfStore((s) => s.loaded);
+  const refreshPublicShelf = useCallback(() => {
+    usePublicShelfStore.getState().hydrate();
+    if (!user) return;
+    usePublicShelfStore
+      .getState()
+      .refresh()
+      .catch((error) => console.warn('Public shelf refresh failed:', error));
+  }, [user]);
+  useEffect(() => {
+    refreshPublicShelf();
+  }, [refreshPublicShelf]);
+  const pullLibrary = useCallback(
+    async (...args: Parameters<typeof pullBooks>) => {
+      refreshPublicShelf();
+      return pullBooks(...args);
+    },
+    [pullBooks, refreshPublicShelf],
+  );
+  const shelfBooks = useMemo(
+    () => mergePublicShelf(libraryBooks, publicBooks, publicLoaded),
+    [libraryBooks, publicBooks, publicLoaded],
+  );
+  const onlyShelfId = !searchParams?.get('group') ? searchParams?.get('shelf') || null : null;
   // Library-scoped auto-sync for the active third-party cloud provider (WebDAV /
   // Google Drive): keeps library.json current on import / delete / book-close,
   // parity with useBooksSync. No-op when no provider is enabled.
@@ -2094,8 +2125,24 @@ const LibraryPageContent = ({ searchParams }: { searchParams: ReadonlyURLSearchP
             }}
           >
             <DropIndicator />
+            {onlyShelfId && (
+              <div className='flex shrink-0 items-center gap-1 px-4 pt-1 text-base sm:px-6'>
+                <button
+                  type='button'
+                  onClick={() => router.back()}
+                  className='hover:bg-base-300 text-base-content/85 flex items-center rounded-sm py-1 pe-2'
+                >
+                  <MdChevronLeft size={iconSize} aria-hidden='true' />
+                  {_('Library')}
+                </button>
+                <span className='truncate px-1 py-1 font-semibold'>
+                  {onlyShelfId === PUBLIC_BOOKSHELF_ID ? _('Public books') : null}
+                </span>
+              </div>
+            )}
+            <FinishedFilterChips />
             <Bookshelf
-              libraryBooks={libraryBooks}
+              libraryBooks={shelfBooks}
               isSelectMode={isSelectMode}
               isSelectAll={isSelectAll}
               isSelectNone={isSelectNone}

@@ -42,6 +42,7 @@ describe('bookshelf evaluation', () => {
       'audiobooks',
       'podcasts',
       'default',
+      'public',
       'finished',
     ]);
     for (const id of ['audiobooks', 'podcasts']) {
@@ -201,6 +202,7 @@ describe('bookshelf evaluation', () => {
       'audiobooks',
       'podcasts',
       'default',
+      'public',
       'finished',
     ]);
     const finished = defaults.find((s) => s.id === 'finished')!;

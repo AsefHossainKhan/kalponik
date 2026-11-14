@@ -68,6 +68,9 @@ import TaggingModal from './TaggingModal';
 import SetStatusAlert from './SetStatusAlert';
 import { useOpenBook } from '../hooks/useOpenBook';
 import LibrarySearchResults from './LibrarySearchResults';
+import PublicShelfAlert from './PublicShelfAlert';
+import { applyFinishedFilter, splitSearchResults } from '../utils/shelves';
+import { DEFAULT_BOOKSHELF_ID, PUBLIC_BOOKSHELF_ID } from '@/services/bookshelves/definitions';
 
 export interface ContentSearchRequest {
   query: string;
@@ -259,10 +262,17 @@ const Bookshelf: React.FC<BookshelfProps> = ({
   // the one settings field it reads keeps unrelated settings writes from
   // re-filtering and re-sorting every shelf.
   const absServers = useABSServerStore((state) => state.servers);
-  const visibleBooks = useMemo(
+  const allVisibleBooks = useMemo(
     () => libraryBooks.filter((book) => !book.deletedAt && !isAbsBookOrphaned(book)),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [libraryBooks, absServers, settings.absServers],
+  );
+  // Kalponik: the filter chips (all, hide finished, finished only) apply to
+  // every section and to search.
+  const finishedFilter = settings.libraryFinishedFilter ?? 'all';
+  const visibleBooks = useMemo(
+    () => applyFinishedFilter(allVisibleBooks, finishedFilter),
+    [allVisibleBooks, finishedFilter],
   );
 
   const filteredBooks = useMemo(() => {
@@ -303,28 +313,43 @@ const Bookshelf: React.FC<BookshelfProps> = ({
     return resolveCurrentShelfBooks(shelfBooks, groupBy, groupId, manualGroupName);
   }, [visibleBooks, results, groupId, unscopedGroup, activeShelfId, groupBy, manualGroupName]);
   const sections = useMemo<ShelfSection[]>(() => {
-    // Search is a flat view of every eligible library book, independent of all shelves.
-    if (queryTerm)
+    // Search is a flat view of every eligible library book, independent of all
+    // shelves. Kalponik: split into your own books and public books, so a
+    // match says which shelf it is on.
+    if (queryTerm) {
+      const sorter = createBookSorter(
+        globalSort.by,
+        uiLanguage,
+        globalSort.thenBy,
+        globalSort.ascending,
+        globalSort.thenAscending,
+        pageDurations,
+      );
+      const { mine, publicBooks } = splitSearchResults(filteredBooks);
+      const searchLayout: BookshelfDefinition['layout'] = viewMode === 'list' ? 'list' : 'grid';
+      const publicShelf = definitions.find((s) => s.id === PUBLIC_BOOKSHELF_ID);
       return [
         {
           definition: {
             ...defaultShelf,
-            name: _('Search results'),
+            name: publicBooks.length ? _('My books') : _('Search results'),
             sort: globalSort,
-            layout: viewMode === 'list' ? 'list' : 'grid',
+            layout: searchLayout,
           },
-          items: [...filteredBooks].sort(
-            createBookSorter(
-              globalSort.by,
-              uiLanguage,
-              globalSort.thenBy,
-              globalSort.ascending,
-              globalSort.thenAscending,
-              pageDurations,
-            ),
-          ),
+          items: [...mine].sort(sorter),
         },
-      ];
+        ...(publicBooks.length && publicShelf
+          ? [
+              {
+                definition: { ...publicShelf, sort: globalSort, layout: searchLayout },
+                items: [...publicBooks].sort(sorter),
+              },
+            ]
+          : []),
+      ].filter((section, index) => index === 0 || section.items.length > 0);
+    }
+    // Kalponik: `?shelf=<id>` alone (a shelf's "See all") opens just that shelf.
+    const onlyShelf = !groupId && shelfId ? shelfId : null;
     return (
       unscopedGroup
         ? [
@@ -335,12 +360,16 @@ const Bookshelf: React.FC<BookshelfProps> = ({
               excluded: 0,
             },
           ]
-        : results.filter((r) => !groupId || r.definition.id === activeShelfId)
+        : results.filter((r) => (!groupId && !onlyShelf) || r.definition.id === activeShelfId)
     )
       .map((result) => {
         const definition: BookshelfDefinition = {
           ...result.definition,
-          layout: resolveBookshelfLayout(result.definition, viewMode),
+          layout: onlyShelf
+            ? viewMode === 'list'
+              ? 'list'
+              : 'grid'
+            : resolveBookshelfLayout(result.definition, viewMode),
         };
         // Legacy group links have no shelf and use their URL/global grouping.
         if (groupId) {
@@ -349,7 +378,13 @@ const Bookshelf: React.FC<BookshelfProps> = ({
         }
         return {
           definition,
-          hideHeading: definition.id === 'default',
+          // Kalponik: every section is named (My books, Public books), except
+          // a lone default shelf, which needs no heading.
+          hideHeading: definition.id === DEFAULT_BOOKSHELF_ID && results.length === 1,
+          seeAll:
+            !onlyShelf && !groupId && definition.layout === 'carousel' && result.books.length > 0
+              ? definition.id
+              : undefined,
           items: presentBookshelf(
             { ...result, definition },
             { libraryGroupBy: globalGroupBy },
@@ -360,8 +395,17 @@ const Bookshelf: React.FC<BookshelfProps> = ({
           ),
         };
       })
-      .filter((section) => section.items.length > 0);
+      .filter(
+        (section) =>
+          section.items.length > 0 ||
+          // Kalponik: My books and Public books stay, with an empty state.
+          (!groupId &&
+            (section.definition.id === DEFAULT_BOOKSHELF_ID ||
+              section.definition.id === PUBLIC_BOOKSHELF_ID)),
+      );
   }, [
+    definitions,
+    shelfId,
     results,
     queryTerm,
     filteredBooks,
@@ -1046,7 +1090,7 @@ const Bookshelf: React.FC<BookshelfProps> = ({
           </button>
         </div>
       )}
-      {!visibleBooks.length ? (
+      {!allVisibleBooks.length ? (
         <div className='flex min-h-0 flex-1 items-center-safe justify-center overflow-y-auto p-6'>
           <LibraryEmptyState onImport={handleImportBooks} />
         </div>
@@ -1067,6 +1111,7 @@ const Bookshelf: React.FC<BookshelfProps> = ({
         <div className='min-h-0 flex-1'>
           <BookshelfStream
             scrollKey={searchParams?.toString() ?? ''}
+            onSeeAll={(id) => router.push(`/library?shelf=${encodeURIComponent(id)}`)}
             pageNavigation={!!settings.globalViewSettings?.isEink}
             hidePageButtons={settings.hideBookshelfPageButtons}
             navigationBottomInset={
@@ -1179,6 +1224,7 @@ const Bookshelf: React.FC<BookshelfProps> = ({
           />
         </div>
       )}
+      <PublicShelfAlert handleBookUpload={(book) => handleBookUpload(book)} />
       {showStatusAlert && (
         <SetStatusAlert
           selectedCount={getSelectedBooks().length}

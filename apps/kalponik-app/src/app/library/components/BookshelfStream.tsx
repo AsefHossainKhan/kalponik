@@ -28,6 +28,8 @@ export interface ShelfSection {
   definition: BookshelfDefinition;
   items: (Book | BooksGroup)[];
   hideHeading?: boolean;
+  /** Kalponik: the shelf id a heading's "See all" opens on its own. */
+  seeAll?: string;
 }
 interface StreamProps {
   sections: ShelfSection[];
@@ -50,6 +52,8 @@ interface StreamProps {
   navigationBottomInset?: number;
   /** Identifies the shelf view; its scroll state survives remounts (open a book, come back). */
   scrollKey?: string;
+  /** Kalponik: opens one shelf on its own, as a full grid. */
+  onSeeAll?: (shelfId: string) => void;
 }
 // Module-scoped so the position outlives the library page while the reader is open.
 // Virtuoso's measured sizes are per row index, so a snapshot is kept with the
@@ -291,6 +295,7 @@ export default function BookshelfStream({
   hidePageButtons = false,
   navigationBottomInset = 0,
   scrollKey,
+  onSeeAll,
 }: StreamProps) {
   const _ = useTranslation();
   const root = useRef<HTMLDivElement>(null);
@@ -397,17 +402,36 @@ export default function BookshelfStream({
                 );
               if (row.type === 'heading')
                 return (
-                  <h2
-                    data-shelf-id={definition.id}
-                    className='transform-wrapper px-4 pb-1 pt-2 text-sm font-semibold sm:px-6 sm:pt-4'
-                  >
-                    {name}
-                  </h2>
+                  <div className='transform-wrapper flex items-baseline justify-between gap-2 px-4 pb-1 pt-2 sm:px-6 sm:pt-4'>
+                    <h2
+                      data-shelf-id={definition.id}
+                      className='min-w-0 truncate text-sm font-semibold'
+                    >
+                      {name}
+                    </h2>
+                    {row.section.seeAll && onSeeAll && (
+                      <button
+                        type='button'
+                        className='text-base-content/70 hover:text-base-content eink:text-base-content shrink-0 rounded-sm px-1 text-sm font-medium focus-visible:outline-2'
+                        onClick={() => onSeeAll(row.section.seeAll!)}
+                      >
+                        {_('See all')}
+                      </button>
+                    )}
+                  </div>
                 );
               if (row.type === 'empty')
                 return (
                   <p className='text-base-content/60 transform-wrapper px-4 py-8 text-sm sm:px-6'>
-                    {row.section.hideHeading ? _('No books') : _('No books in {{name}}', { name })}
+                    {definition.id === 'default'
+                      ? _('Your books live here. Only you can see them.')
+                      : definition.id === 'public'
+                        ? _(
+                            'No public books yet. Share one of yours from its menu and everyone here can read it.',
+                          )
+                        : row.section.hideHeading
+                          ? _('No books')
+                          : _('No books in {{name}}', { name })}
                   </p>
                 );
               if (row.type === 'carousel')

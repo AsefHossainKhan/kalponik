@@ -129,7 +129,7 @@ describe('bookshelf editor', () => {
 
     const header = screen.getByTestId('dialog-header');
     expect(within(header).getByRole('group', { name: 'Bookshelves' })).toBeTruthy();
-    expect(within(header).getByRole('button', { name: 'Default' })).toBeTruthy();
+    expect(within(header).getByRole('button', { name: 'My books' })).toBeTruthy();
     expect(within(header).queryByText('Manage Bookshelves')).toBeNull();
     // The title still names the dialog for assistive technology.
     expect(screen.getByRole('dialog', { name: 'Manage Bookshelves' })).toBeTruthy();
@@ -140,7 +140,7 @@ describe('bookshelf editor', () => {
     await act(async () => {
       await eventDispatcher.dispatch('show-bookshelves');
     });
-    fireEvent.click(screen.getByRole('button', { name: 'Default' }));
+    fireEvent.click(screen.getByRole('button', { name: 'My books' }));
     fireEvent.click(screen.getByLabelText('Close Manage Bookshelves'));
     await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
     unmount();
@@ -149,7 +149,7 @@ describe('bookshelf editor', () => {
     await act(async () => {
       await eventDispatcher.dispatch('show-bookshelves');
     });
-    expect(screen.getByRole('button', { name: 'Default' }).getAttribute('aria-pressed')).toBe(
+    expect(screen.getByRole('button', { name: 'My books' }).getAttribute('aria-pressed')).toBe(
       'true',
     );
     expect(save).not.toHaveBeenCalled();
@@ -192,7 +192,7 @@ describe('bookshelf editor', () => {
       await eventDispatcher.dispatch('show-bookshelves');
     });
     await waitFor(() => expect(screen.getByRole('dialog')).toBeTruthy());
-    expect(screen.queryByRole('button', { name: 'Default' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'My books' })).toBeNull();
 
     fireEvent.click(screen.getByLabelText('Close Manage Bookshelves'));
     await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
@@ -212,7 +212,7 @@ describe('bookshelf editor', () => {
     searchParamsRef.current = new URLSearchParams('editBookshelf=default');
     render(<BookshelvesDialog />);
     await waitFor(() => expect(screen.getByRole('dialog')).toBeTruthy());
-    expect(screen.getByRole('button', { name: 'Default' }).getAttribute('aria-pressed')).toBe(
+    expect(screen.getByRole('button', { name: 'My books' }).getAttribute('aria-pressed')).toBe(
       'true',
     );
   });
@@ -220,7 +220,7 @@ describe('bookshelf editor', () => {
     searchParamsRef.current = new URLSearchParams('editBookshelf=default&t=1');
     const { rerender } = render(<BookshelvesDialog />);
     await waitFor(() =>
-      expect(screen.getByRole('button', { name: 'Default' }).getAttribute('aria-pressed')).toBe(
+      expect(screen.getByRole('button', { name: 'My books' }).getAttribute('aria-pressed')).toBe(
         'true',
       ),
     );
@@ -229,7 +229,7 @@ describe('bookshelf editor', () => {
     rerender(<BookshelvesDialog />);
     await waitFor(() =>
       expect(
-        screen.getByRole('button', { name: /^Recently read/ }).getAttribute('aria-pressed'),
+        screen.getByRole('button', { name: /^Currently reading/ }).getAttribute('aria-pressed'),
       ).toBe('true'),
     );
   });
@@ -282,7 +282,7 @@ describe('bookshelf editor', () => {
     localStorage.setItem('lastBookshelfTab', 'deleted-shelf');
     render(<BookshelvesEditor />);
     expect(
-      screen.getByRole('button', { name: /^Recently read/ }).getAttribute('aria-pressed'),
+      screen.getByRole('button', { name: /^Currently reading/ }).getAttribute('aria-pressed'),
     ).toBe('true');
     expect(localStorage.getItem('lastBookshelfTab')).toBe('recent');
   });
@@ -431,9 +431,9 @@ describe('bookshelf editor', () => {
     render(<BookshelvesEditor />);
     fireEvent.change(screen.getByLabelText('Book covers'), { target: { value: 'fit' } });
     await waitFor(() => expect(save.mock.calls.at(-1)?.[2][0]).toMatchObject({ coverFit: 'fit' }));
-    fireEvent.click(screen.getByRole('button', { name: 'Default' }));
+    fireEvent.click(screen.getByRole('button', { name: 'My books' }));
     expect((screen.getByLabelText('Book covers') as HTMLSelectElement).value).toBe('crop');
-    fireEvent.click(screen.getByRole('button', { name: /^Recently read/ }));
+    fireEvent.click(screen.getByRole('button', { name: /^Currently reading/ }));
     expect((screen.getByLabelText('Book covers') as HTMLSelectElement).value).toBe('fit');
   });
   it('saves skeuomorphic covers independently while preserving the previous appearance', async () => {
@@ -446,9 +446,9 @@ describe('bookshelf editor', () => {
     await waitFor(() =>
       expect(save.mock.calls.at(-1)?.[2][0]).toMatchObject({ skeuomorphicCovers: false }),
     );
-    fireEvent.click(screen.getByRole('button', { name: 'Default' }));
+    fireEvent.click(screen.getByRole('button', { name: 'My books' }));
     expect((screen.getByLabelText('Skeuomorphic covers') as HTMLInputElement).checked).toBe(true);
-    fireEvent.click(screen.getByRole('button', { name: /^Recently read/ }));
+    fireEvent.click(screen.getByRole('button', { name: /^Currently reading/ }));
     expect((screen.getByLabelText('Skeuomorphic covers') as HTMLInputElement).checked).toBe(false);
     expect(useSettingsStore.getState().settings.librarySkeuomorphicCovers).toBe(true);
   });
@@ -515,7 +515,7 @@ describe('bookshelf editor', () => {
   });
   it('starts Default without Carousel and inserts numbered carousel shelves after Recently read', async () => {
     render(<BookshelvesEditor />);
-    fireEvent.click(screen.getByRole('button', { name: 'Default' }));
+    fireEvent.click(screen.getByRole('button', { name: 'My books' }));
     expect((screen.getByLabelText('Carousel layout') as HTMLInputElement).checked).toBe(false);
     for (const number of [1, 2]) {
       fireEvent.click(screen.getByRole('button', { name: 'Add bookshelf' }));
@@ -535,6 +535,7 @@ describe('bookshelf editor', () => {
       'audiobooks',
       'podcasts',
       'default',
+      'public',
       'finished',
     ]);
   });
@@ -566,6 +567,7 @@ describe('bookshelf editor', () => {
       'New bookshelf 2',
       'audiobooks',
       'podcasts',
+      'public',
       'finished',
     ]);
   });
@@ -592,6 +594,7 @@ describe('bookshelf editor', () => {
       'audiobooks',
       'podcasts',
       'default',
+      'public',
       'finished',
     ]);
   });
@@ -640,7 +643,7 @@ describe('bookshelf editor', () => {
     const added = (save.mock.calls.at(-1)![2] as BookshelfDefinition[])[1]!;
     fireEvent.click(screen.getByRole('button', { name: 'Add filter group' }));
     expect(screen.getByRole('alert').textContent).toContain('Complete every filter condition.');
-    fireEvent.click(screen.getByRole('button', { name: 'Default' }));
+    fireEvent.click(screen.getByRole('button', { name: 'My books' }));
     fireEvent.click(screen.getByLabelText('Hide covers'));
     await waitFor(() => expect(save).toHaveBeenCalledTimes(2));
     const draft = save.mock.calls.at(-1)![2] as BookshelfDefinition[];
@@ -679,7 +682,9 @@ describe('bookshelf editor', () => {
   });
   it('describes each shelf tab as a whole sentence', () => {
     render(<BookshelvesEditor />);
-    expect(screen.getByRole('button', { name: 'Default' }).title).toBe('Default · Drag to reorder');
+    expect(screen.getByRole('button', { name: 'My books' }).title).toBe(
+      'My books · Drag to reorder',
+    );
     expect(screen.getByRole('button', { name: /^Finished books/ }).title).toBe(
       'Finished books (disabled) · Drag to reorder',
     );
@@ -694,7 +699,7 @@ describe('bookshelf editor', () => {
       }),
     );
     await waitFor(() =>
-      expect(document.activeElement).toBe(screen.getByRole('button', { name: 'Default' })),
+      expect(document.activeElement).toBe(screen.getByRole('button', { name: 'My books' })),
     );
     expect(localStorage.getItem('lastBookshelfTab')).toBe('default');
   });
@@ -760,14 +765,14 @@ describe('bookshelf editor', () => {
   it('renames inside the tab, supports cancelling edits, and saves the final name', async () => {
     render(<BookshelvesEditor />);
     expect(screen.queryByLabelText('Bookshelf name')).toBeNull();
-    fireEvent.click(screen.getByRole('button', { name: 'Default' }));
+    fireEvent.click(screen.getByRole('button', { name: 'My books' }));
     fireEvent.click(screen.getByRole('button', { name: 'Rename bookshelf' }));
     const input = screen.getByLabelText('Bookshelf name');
     expect(screen.getByRole('group', { name: 'Bookshelves' }).contains(input)).toBe(true);
     fireEvent.change(input, { target: { value: 'My library' } });
     fireEvent.keyDown(input, { key: 'Escape' });
-    expect(screen.getByRole('button', { name: 'Default' })).toBeTruthy();
-    fireEvent.doubleClick(screen.getByRole('button', { name: 'Default' }));
+    expect(screen.getByRole('button', { name: 'My books' })).toBeTruthy();
+    fireEvent.doubleClick(screen.getByRole('button', { name: 'My books' }));
     fireEvent.change(screen.getByLabelText('Bookshelf name'), { target: { value: 'My library' } });
     fireEvent.keyDown(screen.getByLabelText('Bookshelf name'), { key: 'Enter' });
     expect(screen.getByRole('button', { name: 'My library' })).toBeTruthy();
@@ -780,7 +785,7 @@ describe('bookshelf editor', () => {
     render(<BookshelvesEditor />);
     fireEvent.click(screen.getByRole('button', { name: 'Add bookshelf' }));
     fireEvent.click(screen.getByLabelText('Hide covers'));
-    fireEvent.click(screen.getByRole('button', { name: 'Default' }));
+    fireEvent.click(screen.getByRole('button', { name: 'My books' }));
     expect((screen.getByLabelText('Hide covers') as HTMLInputElement).checked).toBe(false);
     await waitFor(() => expect(save).toHaveBeenCalledOnce());
     const draft = save.mock.calls.at(-1)![2] as BookshelfDefinition[];
@@ -789,7 +794,7 @@ describe('bookshelf editor', () => {
   });
   it('saves the page count badge for the selected shelf independently (#6909)', async () => {
     render(<BookshelvesEditor />);
-    fireEvent.click(screen.getByRole('button', { name: 'Default' }));
+    fireEvent.click(screen.getByRole('button', { name: 'My books' }));
     fireEvent.click(screen.getByLabelText('Show page count'));
     await waitFor(() =>
       expect(
@@ -798,12 +803,12 @@ describe('bookshelf editor', () => {
         showPageCount: true,
       }),
     );
-    fireEvent.click(screen.getByRole('button', { name: /^Recently read/ }));
+    fireEvent.click(screen.getByRole('button', { name: /^Currently reading/ }));
     expect((screen.getByLabelText('Show page count') as HTMLInputElement).checked).toBe(false);
   });
   it('drops the page count key when the switch is turned off, so older clients still parse the shelf (#6909)', async () => {
     render(<BookshelvesEditor />);
-    fireEvent.click(screen.getByRole('button', { name: 'Default' }));
+    fireEvent.click(screen.getByRole('button', { name: 'My books' }));
     fireEvent.click(screen.getByLabelText('Show page count'));
     await waitFor(() => expect(save).toHaveBeenCalled());
     fireEvent.click(screen.getByLabelText('Show page count'));
@@ -991,7 +996,7 @@ describe('bookshelf editor', () => {
     ).state;
     useSettingsStore.setState({ settings: { ...DEFAULT_SYSTEM_SETTINGS, bookshelves: state } });
     render(<BookshelvesEditor />);
-    fireEvent.click(screen.getByRole('button', { name: 'Default' }));
+    fireEvent.click(screen.getByRole('button', { name: 'My books' }));
     expect((screen.getByLabelText('Enabled') as HTMLInputElement).disabled).toBe(true);
     expect(screen.queryByRole('button', { name: 'Delete' })).toBeNull();
     expect(screen.queryByRole('button', { name: 'Move up' })).toBeNull();

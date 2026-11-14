@@ -14,11 +14,14 @@ export const RECENT_BOOKSHELF_ID = 'recent';
 export const AUDIOBOOKS_BOOKSHELF_ID = 'audiobooks';
 export const PODCASTS_BOOKSHELF_ID = 'podcasts';
 export const FINISHED_BOOKSHELF_ID = 'finished';
+// Kalponik: books every member can read (src/libs/publicShelf.ts).
+export const PUBLIC_BOOKSHELF_ID = 'public';
 export const BUILTIN_BOOKSHELF_IDS = [
   'recent',
   'audiobooks',
   'podcasts',
   'default',
+  'public',
   'finished',
 ] as const;
 // Positions are persisted independently of definitions. Insert new presets into gaps;
@@ -28,6 +31,7 @@ export const BUILTIN_BOOKSHELF_POSITIONS: Readonly<Record<string, number>> = {
   audiobooks: 256,
   podcasts: 512,
   default: 1024,
+  public: 1536,
   finished: 2048,
 };
 export const bookshelfIdSchema = z.union([z.enum(BUILTIN_BOOKSHELF_IDS), z.uuid()]);
@@ -36,14 +40,16 @@ export const isBuiltinBookshelf = (id: string) =>
 export const bookshelfName = (shelf: BookshelfDefinition) =>
   shelf.name ||
   (shelf.id === RECENT_BOOKSHELF_ID
-    ? _('Recently read')
+    ? _('Currently reading')
     : shelf.id === AUDIOBOOKS_BOOKSHELF_ID
       ? _('Audiobooks')
       : shelf.id === PODCASTS_BOOKSHELF_ID
         ? _('Podcasts')
         : shelf.id === FINISHED_BOOKSHELF_ID
           ? _('Finished books')
-          : _('Default'));
+          : shelf.id === PUBLIC_BOOKSHELF_ID
+            ? _('Public books')
+            : _('My books'));
 // Keep existing serialized layouts compatible; only Carousel is a per-shelf choice.
 export const resolveBookshelfLayout = (
   shelf: BookshelfDefinition,
@@ -263,6 +269,25 @@ export const defaultBookshelves = (settings: Partial<SystemSettings>): Bookshelf
           : settings.libraryThenSortBy || 'none',
       thenAscending: settings.libraryThenSortAscending ?? true,
     },
+  },
+  {
+    // Kalponik: exclusive, so public books stay out of My books (Default);
+    // Currently reading still shows the ones you have started.
+    ...createBookshelf('', PUBLIC_BOOKSHELF_ID),
+    exclusive: true,
+    skeuomorphicCovers: settings.librarySkeuomorphicCovers ?? false,
+    coverFit: settings.libraryCoverFit || 'crop',
+    hideCovers: settings.libraryHideCovers ?? false,
+    useGlobalGrouping: false,
+    groupBy: 'none',
+    filters: {
+      type: 'group',
+      match: 'all',
+      children: [
+        { type: 'rule', field: 'publicShelf', kind: 'boolean', operator: 'equals', value: true },
+      ],
+    },
+    sort: { by: 'created', ascending: false, thenBy: 'none', thenAscending: true },
   },
   {
     ...createBookshelf('', FINISHED_BOOKSHELF_ID),

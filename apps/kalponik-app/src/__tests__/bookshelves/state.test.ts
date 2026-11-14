@@ -43,6 +43,7 @@ describe('bookshelf draft operations', () => {
       'audiobooks',
       'podcasts',
       'default',
+      'public',
       'finished',
     ]);
     expect(shelves.find((s) => s.id === 'default')?.name).toBe('Main');
@@ -52,6 +53,7 @@ describe('bookshelf draft operations', () => {
       'recent',
       'audiobooks',
       'podcasts',
+      'public',
       'finished',
     ]);
   });
@@ -73,6 +75,7 @@ describe('bookshelf draft operations', () => {
       'recent',
       'audiobooks',
       'podcasts',
+      'public',
       'finished',
     ]);
     expect(shelves[0]!.name).toBe('Main');
@@ -84,6 +87,7 @@ describe('bookshelf draft operations', () => {
       'recent',
       'audiobooks',
       'podcasts',
+      'public',
       'finished',
     ]);
     const disabled = effectiveBookshelves(shelves.map((s) => ({ ...s, enabled: false })));
@@ -92,6 +96,7 @@ describe('bookshelf draft operations', () => {
     const added = save(merged, shelves, [...shelves, createBookshelf('Last')]);
     expect(readBookshelves({ bookshelves: added.state }).map((s) => s.name)).toEqual([
       'Main',
+      '',
       '',
       '',
       '',
@@ -120,6 +125,7 @@ describe('bookshelf draft operations', () => {
       '',
       'Local',
       '',
+      '',
     ]);
     expect(local.operations).toHaveLength(1);
     expect(Object.keys(local.operations[0]!.fields_jsonb)).toEqual(['definition']);
@@ -137,6 +143,7 @@ describe('bookshelf draft operations', () => {
     expect(readBookshelves({ bookshelves: merged }).map((s) => s.name)).toEqual([
       '',
       'Renamed',
+      '',
       '',
       '',
       '',
@@ -163,6 +170,7 @@ describe('bookshelf draft operations', () => {
       'audiobooks',
       'podcasts',
       'default',
+      'public',
       'finished',
     ]);
     expect(
@@ -219,6 +227,7 @@ describe('bookshelf draft operations', () => {
         'audiobooks',
         'podcasts',
         'default',
+        'public',
         'finished',
       ]);
       expect(shelves.find((s) => s.id === 'default')?.name).toBe('');
