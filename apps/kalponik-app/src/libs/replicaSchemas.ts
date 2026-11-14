@@ -1,4 +1,8 @@
 import { bookshelfReplicaSchema, bookshelfFieldsSchema } from '@/services/bookshelves/replica';
+import {
+  parseReadingSetReplicaId,
+  readingSetFieldValueSchemas,
+} from '@/services/sync/adapters/readingSet';
 import { z } from 'zod';
 import type { ReplicaRow } from '@/types/replica';
 import type { SyncErrorCode } from '@/libs/errors';
@@ -146,7 +150,31 @@ interface KindSpec {
   binary: boolean;
 }
 
+// Kalponik: reading sets. Each part is one envelope whose value must match
+// its own schema; no other fields.
+const readingSetEnvelope = (value: z.ZodTypeAny) =>
+  z.object({ v: value, t: z.string(), s: z.string() });
+
+const readingSetFieldsSchema = z
+  .object({
+    current: readingSetEnvelope(readingSetFieldValueSchemas.current).optional(),
+    active: readingSetEnvelope(readingSetFieldValueSchemas.active).optional(),
+    basedOn: readingSetEnvelope(readingSetFieldValueSchemas.basedOn).optional(),
+    slot1: readingSetEnvelope(readingSetFieldValueSchemas.slot1).optional(),
+    slot2: readingSetEnvelope(readingSetFieldValueSchemas.slot2).optional(),
+    slot3: readingSetEnvelope(readingSetFieldValueSchemas.slot3).optional(),
+  })
+  .strict();
+
 export const KIND_ALLOWLIST: Record<string, KindSpec> = {
+  reading_set: {
+    minSchemaVersion: 1,
+    maxSchemaVersion: 1,
+    // Four platforms times two kinds of book.
+    maxRowsPerUser: 8,
+    binary: false,
+    fields: readingSetFieldsSchema,
+  },
   bookshelf: {
     minSchemaVersion: 1,
     maxSchemaVersion: 1,
@@ -322,6 +350,9 @@ export const validateRow = (row: ReplicaRow): ValidationResult => {
     };
   }
 
+  if (row.kind === 'reading_set' && !parseReadingSetReplicaId(row.replica_id)) {
+    return { ok: false, code: 'VALIDATION', message: 'Invalid reading set id' };
+  }
   if (row.kind === 'bookshelf' && !bookshelfReplicaSchema.safeParse(row).success) {
     return { ok: false, code: 'VALIDATION', message: 'Invalid bookshelf replica' };
   }

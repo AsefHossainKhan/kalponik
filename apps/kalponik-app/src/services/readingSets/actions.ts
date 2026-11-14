@@ -26,6 +26,7 @@ export const updateReadingSet = async (
   envConfig: EnvConfigType,
   group: ReadingGroup,
   change: (state: ReadingSetState) => ReadingSetState,
+  { publish = true }: { publish?: boolean } = {},
 ): Promise<ReadingSetState> => {
   const { settings, setSettings, saveSettings } = useSettingsStore.getState();
   const before = getSetState(settings, group);
@@ -47,6 +48,6 @@ export const updateReadingSet = async (
     if (openKeys.length) applyReaderTheme(after);
     for (const key of openKeys) recreateViewer(envConfig, key);
   }
-  publishReadingSet(group, after);
+  if (publish) publishReadingSet(group, after);
   return after;
 };

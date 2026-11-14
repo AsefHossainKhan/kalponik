@@ -10,6 +10,7 @@ import { absServerAdapter } from './adapters/absServer';
 import { customTranslatorAdapter, translationPromptAdapter } from './adapters/customTranslator';
 import { customTTSAdapter } from './adapters/customTTS';
 import { settingsAdapter } from './adapters/settings';
+import { readingSetAdapter } from './adapters/readingSet';
 import { getReplicaPersistEnv } from './replicaPersist';
 import { getReplicaAdapter, registerReplicaAdapter } from './replicaRegistry';
 import { registerReplicaDownloadHandler } from './replicaTransferIntegration';
@@ -31,6 +32,8 @@ const KNOWN_ADAPTERS: ReplicaAdapter<unknown>[] = [
   customTTSAdapter as unknown as ReplicaAdapter<unknown>,
   // Bundled scalar settings — singleton row, no binary.
   settingsAdapter as unknown as ReplicaAdapter<unknown>,
+  // Kalponik: reading sets, one row per platform and kind of book.
+  readingSetAdapter as unknown as ReplicaAdapter<unknown>,
 ];
 
 let didBootstrap = false;

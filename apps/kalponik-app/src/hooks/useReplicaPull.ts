@@ -66,6 +66,8 @@ import type { CustomTranslator, TranslationPrompt } from '@/types/translation';
 import type { CustomTTSService } from '@/types/customTTS';
 import type { Hlc, ReplicaRow } from '@/types/replica';
 import type { SystemSettings } from '@/types/settings';
+import { readingSetAdapter, type ReadingSetRecord } from '@/services/sync/adapters/readingSet';
+import { applyRemoteReadingSet, findLocalReadingSet } from '@/services/readingSets/sync';
 
 export type ReplicaKind =
   | 'dictionary'
@@ -77,7 +79,8 @@ export type ReplicaKind =
   | 'translation_prompt'
   | 'custom_tts'
   | 'settings'
-  | 'bookshelf';
+  | 'bookshelf'
+  | 'reading_set';
 
 export interface UseReplicaPullOpts {
   /** Replica kinds this page wants pulled. */
@@ -336,6 +339,18 @@ const customTTSPullConfig: ReplicaPullConfig<CustomTTSService> = {
   softDeleteByContentId: (id) => useCustomTTSStore.getState().softDeleteService(id),
 };
 
+// Kalponik: reading sets. Only this platform's rows are applied; the
+// others belong to the account's other platforms.
+const readingSetPullConfig = (envConfig: EnvConfigType): ReplicaPullConfig<ReadingSetRecord> => ({
+  kind: 'reading_set',
+  // metadata-only — no baseDir
+  adapter: readingSetAdapter,
+  findByContentId: findLocalReadingSet,
+  applyRemote: (record) => void applyRemoteReadingSet(envConfig, record),
+  // Never tombstoned: a cleared slot is a field, not a deleted row.
+  softDeleteByContentId: () => {},
+});
+
 const settingsPullConfig = (envConfig: EnvConfigType): ReplicaPullConfig<SettingsRemoteRecord> => ({
   kind: 'settings',
   // metadata-only — no baseDir
@@ -489,6 +504,18 @@ const runPullForKind = async (
           service,
           envConfig,
           customTTSPullConfig,
+          pullOpts,
+          pullOverride,
+        ),
+      );
+      return;
+    case 'reading_set':
+      await replicaPullAndApply(
+        buildReplicaPullDeps(
+          ctx.manager,
+          service,
+          envConfig,
+          readingSetPullConfig(envConfig),
           pullOpts,
           pullOverride,
         ),

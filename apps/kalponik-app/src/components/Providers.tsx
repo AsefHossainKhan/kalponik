@@ -46,6 +46,7 @@ import { upgradeToKeychainIfAvailable } from '@/libs/crypto/passphrase';
 import { cryptoSession } from '@/libs/crypto/session';
 import { useAppLockStore } from '@/store/appLockStore';
 import { initSettingsSync } from '@/services/sync/replicaSettingsSync';
+import { installReadingSetSync } from '@/services/readingSets/sync';
 
 // One-time, on first launch after this feature ships, decide how to handle
 // PostHog telemetry for the current install:
@@ -218,6 +219,8 @@ const Providers = ({ children }: { children: React.ReactNode }) => {
         // the cross-device authoritative values another device set.
         // Idempotent — safe to call on remount.
         initSettingsSync(settings);
+        // Kalponik: reading-set changes go to the server through the replicas.
+        installReadingSetSync();
       });
     }
   }, [

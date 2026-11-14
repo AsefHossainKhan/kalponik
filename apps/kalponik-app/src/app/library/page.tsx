@@ -264,6 +264,7 @@ const LibraryPageContent = ({ searchParams }: { searchParams: ReadonlyURLSearchP
       'custom_tts',
       'settings',
       'bookshelf',
+      'reading_set',
     ],
   });
   // Hydrate the custom-font store from persisted settings so the Font
