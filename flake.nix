@@ -177,7 +177,7 @@
                     rm -rf apps/kalponik-app/src-tauri/gen/android
                     pnpm tauri android init
                     git checkout apps/kalponik-app/src-tauri/gen/android
-                    pnpm tauri icon ../../data/icons/kalponik-book.png
+                    node apps/kalponik-app/scripts/copy-android-icons.mjs
       
                     if [ ! -d "$ANDROID_AVD_HOME/${name}.avd" ]; then
                         avdmanager create avd \

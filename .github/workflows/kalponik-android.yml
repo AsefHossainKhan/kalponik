@@ -118,8 +118,15 @@ jobs:
           # customisations (our applicationId, label and kalponik:// scheme).
           rm -rf src-tauri/gen/android
           pnpm tauri android init --ci
-          pnpm tauri icon ../../data/icons/kalponik-book.png
           git checkout -- src-tauri
+          # Launcher icons come from the tracked set, not `tauri icon`: it has
+          # the legacy square, the round icon and the adaptive icon with a
+          # monochrome layer (Android 13+ themed icons). The tracked manifest
+          # points roundIcon at ic_launcher_round.
+          node scripts/copy-android-icons.mjs
+          res=src-tauri/gen/android/app/src/main/res
+          grep -q 'android:roundIcon="@mipmap/ic_launcher_round"' src-tauri/gen/android/app/src/main/AndroidManifest.xml
+          test -f "$res/mipmap-anydpi-v26/ic_launcher_round.xml"
 
       - name: Set the version from the tag
         working-directory: apps/kalponik-app

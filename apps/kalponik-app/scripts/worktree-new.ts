@@ -230,14 +230,11 @@ if (fs.existsSync(androidGenDir)) {
   console.error('\n--- Initializing Tauri Android ---');
   fs.rmSync(androidGenDir, { recursive: true });
   execSync('pnpm tauri android init', { stdio: gitStdio, cwd: dstAppDir });
-  execSync('pnpm tauri icon ../../data/icons/kalponik-book.png', {
-    stdio: gitStdio,
-    cwd: dstAppDir,
-  });
   execSync(`git checkout ${appRelPath}/src-tauri/gen/android ${appRelPath}/src-tauri/icons`, {
     stdio: gitStdio,
     cwd: worktreePath,
   });
+  execSync('node scripts/copy-android-icons.mjs', { stdio: gitStdio, cwd: dstAppDir });
 }
 
 // Copy Tauri iOS gen from the bare repo, skipping rebuildable artifacts so

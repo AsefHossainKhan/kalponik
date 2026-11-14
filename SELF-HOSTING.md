@@ -411,8 +411,8 @@ cd apps/kalponik-app
 # first time only: generate the Android project, then restore the tracked files
 rm -rf src-tauri/gen/android
 pnpm tauri android init --ci
-pnpm tauri icon ../../data/icons/kalponik-book.png
 git checkout -- src-tauri
+node scripts/copy-android-icons.mjs
 cp ~/keystore.properties src-tauri/gen/android/keystore.properties
 npx dotenv -e .env.tauri -- pnpm tauri android build --apk -t aarch64
 ```

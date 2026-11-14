@@ -95,8 +95,8 @@ The following must be run once before running the Android app. Note that this is
 ```bash
 rm apps/kalponik-app/src-tauri/gen/android
 pnpm tauri android init
-pnpm tauri icon ../../data/icons/kalponik-book.png
 git checkout apps/kalponik-app/src-tauri/gen/android
+node apps/kalponik-app/scripts/copy-android-icons.mjs
 ```
 
 To run the Android app:
@@ -112,7 +112,8 @@ pnpm tauri android dev --host
 ```bash
 # Set up the iOS environment (run once)
 pnpm tauri ios init
-pnpm tauri icon ../../data/icons/kalponik-book.png
+pnpm tauri icon ../../data/icons/kalponik-logo.png
+git checkout apps/kalponik-app/src-tauri/icons
 
 pnpm tauri ios dev
 # or if you want to dev on a real device
