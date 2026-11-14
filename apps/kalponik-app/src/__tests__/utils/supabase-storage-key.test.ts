@@ -20,15 +20,18 @@ describe('supabase session storage key', () => {
     );
   });
 
+  // Kalponik: no special cases for Readest's cloud hosts. Every project,
+  // ours included, keeps supabase-js's default key from the host's first
+  // label, so existing sessions survive this change.
   it.each([
-    'https://kalponik.supabase.co',
-    'https://vbsyxfusjjqdxkjqlysc.supabase.co',
-    'https://auth.readest.com',
-  ])('keeps the original session key for Kalponik Cloud at %s', async (url) => {
-    expect(await loadStorageKey(url)).toBe('sb-kalponik-auth-token');
+    ['https://abcdefghijklmnop.supabase.co', 'sb-abcdefghijklmnop-auth-token'],
+    ['https://vbsyxfusjjqdxkjqlysc.supabase.co', 'sb-vbsyxfusjjqdxkjqlysc-auth-token'],
+    ['https://auth.readest.com', 'sb-auth-auth-token'],
+  ])('uses the host-derived key for %s', async (url, key) => {
+    expect(await loadStorageKey(url)).toBe(key);
   });
 
-  it('keeps the host-derived key for a self-hosted instance', async () => {
+  it('keeps the host-derived key for a local instance', async () => {
     expect(await loadStorageKey('http://localhost:54321')).toBe('sb-localhost-auth-token');
   });
 });

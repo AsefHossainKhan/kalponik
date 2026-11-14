@@ -1,8 +1,9 @@
 // @vitest-environment happy-dom
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-const CLOUD_URL = 'https://vbsyxfusjjqdxkjqlysc.supabase.co';
-const PROXY_URL = 'https://auth-cf.readest.com';
+// Readest's old cloud project: it used to route through Readest's auth proxy.
+const READEST_CLOUD_URL = 'https://vbsyxfusjjqdxkjqlysc.supabase.co';
+const PROJECT_URL = 'https://abcdefghijklmnop.supabase.co';
 
 const fetchMock = vi.fn<typeof fetch>();
 
@@ -37,72 +38,36 @@ afterEach(() => {
   vi.unstubAllEnvs();
 });
 
-describe('Kalponik Cloud auth routing (#6416)', () => {
-  it('sends the password sign-in through the proxy', async () => {
-    const supabase = await loadClient(CLOUD_URL);
+// Kalponik never uses Readest's auth proxy (auth-cf.readest.com): every auth
+// call, password sign-in and refresh included, goes to our own project.
+describe('auth routing', () => {
+  it.each([
+    PROJECT_URL,
+    READEST_CLOUD_URL,
+  ])('sends password sign-in, refresh and sign-out to %s itself', async (url) => {
+    const supabase = await loadClient(url);
 
-    const { error } = await supabase.auth.signInWithPassword({ email: 'a@b.c', password: 'pw' });
-
-    expect(error).toBeNull();
-    expect(requestedUrls()).toEqual([`${PROXY_URL}/auth/v1/token?grant_type=password`]);
-  });
-
-  it('refreshes the session through the proxy', async () => {
-    const supabase = await loadClient(CLOUD_URL);
     await supabase.auth.signInWithPassword({ email: 'a@b.c', password: 'pw' });
-    fetchMock.mockClear();
-
     await supabase.auth.refreshSession();
-
-    expect(requestedUrls()).toEqual([`${PROXY_URL}/auth/v1/token?grant_type=refresh_token`]);
-  });
-
-  it('signs out through the proxy so a blocked network can drop the session', async () => {
-    const supabase = await loadClient(CLOUD_URL);
-    await supabase.auth.signInWithPassword({ email: 'a@b.c', password: 'pw' });
-    fetchMock.mockClear();
     fetchMock.mockImplementation(async () => new Response(null, { status: 204 }));
-
     await supabase.auth.signOut({ scope: 'local' });
 
-    expect(requestedUrls()).toEqual([`${PROXY_URL}/auth/v1/logout?scope=local`]);
-    const { data } = await supabase.auth.getSession();
-    expect(data.session).toBeNull();
-  });
-
-  it('keeps every other auth call on the Supabase host', async () => {
-    const supabase = await loadClient(CLOUD_URL);
-
-    await supabase.auth.signInWithOtp({ email: 'a@b.c' });
-    await supabase.auth.signUp({ email: 'a@b.c', password: 'pw' });
-    await supabase.auth.resetPasswordForEmail('a@b.c');
-    await supabase.auth.signInWithIdToken({ provider: 'apple', token: 'id-token' });
-
-    const urls = requestedUrls();
-    expect(urls).toHaveLength(4);
-    for (const url of urls) {
-      expect(url.startsWith(`${CLOUD_URL}/auth/v1/`)).toBe(true);
-    }
+    expect(requestedUrls()).toEqual([
+      `${url}/auth/v1/token?grant_type=password`,
+      `${url}/auth/v1/token?grant_type=refresh_token`,
+      `${url}/auth/v1/logout?scope=local`,
+    ]);
   });
 
   it('keeps OAuth on the Supabase host, where its callback lands', async () => {
-    const supabase = await loadClient(CLOUD_URL);
+    const supabase = await loadClient(PROJECT_URL);
 
     const { data } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: { skipBrowserRedirect: true },
     });
 
-    expect(data.url?.startsWith(`${CLOUD_URL}/auth/v1/authorize`)).toBe(true);
+    expect(data.url?.startsWith(`${PROJECT_URL}/auth/v1/authorize`)).toBe(true);
     expect(fetchMock).not.toHaveBeenCalled();
-  });
-
-  it('never sends a self-hosted instance password to the Kalponik proxy', async () => {
-    const selfHosted = 'https://supabase.example.org';
-    const supabase = await loadClient(selfHosted);
-
-    await supabase.auth.signInWithPassword({ email: 'a@b.c', password: 'pw' });
-
-    expect(requestedUrls()).toEqual([`${selfHosted}/auth/v1/token?grant_type=password`]);
   });
 });
