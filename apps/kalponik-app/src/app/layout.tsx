@@ -5,17 +5,21 @@ import Script from 'next/script';
 import { ViewTransitions } from '@/components/ViewTransitions';
 import { EnvProvider } from '@/context/EnvContext';
 import Providers from '@/components/Providers';
+import { SOURCE_CODE_URL } from '@/utils/legal';
 
 import '../styles/globals.css';
 
-const url = 'https://web.readest.com/';
+// Kalponik's public address. Next.js resolves the relative preview image
+// against it, so the og:image URL includes the base path (/kalponik).
+const siteOrigin = 'https://asroy.duckdns.org';
+const url = `${siteOrigin}${BASE_PATH}/`;
 const title = 'Kalponik — Where You Read, Digest and Get Insight';
 const description =
   'Discover Kalponik, the ultimate online ebook reader for immersive and organized reading. ' +
   'Enjoy seamless access to your digital library, powerful tools for highlighting, bookmarking, ' +
   'and note-taking, and support for multiple book views. ' +
   'Perfect for deep reading, analysis, and understanding. Explore now!';
-const previewImage = 'https://cdn.readest.com/images/open_graph_preview_read_now.png';
+const previewImage = withBasePath('/images/og-preview.png');
 
 export const metadata: Metadata = {
   metadataBase: new URL(url),
@@ -30,7 +34,7 @@ export const metadata: Metadata = {
   authors: [
     {
       name: 'kalponik',
-      url: 'https://github.com/readest/readest',
+      url: SOURCE_CODE_URL,
     },
   ],
   icons: {
@@ -57,7 +61,7 @@ export const metadata: Metadata = {
   },
   other: {
     'apple-mobile-web-app-capable': 'yes',
-    'twitter:domain': 'web.readest.com',
+    'twitter:domain': new URL(siteOrigin).host,
     'twitter:url': url,
   },
 };
