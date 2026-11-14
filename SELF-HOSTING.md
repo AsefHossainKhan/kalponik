@@ -83,8 +83,8 @@ On Windows, use Git Bash, turn on Developer Mode (Tauri uses symlinks) and run
 Use the **legacy** JWT keys (`anon`, `service_role`), not the newer
 `sb_publishable_…` / `sb_secret_…` ones: the app is built around the JWT keys.
 
-A free project **pauses after 7 days without activity**; [§10](#10-running-it)
-has a one-line cron job that keeps it awake.
+A free project **pauses when it sees too little database activity over a
+week**. The web server keeps it awake by itself; see [§10](#10-running-it).
 
 ### 2.2 Apply the database schema
 
@@ -196,6 +196,8 @@ Then fill in `.env`. Every key:
 | `GARAGE_META_DIR` | Host folder for Garage's small metadata database, default `./data/garage-meta`. |
 | `GARAGE_CAPACITY` | How much space Garage may use on that disk, e.g. `100G`. |
 | `STORAGE_FIXED_QUOTA` | Per-user storage quota shown in the app, in bytes (default 100 GiB). |
+| `KALPONIK_KEEPALIVE` | Optional, default on. `off` stops the Supabase keep-awake ping ([§10](#10-running-it)). |
+| `KALPONIK_KEEPALIVE_INTERVAL_HOURS` | Optional, hours between keep-awake pings, default `24` (1 to 576). |
 | `KALPONIK_WEB_PORT` | Host port for the web app, bound to `127.0.0.1` only (default `47811`). Used by `check.sh` and host-mode proxies. |
 | `KALPONIK_S3_PORT` | Host port for Garage's S3 API, `127.0.0.1` only (default `47812`). |
 | `KALPONIK_WEB_IMAGE` | The image to run, default `kalponik-web:latest`. Pin a dated tag from [§4](#4-build-the-web-image) to make rollbacks easy. |
@@ -440,12 +442,24 @@ The tag sets the version, and each tag must be higher than the last.
 
 ## 10. Running it
 
-- **Keep Supabase awake.** A free project pauses after 7 idle days. A daily
-  cron job on the server (`crontab -e`) prevents that:
+- **Keep Supabase awake.** Supabase pauses a free project that gets too little
+  database activity over a week; its
+  [docs](https://supabase.com/docs/guides/platform/free-project-pausing) say a
+  few requests a day is typically enough. The web container does this itself,
+  with no host cron: a minute after it starts, and then every 24 hours, it reads
+  one row through Supabase's REST API with the service key and logs one line:
 
   ```
-  17 5 * * * curl -fsS -o /dev/null "https://<ref>.supabase.co/rest/v1/" -H "apikey: <anon key>"
+  docker logs kalponik-web 2>&1 | grep keepalive
+  [keepalive] on: first ping in 60 s, then every 24 h
+  [keepalive] supabase ping ok (200, 143 ms)
   ```
+
+  It stops whenever the `web` container stops. Set
+  `KALPONIK_KEEPALIVE=off` to turn it off, or
+  `KALPONIK_KEEPALIVE_INTERVAL_HOURS` to change the interval (see
+  [§3](#3-configure-the-servers-env)), then `docker compose up -d`. If you
+  had the old `curl` cron job from an earlier version of this guide, remove it.
 
 - **Backups.** Back up `GARAGE_DATA_DIR` and `GARAGE_META_DIR` together (the
   books and Garage's index of them). The free Supabase tier has no

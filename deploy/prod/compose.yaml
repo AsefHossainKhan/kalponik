@@ -51,6 +51,10 @@ services:
       KALPONIK_SMTP_HOST: ${KALPONIK_SMTP_HOST:-smtp.gmail.com}
       KALPONIK_SMTP_PORT: ${KALPONIK_SMTP_PORT:-465}
       KALPONIK_MAIL_FROM: ${KALPONIK_MAIL_FROM:-}
+      # Keeps the free Supabase project awake: one small database read a
+      # minute after start, then every interval (src/libs/supabaseKeepAlive.ts).
+      KALPONIK_KEEPALIVE: ${KALPONIK_KEEPALIVE:-on}
+      KALPONIK_KEEPALIVE_INTERVAL_HOURS: ${KALPONIK_KEEPALIVE_INTERVAL_HOURS:-24}
     depends_on:
       - garage
     networks:
