@@ -16,6 +16,7 @@ import {
   DEFAULT_VIEW_CONFIG,
   DEFAULT_READSETTINGS,
   SYSTEM_SETTINGS_VERSION,
+  SETTINGS_FILENAME,
   DEFAULT_TTS_CONFIG,
   DEFAULT_MOBILE_VIEW_SETTINGS,
   DEFAULT_SYSTEM_SETTINGS,
@@ -33,6 +34,8 @@ import { DEFAULT_AI_SETTINGS } from './ai/constants';
 import { getTargetLang, isCJKEnv } from '@/utils/misc';
 import { safeLoadJSON, safeSaveJSON } from './persistence';
 import { getAccountSettingsFilename, getLibraryAccount } from './libraryAccount';
+import { readStoredReaderTheme, seedReadingSets } from './readingSets/seed';
+import { getReadingPlatform } from './readingSets/platform';
 
 /**
  * Kalponik: the books, configs and notes cursors say how far this device has
@@ -232,6 +235,16 @@ export async function loadSettings(ctx: Context): Promise<SystemSettings> {
     settings.replicaDeviceId = uuidv4();
     await saveSettings(ctx.fs, settings);
   }
+
+  // Kalponik: reading sets. The device's first account keeps its current
+  // look; another account starts from the default presets.
+  const setsSeeded = seedReadingSets(settings, {
+    keepCurrentLook: getAccountSettingsFilename() === SETTINGS_FILENAME,
+    defaults: getDefaultViewSettings(ctx),
+    platform: getReadingPlatform(),
+    readerTheme: readStoredReaderTheme(),
+  });
+  if (setsSeeded) await saveSettings(ctx.fs, settings);
 
   const shelvesMigrated = migrateBookshelfSettings(settings);
   // Kalponik: Currently reading on, unless someone turned it off themselves.

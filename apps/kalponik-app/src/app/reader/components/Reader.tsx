@@ -33,6 +33,7 @@ import { Toast } from '@/components/Toast';
 import { getLocale } from '@/utils/misc';
 import { initDayjs } from '@/utils/time';
 import ReaderContent from './ReaderContent';
+import { useReadingSetTheme } from '../hooks/useReadingSetTheme';
 
 /*
 Z-Index Layering Guide:
@@ -84,6 +85,7 @@ const Reader: React.FC<{ ids?: string }> = ({ ids }) => {
   // `pages/reader/[ids].tsx` also gets the pull. Module-scoped dedup
   // means navigating between library and reader doesn't re-pull.
   useReplicaPull({ kinds: ['dictionary', 'font', 'texture'] });
+  useReadingSetTheme();
 
   useEffect(() => {
     mountAdditionalFonts(document);

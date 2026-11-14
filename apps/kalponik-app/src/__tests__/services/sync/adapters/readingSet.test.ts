@@ -58,7 +58,7 @@ describe('reading set rows', () => {
 
   test('a state survives the round trip through row fields', () => {
     const packed = readingSetAdapter.pack({ name: 'web.text', state: state() });
-    const back = readingSetAdapter.unpackRow!(row('web.text', packed));
+    const back = readingSetAdapter.unpackRow(row('web.text', packed), '');
     expect(back).toEqual({ name: 'web.text', state: state() });
   });
 

@@ -93,3 +93,44 @@ describe('each account keeps its own settings file on a device', () => {
     expect(heard).toEqual([BOB, ALICE]);
   });
 });
+
+describe('the first reading sets an account gets', () => {
+  beforeEach(() => {
+    localStorage.clear();
+    resetLibraryAccountCache();
+  });
+
+  test("the device's first account keeps today's look, theme included", async () => {
+    const { fs } = makeFs();
+    localStorage.setItem('themeMode', 'dark');
+    bindLibraryAccount(ALICE);
+    const before = await loadSettings(ctx(fs));
+    expect(before.readingSets?.text?.current.defaultFontSize).toBe(
+      before.globalViewSettings.defaultFontSize,
+    );
+    expect(before.readingSets?.text?.current.readerThemeMode).toBe('dark');
+    expect(before.readingSets?.text?.basedOn).toBeNull();
+    expect(before.readingSets?.fixed?.current.zoomMode).toBe(before.globalViewSettings.zoomMode);
+  });
+
+  test('another account starts from the default presets', async () => {
+    const { fs } = makeFs();
+    bindLibraryAccount(ALICE);
+    await loadSettings(ctx(fs));
+    bindLibraryAccount(BOB);
+    const bob = await loadSettings(ctx(fs));
+    expect(bob.readingSets?.text?.basedOn).toBe('comfortable');
+    expect(bob.readingSets?.text?.current.defaultFontSize).toBe(18);
+    expect(bob.readingSets?.fixed?.basedOn).toBe('fit-page');
+  });
+
+  test('sets already saved are kept', async () => {
+    const { fs } = makeFs();
+    bindLibraryAccount(ALICE);
+    const first = await loadSettings(ctx(fs));
+    first.readingSets!.text!.current.defaultFontSize = 31;
+    await saveSettings(fs, first);
+    const again = await loadSettings(ctx(fs));
+    expect(again.readingSets?.text?.current.defaultFontSize).toBe(31);
+  });
+});
