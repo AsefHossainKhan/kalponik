@@ -23,7 +23,6 @@ import {
   DEFAULT_MOBILE_READSETTINGS,
   DEFAULT_SCREEN_CONFIG,
   DEFAULT_TRANSLATOR_CONFIG,
-  SETTINGS_FILENAME,
   DEFAULT_MOBILE_SYSTEM_SETTINGS,
   DEFAULT_ANNOTATOR_CONFIG,
   DEFAULT_WORD_LENS_CONFIG,
@@ -33,7 +32,7 @@ import {
 import { DEFAULT_AI_SETTINGS } from './ai/constants';
 import { getTargetLang, isCJKEnv } from '@/utils/misc';
 import { safeLoadJSON, safeSaveJSON } from './persistence';
-import { getLibraryAccount } from './libraryAccount';
+import { getAccountSettingsFilename, getLibraryAccount } from './libraryAccount';
 
 /**
  * Kalponik: the books, configs and notes cursors say how far this device has
@@ -163,7 +162,7 @@ export async function loadSettings(ctx: Context): Promise<SystemSettings> {
 
   let settings = await safeLoadJSON<SystemSettings>(
     ctx.fs,
-    SETTINGS_FILENAME,
+    getAccountSettingsFilename(),
     'Settings',
     defaultSettings,
   );
@@ -194,6 +193,9 @@ export async function loadSettings(ctx: Context): Promise<SystemSettings> {
 
   settings.localBooksDir = await ctx.fs.getPrefix('Books');
   resetSyncCursorsForAccount(settings, getLibraryAccount());
+  // Kalponik: which account's file this copy came from, so a late save made
+  // after a switch can't land in the next account's file.
+  settings.settingsAccount = getLibraryAccount() ?? undefined;
 
   // Coerce stale `'wikipedia'` quick-action to `'dictionary'`. The Wikipedia
   // annotation tool was removed; Wikipedia is now reachable as a tab inside
@@ -251,19 +253,27 @@ let settingsWrites: Promise<void> = Promise.resolve();
  * it when it fails — the stamp is only dropped once the write succeeds, so the
  * next link retries instead of reporting a silent success.
  */
-let pendingSettings: SystemSettings | null = null;
+const pendingSettings = new Map<string, SystemSettings>();
 export async function saveSettings(fs: FileSystem, settings: SystemSettings): Promise<void> {
-  pendingSettings = settings;
+  const account = getLibraryAccount();
+  if (settings.settingsAccount && account && settings.settingsAccount !== account) {
+    console.warn('Skipped saving settings loaded for another account');
+    return;
+  }
+  // Kalponik: one file per account; the name is fixed when the save is asked
+  // for, so a queued write never moves to another account's file.
+  const filename = getAccountSettingsFilename();
+  pendingSettings.set(filename, settings);
   const write = async () => {
-    const next = pendingSettings;
+    const next = pendingSettings.get(filename);
     if (!next) return;
-    const disk = await safeLoadJSON<Partial<SystemSettings>>(fs, SETTINGS_FILENAME, 'Settings', {});
+    const disk = await safeLoadJSON<Partial<SystemSettings>>(fs, filename, 'Settings', {});
     const merged =
       next.bookshelves || disk.bookshelves
         ? { ...next, bookshelves: mergeBookshelfStates(disk.bookshelves, next.bookshelves) }
         : next;
-    await safeSaveJSON(fs, SETTINGS_FILENAME, 'Settings', merged);
-    if (pendingSettings === next) pendingSettings = null;
+    await safeSaveJSON(fs, filename, 'Settings', merged);
+    if (pendingSettings.get(filename) === next) pendingSettings.delete(filename);
   };
   settingsWrites = settingsWrites.catch(() => {}).then(write);
   await settingsWrites;

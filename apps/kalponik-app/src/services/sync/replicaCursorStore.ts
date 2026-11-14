@@ -1,6 +1,7 @@
 import type { AppService } from '@/types/system';
 import type { Hlc } from '@/types/replica';
 import type { CursorStore } from './replicaSyncManager';
+import { onLibraryAccountChange } from '@/services/libraryAccount';
 
 export interface SettingsCursorStoreOpts {
   /** Debounce window for the load-merge-save flush. Defaults to 1s. */
@@ -32,7 +33,7 @@ export const createSettingsCursorStore = (
   const debounceMs = opts.debounceMs ?? 1000;
   let pending: ReturnType<typeof setTimeout> | null = null;
 
-  void (async () => {
+  const hydrate = async () => {
     try {
       const settings = await appService.loadSettings();
       for (const [k, v] of Object.entries(settings.lastSyncedAtReplicas ?? {})) {
@@ -41,7 +42,18 @@ export const createSettingsCursorStore = (
     } catch (err) {
       console.warn('replica cursor hydrate failed', err);
     }
-  })();
+  };
+  void hydrate();
+
+  // Kalponik: cursors live in each account's settings file. On a switch, drop
+  // the previous account's (and any write of them still waiting) and read the
+  // new account's, so its pull is not skipped past rows it never saw.
+  onLibraryAccountChange(() => {
+    if (pending !== null) clearTimeoutFn(pending);
+    pending = null;
+    cache.clear();
+    void hydrate();
+  });
 
   const flush = async () => {
     try {

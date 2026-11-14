@@ -526,22 +526,35 @@ let unsubscribe: (() => void) | null = null;
  *
  * Idempotent — subsequent calls are no-ops.
  */
-export const initSettingsSync = (initialSettings?: SystemSettings): void => {
-  if (unsubscribe) return;
-  if (initialSettings) {
-    for (const path of SETTINGS_WHITELIST) {
-      const v = readPath(initialSettings, path);
-      if (v === undefined) continue;
-      // Encrypted paths and credential connection metadata both use the
-      // persisted-hash mechanism that already survives reloads; only the
-      // remaining plaintext paths need in-memory priming. (Seeding the
-      // connection fields here is what stranded a configured-but-unpublished
-      // URL — see CONNECTION_PATHS and #5141.)
-      if (!ENCRYPTED_PATHS.has(path) && !CONNECTION_PATHS.has(path)) {
-        lastPublishedFields.set(path, JSON.parse(JSON.stringify(v)));
-      }
+const primeSnapshot = (settings: SystemSettings): void => {
+  for (const path of SETTINGS_WHITELIST) {
+    const v = readPath(settings, path);
+    if (v === undefined) continue;
+    // Encrypted paths and credential connection metadata both use the
+    // persisted-hash mechanism that already survives reloads; only the
+    // remaining plaintext paths need in-memory priming. (Seeding the
+    // connection fields here is what stranded a configured-but-unpublished
+    // URL — see CONNECTION_PATHS and #5141.)
+    if (!ENCRYPTED_PATHS.has(path) && !CONNECTION_PATHS.has(path)) {
+      lastPublishedFields.set(path, JSON.parse(JSON.stringify(v)));
     }
   }
+};
+
+/**
+ * Kalponik: another account was signed in and its settings file loaded. The
+ * snapshot held the previous account's values, so without this the first
+ * setSettings would push the new file's defaults over the account's server
+ * values. Call it before handing the new settings to the store.
+ */
+export const reprimeSettingsSync = (settings: SystemSettings): void => {
+  lastPublishedFields.clear();
+  primeSnapshot(settings);
+};
+
+export const initSettingsSync = (initialSettings?: SystemSettings): void => {
+  if (unsubscribe) return;
+  if (initialSettings) primeSnapshot(initialSettings);
   unsubscribe = useSettingsStore.subscribe((state, prev) => {
     if (state.settings && state.settings !== prev?.settings) {
       void publishSettingsIfChanged(state.settings);

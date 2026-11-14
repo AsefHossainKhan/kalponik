@@ -609,6 +609,8 @@ export interface SystemSettings {
    * its own library on a device, so a different account starts from zero.
    */
   syncCursorsAccount?: string;
+  /** Kalponik: the account whose settings file this copy was loaded from. */
+  settingsAccount?: string;
   /** Kalponik: the library's filter chips: all books, hide finished, or finished only. */
   libraryFinishedFilter?: 'all' | 'hide' | 'only';
 

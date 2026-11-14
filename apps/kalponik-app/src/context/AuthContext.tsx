@@ -14,12 +14,17 @@ import { supabase } from '@/utils/supabase';
 import posthog from 'posthog-js';
 import { bindLibraryAccount } from '@/services/libraryAccount';
 import { useLibraryStore } from '@/store/libraryStore';
+import { reloadAccountSettings } from '@/services/accountSettingsSwitch';
 
-// Kalponik: each account has its own library on a device. Signing in as a
-// different account switches the books folder and drops the library in
-// memory, so the library page reads the new account's from disk.
+// Kalponik: each account has its own library and settings on a device.
+// Signing in as a different account switches the books folder and the
+// settings file, drops the library in memory (the library page reads the new
+// account's from disk) and loads the new account's settings.
 const switchAccountLibrary = (userId: string | undefined) => {
-  if (userId && bindLibraryAccount(userId)) useLibraryStore.getState().clearLibrary();
+  if (userId && bindLibraryAccount(userId)) {
+    useLibraryStore.getState().clearLibrary();
+    void reloadAccountSettings();
+  }
 };
 
 interface AuthContextType {
