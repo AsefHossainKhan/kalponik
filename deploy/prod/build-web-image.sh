@@ -1,7 +1,6 @@
 #!/bin/sh
-# Build the Kalponik web image on the PC and save it for the server.
-# The server (8 GB) is too small to build Next.js comfortably, so the image is
-# built here and moved over with `docker load`.
+# Build the Kalponik web image on a PC and save it for the server.
+# A small server can't build Next.js comfortably, so the image is built here and moved over with `docker load`.
 #
 # Usage, from the repo root, submodules initialised:
 #   sh deploy/prod/build-web-image.sh

@@ -1,16 +1,16 @@
 # Kalponik local dev stack: book storage (Garage, S3-compatible) + nginx.
 #
-# Mirrors the production layout on asroy.duckdns.org, but on one port:
-#   http://localhost:47810/kalponik/        -> Readest web (runs on the host, port 47811)
+# Mirrors the production layout, but on one port:
+#   http://localhost:47810/kalponik/        -> Kalponik web (runs on the host, port 47811)
 #   http://localhost:47810/kalponik-books/  -> Garage S3 API, passed through unchanged
 #
 # Auth + database are the hosted Supabase project, so they are not in here.
-# First run: `docker compose up -d && sh init-garage.sh`. See docs/DEV-SETUP.md.
+# First run: `docker compose up -d && sh init-garage.sh`. See SELF-HOSTING.md.
 #
 # Why Garage and not MinIO: MinIO's community edition stopped publishing
 # images in Oct 2025 (quay.io now refuses anonymous pulls) and the project is
 # archived. Garage is maintained, ships an official image and is light enough
-# for the 8 GB home server.
+# for a small home server.
 
 name: kalponik-local
 

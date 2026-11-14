@@ -31,6 +31,7 @@
   <a href="#downloads">Downloads</a> •
   <a href="#documentation">Documentation</a> •
   <a href="#getting-started">Getting Started</a> •
+  <a href="./SELF-HOSTING.md">Host Your Own</a> •
   <a href="#troubleshooting">Troubleshooting</a> •
   <a href="#support">Support</a> •
   <a href="#license">License</a>
@@ -163,6 +164,12 @@ Guides, tutorials, and FAQs for installing and using Kalponik live in the offici
 Contributor references live in the repository: [architecture](./apps/kalponik-app/docs/architecture.md),
 [code layout](./apps/kalponik-app/docs/code-layout.md), and
 [testing](./apps/kalponik-app/docs/testing.md).
+
+## Host Your Own
+
+Kalponik's own instance is invite-only. To run your own copy (web app, Android
+app, your own server and a free Supabase project), follow
+**[Host your own Kalponik](./SELF-HOSTING.md)**.
 
 ## Building from Source
 

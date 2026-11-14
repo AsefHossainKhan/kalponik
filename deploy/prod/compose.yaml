@@ -1,15 +1,15 @@
-# Kalponik production stack on the home server: the Readest web app + Garage.
+# Kalponik production stack: the web app + Garage (S3 book storage).
 #
-#   https://asroy.duckdns.org/kalponik/          -> web     (Next.js, basePath /kalponik)
-#   https://asroy.duckdns.org/kalponik-books/... -> garage  (S3 API, bucket = path)
+#   https://example.com/kalponik/          -> web     (Next.js, basePath /kalponik)
+#   https://example.com/kalponik-books/... -> garage  (S3 API, bucket = path)
 #
 # Auth + database are the hosted Supabase project. TLS and the public routes
-# belong to the existing nginx-proxy, which reaches these two containers by
+# belong to your reverse proxy, which reaches these two containers by
 # name over its Docker network (NGINX_PROXY_NETWORK); see nginx-locations.conf
-# and docs/DEPLOY.md. Both are also published on 127.0.0.1 for local checks.
+# and SELF-HOSTING.md. Both are also published on 127.0.0.1 for local checks.
 #
-# The web image is built on the PC (8 GB here is too tight for a Next.js
-# build) and loaded with `docker load`; see build-web-image.sh.
+# The web image is built on a PC (a Next.js build wants more memory than a
+# small server has) and loaded with `docker load`; see build-web-image.sh.
 
 name: kalponik
 
@@ -44,7 +44,7 @@ services:
       # (comma-separated emails or user ids). More admins are added in the app.
       KALPONIK_ADMINS: ${KALPONIK_ADMINS:?set KALPONIK_ADMINS in .env}
       # Email for sign-up (verification links, "your account is ready",
-      # admin notices) through Gmail with an app password; DEPLOY.md §5.
+      # admin notices), e.g. Gmail with an app password; SELF-HOSTING.md.
       # Empty: no email is sent and addresses are taken as given.
       KALPONIK_SMTP_USER: ${KALPONIK_SMTP_USER:-}
       KALPONIK_SMTP_PASS: ${KALPONIK_SMTP_PASS:-}
@@ -69,7 +69,7 @@ services:
       GARAGE_ADMIN_TOKEN: ${GARAGE_ADMIN_TOKEN:?set GARAGE_ADMIN_TOKEN in .env}
     volumes:
       - ./garage.toml:/etc/garage.toml:ro
-      # Metadata (small, sqlite) on the system disk; book files on the HDD.
+      # Metadata (small, sqlite) and book files (big; put them on a big disk).
       - ${GARAGE_META_DIR:-./data/garage-meta}:/var/lib/garage/meta
       - ${GARAGE_DATA_DIR:?set GARAGE_DATA_DIR in .env}:/var/lib/garage/data
     networks:
@@ -79,4 +79,4 @@ services:
 networks:
   proxy:
     external: true
-    name: ${NGINX_PROXY_NETWORK:?set NGINX_PROXY_NETWORK in .env (the nginx-proxy container's network)}
+    name: ${NGINX_PROXY_NETWORK:?set NGINX_PROXY_NETWORK in .env (the reverse proxy container's network)}

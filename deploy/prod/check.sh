@@ -1,11 +1,11 @@
 #!/bin/sh
 # Post-deploy checks. Run on the server from this folder:  sh check.sh
 # The first group needs only the containers; the second goes through
-# nginx-proxy and TLS, so it only passes once the locations are in place.
+# the reverse proxy and TLS, so it only passes once the locations are in place.
 set -u
 cd "$(dirname "$0")"
 . ./.env
-ORIGIN="${KALPONIK_PUBLIC_ORIGIN:-https://asroy.duckdns.org}"
+ORIGIN="${KALPONIK_PUBLIC_ORIGIN:?set KALPONIK_PUBLIC_ORIGIN in .env}"
 BUCKET="${S3_BUCKET_NAME:-kalponik-books}"
 WEB="http://127.0.0.1:${KALPONIK_WEB_PORT:-47811}"
 S3="http://127.0.0.1:${KALPONIK_S3_PORT:-47812}"
@@ -26,7 +26,7 @@ check "web runtime config"      200 "$(code "$WEB/kalponik/runtime-config.js")"
 check "pdf.js asset"            200 "$(code "$WEB/kalponik/vendor/pdfjs/pdf.worker.min.mjs")"
 check "Garage CORS preflight"   200 "$(preflight "$S3")"
 
-echo "== public ($ORIGIN, through nginx-proxy)"
+echo "== public ($ORIGIN, through the reverse proxy)"
 check "app root, no redirect loop" 200 "$(code -L --max-redirs 5 "$ORIGIN/kalponik/")"
 check "web app page"            200 "$(code "$ORIGIN/kalponik/library")"
 check "web runtime config"      200 "$(code "$ORIGIN/kalponik/runtime-config.js")"
