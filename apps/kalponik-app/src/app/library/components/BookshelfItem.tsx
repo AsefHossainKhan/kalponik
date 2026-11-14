@@ -27,6 +27,8 @@ import BookItem from './BookItem';
 import GroupItem from './GroupItem';
 import BookContextMenuPopup, { type BookContextMenuItem } from './BookContextMenuPopup';
 import { useOpenBook } from '../hooks/useOpenBook';
+import { useLibraryStore } from '@/store/libraryStore';
+import { usePublicShelfStore } from '@/store/publicShelfStore';
 
 // A native popup blocks Tauri's main thread until the menu is dismissed and
 // holds the webview's resources table lock for that whole time, while
@@ -272,16 +274,37 @@ const BookshelfItem: React.FC<BookshelfItemProps> = ({
           eventDispatcher.dispatch('localsend-send-books', { books: [book] });
         },
       },
+      sharePublic: {
+        text: _('Share on public shelf'),
+        action: async () => {
+          eventDispatcher.dispatch('public-shelf-share', { book });
+        },
+      },
+      unsharePublic: {
+        text: _('Take off public shelf'),
+        action: async () => {
+          eventDispatcher.dispatch('public-shelf-unshare', { book });
+        },
+      },
       delete: {
-        text: _('Delete'),
+        text: book.shelf === 'public' ? _('Remove from my library') : _('Delete'),
         action: async () => {
           eventDispatcher.dispatch('delete-books', { ids: [book.hash] });
         },
       },
     };
+    // Kalponik: the public shelf's view of this book. The library is behind
+    // the sign-in gate, so whoever sees this menu is signed in.
+    const shelf = usePublicShelfStore.getState();
+    const libraryEntry = useLibraryStore.getState().getBookByHash(book.hash);
+    const publicEntry = shelf.books.find((b) => b.hash === book.hash);
     return getBookContextMenuItemIds(book, {
       localSend: isTauriAppPlatform() && isLocalSendEnabled(),
       absOffline: isTauriAppPlatform(),
+      publicShelf: {
+        inLibrary: !!libraryEntry && !libraryEntry.deletedAt,
+        canRemove: !!publicEntry?.canRemove,
+      },
     }).map((id) => itemOptions[id]);
   };
 

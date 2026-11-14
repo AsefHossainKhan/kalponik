@@ -185,3 +185,35 @@ describe('getBookContextMenuItemIds', () => {
     expect(new Set(first).size).toBe(first.length);
   });
 });
+
+describe('Kalponik public shelf menu items', () => {
+  const signedIn = (inLibrary = true, canRemove = false) => ({
+    publicShelf: { inLibrary, canRemove },
+  });
+
+  it('offers sharing on the public shelf for your own uploaded book, when signed in', () => {
+    const book = createBook({ downloadedAt: 1, uploadedAt: 1 });
+    expect(getBookContextMenuItemIds(book, signedIn())).toContain('sharePublic');
+    expect(getBookContextMenuItemIds(book)).not.toContain('sharePublic');
+  });
+
+  it('a public book you started has no upload or share link, and only its sharer or an admin can take it off', () => {
+    const book = createBook({ shelf: 'public', downloadedAt: 1, uploadedAt: 1 });
+    const reader = getBookContextMenuItemIds(book, signedIn(true, false));
+    expect(reader).not.toContain('share');
+    expect(reader).not.toContain('sharePublic');
+    expect(reader).not.toContain('upload');
+    expect(reader).not.toContain('unsharePublic');
+    expect(reader.at(-1)).toBe('delete');
+    expect(getBookContextMenuItemIds(book, signedIn(true, true))).toContain('unsharePublic');
+  });
+
+  it("a public book you haven't opened offers only its details, plus take off for its sharer", () => {
+    const book = createBook({ shelf: 'public', uploadedAt: 1 });
+    expect(getBookContextMenuItemIds(book, signedIn(false, false))).toEqual(['showDetails']);
+    expect(getBookContextMenuItemIds(book, signedIn(false, true))).toEqual([
+      'showDetails',
+      'unsharePublic',
+    ]);
+  });
+});

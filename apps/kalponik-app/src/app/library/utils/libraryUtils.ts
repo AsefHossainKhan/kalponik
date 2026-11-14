@@ -1065,6 +1065,9 @@ export type BookContextMenuItemId =
   | 'sendNearby'
   | 'offlineDownload'
   | 'offlineRemove'
+  // Kalponik: put a book on the public shelf, or take it off.
+  | 'sharePublic'
+  | 'unsharePublic'
   | 'delete';
 
 /**
@@ -1178,8 +1181,18 @@ export const pickFresherMetadata = (
  */
 export const getBookContextMenuItemIds = (
   book: Book,
-  opts?: { localSend?: boolean; absOffline?: boolean },
+  opts?: {
+    localSend?: boolean;
+    absOffline?: boolean;
+    /** Kalponik: the public shelf's view of this book, when signed in. */
+    publicShelf?: { inLibrary: boolean; canRemove: boolean };
+  },
 ): BookContextMenuItemId[] => {
+  // Kalponik: a public book you haven't opened yet is not in your library:
+  // all it offers is its details and, for its sharer or an admin, taking it off.
+  if (book.shelf === 'public' && opts?.publicShelf && !opts.publicShelf.inLibrary) {
+    return opts.publicShelf.canRemove ? ['showDetails', 'unsharePublic'] : ['showDetails'];
+  }
   const ids: BookContextMenuItemId[] = ['select', 'group'];
   ids.push(book.readingStatus === 'finished' ? 'markUnread' : 'markFinished');
   if (book.readingStatus !== 'abandoned') ids.push('markAbandoned');
@@ -1199,7 +1212,13 @@ export const getBookContextMenuItemIds = (
     if (!book.uploadedAt && book.downloadedAt) ids.push('upload');
     // Share is offered for any local-or-uploaded book; the dialog uploads first
     // if the book hasn't been pushed yet.
-    if (book.downloadedAt || book.uploadedAt) ids.push('share');
+    if (book.shelf === 'public') {
+      // Kalponik: a public book's file is the shared copy: no upload, no link.
+      if (opts?.publicShelf?.canRemove) ids.push('unsharePublic');
+    } else if (book.downloadedAt || book.uploadedAt) {
+      ids.push('share');
+      if (opts?.publicShelf && !isAudiobook(book)) ids.push('sharePublic');
+    }
     // LocalSend needs the file on this device; cloud-only books are excluded.
     if (opts?.localSend && (book.downloadedAt || book.filePath)) ids.push('sendNearby');
   }

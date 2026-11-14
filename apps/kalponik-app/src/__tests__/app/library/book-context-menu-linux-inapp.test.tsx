@@ -135,6 +135,7 @@ describe('library context menu on Linux desktop (issue #5360)', () => {
       'Search on Goodreads',
       'Upload Book',
       'Share Book',
+      'Share on public shelf',
       'Delete',
     ];
     const menuItems = await screen.findAllByRole('menuitem');
