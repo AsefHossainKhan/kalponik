@@ -1,7 +1,12 @@
 # Kalponik: build the signed Android APK and attach it to a GitHub Release.
 #
 # How to release (see docs/DEPLOY.md, "Android release via GitHub"):
-#   gh release create kalponik-v0.12.21 --target main --title "Kalponik 0.12.21" --notes "..."
+#   gh release create kalponik-v0.12.21 --target main --latest=false --title "Kalponik 0.12.21" --notes "..."
+# --latest=false keeps GitHub's "latest" on the previous release while this
+# one builds: the app and the invite page read .../releases/latest/download/,
+# and a release with no files yet answers 404 there ("Error checking for
+# updates"). The last step below marks it latest once everything is attached.
+# A failed run leaves it unmarked, so phones stay on the last good release.
 # The tag sets the app version (kalponik-vX.Y.Z -> X.Y.Z, and the Android
 # versionCode Tauri derives from it), so no version-bump commit is needed and
 # upstream merges never conflict on package.json. Each new tag must be higher
@@ -258,3 +263,14 @@ jobs:
             --out-dir "$RUNNER_TEMP/manifest"
           ../../.github/scripts/retry.sh gh release upload "$TAG" \
             "$RUNNER_TEMP/manifest/latest.json" "$RUNNER_TEMP/manifest/release-notes.json" --clobber
+
+      # Only now, with the APK and both manifests attached, does
+      # .../releases/latest/ move to this release (see the top of this file).
+      - name: Mark the release as latest
+        if: github.event_name == 'release' && !github.event.release.prerelease
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ github.event.release.tag_name }}
+        run: |
+          .github/scripts/retry.sh gh release edit "$TAG" --repo "$GITHUB_REPOSITORY" --latest
+          gh release view --repo "$GITHUB_REPOSITORY" --json tagName --jq .tagName
