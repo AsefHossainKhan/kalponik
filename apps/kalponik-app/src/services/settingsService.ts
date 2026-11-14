@@ -29,6 +29,28 @@ import {
 import { DEFAULT_AI_SETTINGS } from './ai/constants';
 import { getTargetLang, isCJKEnv } from '@/utils/misc';
 import { safeLoadJSON, safeSaveJSON } from './persistence';
+import { getLibraryAccount } from './libraryAccount';
+
+/**
+ * Kalponik: the books, configs and notes cursors say how far this device has
+ * pulled one account's data. When another account's library is shown, its
+ * pull starts from zero. Returns true when the cursors were reset.
+ */
+export function resetSyncCursorsForAccount(
+  settings: SystemSettings,
+  account: string | null,
+): boolean {
+  if (!account || settings.syncCursorsAccount === account) return false;
+  // Cursors saved before this setting existed belong to the device's first
+  // account, which keeps the old books folder: adopt them as they are.
+  const adopt = !settings.syncCursorsAccount;
+  settings.syncCursorsAccount = account;
+  if (adopt) return false;
+  settings.lastSyncedAtBooks = 0;
+  settings.lastSyncedAtConfigs = 0;
+  settings.lastSyncedAtNotes = 0;
+  return true;
+}
 
 export interface Context {
   fs: FileSystem;
@@ -167,6 +189,7 @@ export async function loadSettings(ctx: Context): Promise<SystemSettings> {
   };
 
   settings.localBooksDir = await ctx.fs.getPrefix('Books');
+  resetSyncCursorsForAccount(settings, getLibraryAccount());
 
   // Coerce stale `'wikipedia'` quick-action to `'dictionary'`. The Wikipedia
   // annotation tool was removed; Wikipedia is now reachable as a tab inside

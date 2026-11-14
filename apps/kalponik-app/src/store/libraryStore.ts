@@ -30,6 +30,8 @@ interface LibraryState {
   setCheckLastOpenBooks: (check: boolean) => void;
   setCheckPendingLaunchLink: (check: boolean) => void;
   setLibrary: (books: Book[]) => void;
+  /** Drops the library in memory so the next page load reads it from disk. */
+  clearLibrary: () => void;
   setBookCoverThumbnail: (hash: string, coverHash: string | null, url: string) => void;
   // The third parameter is required (no `?`) so a future caller cannot
   // accidentally clear `readingStatus` by omitting it. Pass the desired final
@@ -116,6 +118,18 @@ export const useLibraryStore = create<LibraryState>((set, get) => ({
     });
     get().refreshGroups();
   },
+
+  clearLibrary: () =>
+    set({
+      library: [],
+      libraryLoaded: false,
+      currentBookshelf: [],
+      selectedBooks: new Set(),
+      groups: {},
+      hashIndex: new Map(),
+      visibleLibrary: [],
+      coverThumbnails: new Map(),
+    }),
 
   setBookCoverThumbnail: (hash, coverHash, url) => {
     const { library, hashIndex, coverThumbnails } = get();

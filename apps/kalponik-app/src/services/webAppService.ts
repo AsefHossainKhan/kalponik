@@ -10,11 +10,11 @@ import { isPWA } from './environment';
 import { BaseAppService } from './appService';
 import {
   DATA_SUBDIR,
-  LOCAL_BOOKS_SUBDIR,
   LOCAL_DICTIONARIES_SUBDIR,
   LOCAL_FONTS_SUBDIR,
   LOCAL_IMAGES_SUBDIR,
 } from './constants';
+import { getLocalBooksSubdir } from './libraryAccount';
 
 const basePrefix = async () => '';
 
@@ -23,7 +23,7 @@ const resolvePath = (path: string, base: BaseDir): ResolvedPath => {
     case 'Data':
       return { baseDir: 0, basePrefix, fp: `${DATA_SUBDIR}/${path}`, base };
     case 'Books':
-      return { baseDir: 0, basePrefix, fp: `${LOCAL_BOOKS_SUBDIR}/${path}`, base };
+      return { baseDir: 0, basePrefix, fp: `${getLocalBooksSubdir()}/${path}`, base };
     case 'Fonts':
       return { baseDir: 0, basePrefix, fp: `${LOCAL_FONTS_SUBDIR}/${path}`, base };
     case 'Images':

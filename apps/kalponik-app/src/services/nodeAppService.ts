@@ -10,11 +10,11 @@ import { SchemaType } from '@/services/database/migrate';
 import { BaseAppService } from './appService';
 import {
   DATA_SUBDIR,
-  LOCAL_BOOKS_SUBDIR,
   LOCAL_DICTIONARIES_SUBDIR,
   LOCAL_FONTS_SUBDIR,
   LOCAL_IMAGES_SUBDIR,
 } from './constants';
+import { getLocalBooksSubdir } from './libraryAccount';
 
 const APP_NAME = 'Kalponik';
 
@@ -149,8 +149,8 @@ const getPathResolver = ({ customRootDir }: { customRootDir?: string } = {}) => 
           baseDir: 0,
           basePrefix: async () => custom ?? getAppDataDir(),
           fp: custom
-            ? nodePath.join(custom, LOCAL_BOOKS_SUBDIR, fp)
-            : nodePath.join(LOCAL_BOOKS_SUBDIR, fp),
+            ? nodePath.join(custom, getLocalBooksSubdir(), fp)
+            : nodePath.join(getLocalBooksSubdir(), fp),
           base,
         };
       case 'Fonts':

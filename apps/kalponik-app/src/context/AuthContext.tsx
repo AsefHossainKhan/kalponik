@@ -12,6 +12,15 @@ import {
 import { User } from '@supabase/supabase-js';
 import { supabase } from '@/utils/supabase';
 import posthog from 'posthog-js';
+import { bindLibraryAccount } from '@/services/libraryAccount';
+import { useLibraryStore } from '@/store/libraryStore';
+
+// Kalponik: each account has its own library on a device. Signing in as a
+// different account switches the books folder and drops the library in
+// memory, so the library page reads the new account's from disk.
+const switchAccountLibrary = (userId: string | undefined) => {
+  if (userId && bindLibraryAccount(userId)) useLibraryStore.getState().clearLibrary();
+};
 
 interface AuthContextType {
   token: string | null;
@@ -33,7 +42,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(() => {
     if (typeof window !== 'undefined') {
       const userJson = localStorage.getItem('user');
-      return userJson ? JSON.parse(userJson) : null;
+      const stored = userJson ? (JSON.parse(userJson) as User) : null;
+      switchAccountLibrary(stored?.id);
+      return stored;
     }
     return null;
   });
@@ -45,6 +56,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       if (session) {
         console.log('Syncing session');
         const { access_token, refresh_token, user } = session;
+        switchAccountLibrary(user.id);
         localStorage.setItem('token', access_token);
         localStorage.setItem('refresh_token', refresh_token);
         localStorage.setItem('user', JSON.stringify(user));
@@ -84,6 +96,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   // every render and the memo would always invalidate.
   const login = useCallback((newToken: string, newUser: User) => {
     console.log('Logging in');
+    switchAccountLibrary(newUser.id);
     setToken(newToken);
     setUser(newUser);
     localStorage.setItem('token', newToken);

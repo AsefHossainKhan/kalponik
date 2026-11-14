@@ -604,6 +604,11 @@ export interface SystemSettings {
   lastSyncedAtBooks: number;
   lastSyncedAtConfigs: number;
   lastSyncedAtNotes: number;
+  /**
+   * Kalponik: the account the three cursors above belong to. Each account has
+   * its own library on a device, so a different account starts from zero.
+   */
+  syncCursorsAccount?: string;
 
   /**
    * App-lock PIN. When `pinCodeEnabled` is true, the user must enter

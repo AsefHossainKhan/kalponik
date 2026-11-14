@@ -65,12 +65,12 @@ import { DatabaseOpts, DatabaseService } from '@/types/database';
 import { SchemaType } from '@/services/database/migrate';
 import {
   DATA_SUBDIR,
-  LOCAL_BOOKS_SUBDIR,
   LOCAL_DICTIONARIES_SUBDIR,
   LOCAL_FONTS_SUBDIR,
   LOCAL_IMAGES_SUBDIR,
   SETTINGS_FILENAME,
 } from './constants';
+import { getLocalBooksSubdir } from './libraryAccount';
 
 declare global {
   interface Window {
@@ -119,7 +119,11 @@ const safeDecodePath = (input: string) => {
  *     this is a perf cache, not a correctness shortcut.
  */
 const knownExistingDirs = new Set<string>();
-const dirCacheKey = (base: BaseDir, dir: string) => `${base}:${dir}`;
+// The Books base moves with the signed-in account (libraryAccount.ts), so its
+// keys carry the current books folder: a dir known under one account's folder
+// says nothing about another's.
+const dirCacheKey = (base: BaseDir, dir: string) =>
+  base === 'Books' ? `${base}@${getLocalBooksSubdir()}:${dir}` : `${base}:${dir}`;
 const markDirKnown = (base: BaseDir, dir: string) => {
   // Empty string is a valid path: it represents the BaseDir itself, which
   // is the parent dir for root-level files like `settings.json`. We must
@@ -232,8 +236,8 @@ const getPathResolver = ({
           baseDir: customBaseDir ?? BaseDirectory.AppData,
           basePrefix: customBasePrefix || appDataDir,
           fp: customBasePrefixSync
-            ? `${customBasePrefixSync()}/${LOCAL_BOOKS_SUBDIR}${path ? `/${path}` : ''}`
-            : `${LOCAL_BOOKS_SUBDIR}${path ? `/${path}` : ''}`,
+            ? `${customBasePrefixSync()}/${getLocalBooksSubdir()}${path ? `/${path}` : ''}`
+            : `${getLocalBooksSubdir()}${path ? `/${path}` : ''}`,
           base,
         };
       case 'Fonts':
