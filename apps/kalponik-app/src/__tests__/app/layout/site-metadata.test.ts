@@ -23,3 +23,19 @@ describe('root layout metadata', () => {
     expect(String(metadata.metadataBase)).toBe('https://asroy.duckdns.org/');
   });
 });
+
+describe('root layout metadata under the /kalponik base path', () => {
+  // Next.js joins a relative image path onto metadataBase's path, which
+  // already ends in /kalponik/. A base-path-prefixed image path would give
+  // /kalponik/kalponik/images/og-preview.png, a 404 (seen live 2026-11-14).
+  it('adds the base path once, through metadataBase only', async () => {
+    vi.resetModules();
+    vi.stubEnv('NEXT_PUBLIC_BASE_PATH', '/kalponik');
+    const { metadata: prefixed } = await import('@/app/layout');
+    vi.unstubAllEnvs();
+
+    expect(String(prefixed.metadataBase)).toBe('https://asroy.duckdns.org/kalponik/');
+    expect(prefixed.openGraph?.images).toEqual(['/images/og-preview.png']);
+    expect(prefixed.twitter?.images).toEqual(['/images/og-preview.png']);
+  });
+});

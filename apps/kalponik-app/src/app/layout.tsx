@@ -9,8 +9,7 @@ import { SOURCE_CODE_URL } from '@/utils/legal';
 
 import '../styles/globals.css';
 
-// Kalponik's public address. Next.js resolves the relative preview image
-// against it, so the og:image URL includes the base path (/kalponik).
+// Kalponik's public address, base path included.
 const siteOrigin = 'https://asroy.duckdns.org';
 const url = `${siteOrigin}${BASE_PATH}/`;
 const title = 'Kalponik — Where You Read, Digest and Get Insight';
@@ -19,7 +18,9 @@ const description =
   'Enjoy seamless access to your digital library, powerful tools for highlighting, bookmarking, ' +
   'and note-taking, and support for multiple book views. ' +
   'Perfect for deep reading, analysis, and understanding. Explore now!';
-const previewImage = withBasePath('/images/og-preview.png');
+// Relative to metadataBase, which already ends in the base path: Next.js joins
+// the two paths, so this one must not carry /kalponik itself.
+const previewImage = '/images/og-preview.png';
 
 export const metadata: Metadata = {
   metadataBase: new URL(url),
