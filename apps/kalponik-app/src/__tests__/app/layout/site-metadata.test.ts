@@ -20,6 +20,6 @@ describe('root layout metadata', () => {
   it("serves the preview image from Kalponik's own public folder", () => {
     expect(metadata.openGraph?.images).toEqual(['/images/og-preview.png']);
     expect(metadata.twitter?.images).toEqual(['/images/og-preview.png']);
-    expect(metadata.metadataBase?.host).toBe('asroy.duckdns.org');
+    expect(String(metadata.metadataBase)).toBe('https://asroy.duckdns.org/');
   });
 });
