@@ -25,6 +25,7 @@ vi.mock('@/store/bookDataStore', () => ({
     getState: () => ({
       getConfig: vi.fn(() => null),
       saveConfig: vi.fn(),
+      getBookData: vi.fn(() => null),
     }),
   },
 }));

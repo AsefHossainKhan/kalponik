@@ -33,6 +33,7 @@ import { useEinkRefreshSupported } from '@/hooks/useEinkRefreshSupported';
 import { optInTelemetry, optOutTelemetry } from '@/utils/telemetry';
 import { isNightlyChannelAvailable } from '@/utils/updaterChannel';
 import KeyboardShortcutsSettings from './KeyboardShortcutsSettings';
+import { getLibraryReadingLook } from '@/services/readingSets/resolve';
 
 const ControlPanel: React.FC<SettingsPanelPanelProp> = ({ bookKey, onRegisterReset }) => {
   const _ = useTranslation();
@@ -42,7 +43,7 @@ const ControlPanel: React.FC<SettingsPanelPanelProp> = ({ bookKey, onRegisterRes
   const { settings } = useSettingsStore();
   const { applyEinkMode } = useEinkMode();
   const bookData = getBookData(bookKey);
-  const viewSettings = getViewSettings(bookKey) || settings.globalViewSettings;
+  const viewSettings = getViewSettings(bookKey) || getLibraryReadingLook(settings);
 
   const [isScrolledMode, setScrolledMode] = useState(viewSettings.scrolled);
   const [noContinuousScroll, setNoContinuousScroll] = useState(viewSettings.noContinuousScroll);

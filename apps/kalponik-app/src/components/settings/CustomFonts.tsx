@@ -17,6 +17,7 @@ import {
 } from '@/services/sync/replicaBinaryUpload';
 import { eventDispatcher } from '@/utils/event';
 import { Tips } from './primitives';
+import { getLibraryReadingLook } from '@/services/readingSets/resolve';
 
 interface CustomFontsProps {
   bookKey: string;
@@ -42,7 +43,7 @@ const CustomFonts: React.FC<CustomFontsProps> = ({ bookKey, onBack }) => {
   } = useCustomFontStore();
   const { getViewSettings } = useReaderStore();
   const { getReplicaTransfer } = useTransferStore();
-  const viewSettings = getViewSettings(bookKey) || settings.globalViewSettings;
+  const viewSettings = getViewSettings(bookKey) || getLibraryReadingLook(settings);
   const [isDeleteMode, setIsDeleteMode] = useState(false);
   // null = idle, true = importing (spinner), { family } = done importing (show font name).
   // The card stays mounted throughout — only its content changes.

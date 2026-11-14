@@ -68,7 +68,7 @@ describe('reading set groups', () => {
     const epub = resolveViewSettings(defaults, sets, 'text');
     expect(epub.defaultFontSize).toBe(22);
     expect(epub.zoomMode).toBe(defaults.zoomMode);
-    expect((epub as unknown as Record<string, unknown>).readerThemeMode).toBeUndefined();
+    expect((epub as unknown as Record<string, unknown>)['readerThemeMode']).toBeUndefined();
     const pdf = resolveViewSettings(defaults, sets, 'fixed');
     expect(pdf.zoomMode).toBe('fit-width');
     expect(pdf.defaultFontSize).toBe(defaults.defaultFontSize);

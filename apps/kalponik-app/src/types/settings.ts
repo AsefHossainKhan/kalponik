@@ -1,5 +1,6 @@
 import type { InkTool } from '@/services/handwriting/model';
 import type { BookshelfState } from './bookshelf';
+import type { ReadingSets } from '@/services/readingSets/model';
 import { CustomTheme } from '@/styles/themes';
 import { CustomFont } from '@/styles/fonts';
 import { CustomTexture } from '@/styles/textures';
@@ -611,6 +612,8 @@ export interface SystemSettings {
   syncCursorsAccount?: string;
   /** Kalponik: the account whose settings file this copy was loaded from. */
   settingsAccount?: string;
+  /** Kalponik: this account's reading sets on this platform, per kind of book. */
+  readingSets?: ReadingSets;
   /** Kalponik: the library's filter chips: all books, hide finished, or finished only. */
   libraryFinishedFilter?: 'all' | 'hide' | 'only';
 

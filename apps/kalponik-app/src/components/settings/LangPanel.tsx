@@ -38,6 +38,7 @@ import CustomTranslators from './CustomTranslators';
 import WordLensPanel from './WordLensPanel';
 import ColorInput from './theme/ColorInput';
 import { PiTranslate } from 'react-icons/pi';
+import { getLibraryReadingLook } from '@/services/readingSets/resolve';
 
 const LangPanel: React.FC<SettingsPanelPanelProp> = ({ bookKey, onRegisterReset }) => {
   const _ = useTranslation();
@@ -50,7 +51,7 @@ const LangPanel: React.FC<SettingsPanelPanelProp> = ({ bookKey, onRegisterReset 
   const { getView, getViewSettings, setViewSettings, recreateViewer } = useReaderStore();
   const { getBookData } = useBookDataStore();
   const view = getView(bookKey);
-  const viewSettings = getViewSettings(bookKey) || settings.globalViewSettings;
+  const viewSettings = getViewSettings(bookKey) || getLibraryReadingLook(settings);
 
   const [uiLanguage, setUILanguage] = useState(viewSettings.uiLanguage);
   const [translationEnabled, setTranslationEnabled] = useState(viewSettings.translationEnabled);

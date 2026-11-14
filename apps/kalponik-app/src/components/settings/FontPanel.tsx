@@ -40,6 +40,7 @@ import NumberInput from './NumberInput';
 import FontDropdown from './FontDropDown';
 import CustomFonts from './CustomFonts';
 import { Toggle } from '../primitives/toggle';
+import { getLibraryReadingLook } from '@/services/readingSets/resolve';
 
 const genCJKFontsList = (sysFonts: string[]) => {
   return Array.from(new Set([...sysFonts, ...CJK_SERIF_FONTS, ...CJK_SANS_SERIF_FONTS]))
@@ -105,7 +106,7 @@ const FontPanel: React.FC<SettingsPanelPanelProp> = ({ bookKey, onRegisterReset 
   const { getView, getViewSettings } = useReaderStore();
   const { settings, fontPanelView, setFontPanelView } = useSettingsStore();
   const { fonts: allCustomFonts, getFontFamilies } = useCustomFontStore();
-  const viewSettings = getViewSettings(bookKey) || settings.globalViewSettings;
+  const viewSettings = getViewSettings(bookKey) || getLibraryReadingLook(settings);
   const view = getView(bookKey);
 
   const fontFamilyOptions = [

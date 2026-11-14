@@ -102,6 +102,11 @@ export interface ImportBookOptions {
 export interface Book {
   // if Book is a remote book we just lazy load the book content via url
   url?: string;
+  /**
+   * Kalponik: an EPUB found to be fixed layout when opened. It then reads
+   * with the PDF and fixed-layout reading set (readingSets/model.ts).
+   */
+  isFixedLayout?: boolean;
   // if Book is a transient local book we can load the book content via filePath
   filePath?: string;
   // Other on-disk paths that resolved to this same book — a watched folder

@@ -184,7 +184,9 @@ describe('Behavior animation reset', () => {
     await act(async () => registerReset.mock.calls[0]![0]());
 
     expect(styleSelect().value).toBe('push');
-    expect(savedSettings().globalViewSettings).toMatchObject({
+    // Kalponik: page turns belong to the reading set; with no book open the
+    // dialog edits the text-book set.
+    expect(savedSettings().readingSets?.text?.current).toMatchObject({
       animated: false,
       pageTurnStyle: 'push',
     });

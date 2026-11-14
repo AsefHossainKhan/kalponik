@@ -11,6 +11,7 @@ import { saveViewSettings } from '@/helpers/settings';
 import { validateCSS, formatCSS } from '@/utils/css';
 import { getStyles } from '@/utils/style';
 import { BoxedList } from './primitives';
+import { getLibraryReadingLook } from '@/services/readingSets/resolve';
 
 type CSSType = 'book' | 'reader';
 
@@ -19,7 +20,7 @@ const MiscPanel: React.FC<SettingsPanelPanelProp> = ({ bookKey, onRegisterReset 
   const { appService, envConfig } = useEnv();
   const { settings } = useSettingsStore();
   const { getView, getViewSettings, setViewSettings } = useReaderStore();
-  const viewSettings = getViewSettings(bookKey) || settings.globalViewSettings;
+  const viewSettings = getViewSettings(bookKey) || getLibraryReadingLook(settings);
 
   const [draftContentStylesheet, setDraftContentStylesheet] = useState(viewSettings.userStylesheet);
   const [draftContentStylesheetSaved, setDraftContentStylesheetSaved] = useState(true);

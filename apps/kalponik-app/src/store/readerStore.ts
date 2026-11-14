@@ -33,6 +33,8 @@ import {
 import { getBaseFilename } from '@/utils/path';
 import { SUPPORTED_LANGNAMES } from '@/services/constants';
 import { useSettingsStore } from './settingsStore';
+import { getReadingGroup } from '@/services/readingSets/model';
+import { getBookBaseViewSettings, rebaseViewSettings } from '@/services/readingSets/resolve';
 import { BookData, useBookDataStore } from './bookDataStore';
 import { useLibraryStore } from './libraryStore';
 import { clearBookProgress, getBookProgress, setBookProgress } from './readerProgressStore';
@@ -397,6 +399,18 @@ export const useReaderStore = create<ReaderStore>((set, get) => ({
 
       const isFixedLayout =
         bookDoc.rendition?.layout === 'pre-paginated' || FIXED_LAYOUT_FORMATS.has(book.format);
+      // Kalponik: an EPUB that turns out to be fixed layout reads with the
+      // fixed-layout reading set. Mark the book so every later load and save
+      // measures its config against that set, and move this config over.
+      if (isFixedLayout && !book.isFixedLayout && getReadingGroup(book) === 'text') {
+        const textBase = getBookBaseViewSettings(settings, book);
+        book.isFixedLayout = true;
+        config.viewSettings = rebaseViewSettings(
+          config.viewSettings as ViewSettings,
+          textBase,
+          getBookBaseViewSettings(settings, book),
+        );
+      }
       const newBookData: BookData = { id, book, file, config, bookDoc, docFormat, isFixedLayout };
       useBookDataStore.setState((state) => ({
         booksData: {
@@ -405,7 +419,7 @@ export const useReaderStore = create<ReaderStore>((set, get) => ({
         },
       }));
       const configViewSettings = config.viewSettings!;
-      const globalViewSettings = settings.globalViewSettings;
+      const globalViewSettings = getBookBaseViewSettings(settings, book);
       set((state) => ({
         viewStates: {
           ...state.viewStates,

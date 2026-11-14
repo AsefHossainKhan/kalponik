@@ -21,7 +21,7 @@ export const serializeRawConfig = (config: Partial<BookConfig>): string => {
 // check would persist them as per-book overrides even when identical to global,
 // which then shadows later global changes on reopen. Primitives short-circuit;
 // the JSON compare covers arrays and plain config objects (all JSON-serializable).
-const isSameViewSettingValue = (a: unknown, b: unknown): boolean =>
+export const isSameViewSettingValue = (a: unknown, b: unknown): boolean =>
   a === b || JSON.stringify(a) === JSON.stringify(b);
 
 export const serializeConfig = (

@@ -28,6 +28,7 @@ import {
 import SubPageHeader from './SubPageHeader';
 import ColorInput from './theme/ColorInput';
 import { BoxedList, SettingsRow, SettingsSelect, SettingsSwitchRow } from './primitives';
+import { getLibraryReadingLook } from '@/services/readingSets/resolve';
 
 // Swatch shown for the "default" (muted, theme-adaptive) gloss color, which has
 // no fixed hex of its own. Picking any color overrides; "Default" clears back.
@@ -46,7 +47,7 @@ const WordLensPanel: React.FC<WordLensPanelProps> = ({ bookKey, onBack }) => {
   const { getViewSettings, setViewSettings } = useReaderStore();
   const { getBookData } = useBookDataStore();
   const { settings, setSettings, saveSettings } = useSettingsStore();
-  const viewSettings = getViewSettings(bookKey) || settings.globalViewSettings;
+  const viewSettings = getViewSettings(bookKey) || getLibraryReadingLook(settings);
   const bookData = getBookData(bookKey);
 
   const appLang = baseCode(getLocale());

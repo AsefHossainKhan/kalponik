@@ -35,6 +35,7 @@ import {
 } from '@/utils/annotationToolbar';
 import { canShareText } from '@/utils/share';
 import SubPageHeader from './SubPageHeader';
+import { getLibraryReadingLook } from '@/services/readingSets/resolve';
 
 type ZoneId = 'toolbar' | 'available';
 
@@ -153,7 +154,7 @@ const AnnotationToolbarCustomizer: React.FC<AnnotationToolbarCustomizerProps> = 
   const { envConfig, appService } = useEnv();
   const { getViewSettings } = useReaderStore();
   const { settings } = useSettingsStore();
-  const viewSettings = getViewSettings(bookKey) || settings.globalViewSettings;
+  const viewSettings = getViewSettings(bookKey) || getLibraryReadingLook(settings);
 
   const canShare = canShareText(appService);
 

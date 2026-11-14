@@ -29,6 +29,7 @@ import {
 import NumberInput from './NumberInput';
 import ColorInput from './theme/ColorInput';
 import { Toggle } from '../primitives/toggle';
+import { getLibraryReadingLook } from '@/services/readingSets/resolve';
 
 const LayoutPanel: React.FC<SettingsPanelPanelProp> = ({ bookKey, onRegisterReset }) => {
   const _ = useTranslation();
@@ -37,7 +38,7 @@ const LayoutPanel: React.FC<SettingsPanelPanelProp> = ({ bookKey, onRegisterRese
   const { getView, getViewSettings, getGridInsets } = useReaderStore();
   const { setViewSettings, recreateViewer } = useReaderStore();
   const { getBookData } = useBookDataStore();
-  const viewSettings = getViewSettings(bookKey) || settings.globalViewSettings;
+  const viewSettings = getViewSettings(bookKey) || getLibraryReadingLook(settings);
 
   const view = getView(bookKey);
   const bookData = getBookData(bookKey);

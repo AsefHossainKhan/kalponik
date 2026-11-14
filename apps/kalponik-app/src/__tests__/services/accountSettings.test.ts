@@ -8,7 +8,6 @@ import {
   resetLibraryAccountCache,
 } from '@/services/libraryAccount';
 import { loadSettings, saveSettings } from '@/services/settingsService';
-import type { SystemSettings } from '@/types/settings';
 import type { FileSystem } from '@/types/system';
 
 const ALICE = '11111111-2222-4333-8444-555555555555';

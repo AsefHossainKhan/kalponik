@@ -5,6 +5,12 @@ import { useBookDataStore } from '@/store/bookDataStore';
 import { useReaderStore } from '@/store/readerStore';
 import { useSettingsStore } from '@/store/settingsStore';
 import { getStyles } from '@/utils/style';
+import {
+  getBookGroup,
+  getChangeGroup,
+  publishReadingSet,
+  withSetValue,
+} from '@/services/readingSets/routing';
 
 /**
  * Resolve the effective background texture for the library page (issue #4743).
@@ -66,7 +72,7 @@ export const saveViewSettings = async <K extends keyof ViewSettings>(
     useReaderStore.getState();
   const { getConfig, saveConfig } = useBookDataStore.getState();
 
-  const applyViewSettings = async (bookKey: string) => {
+  const applyViewSettings = async (bookKey: string, base: SystemSettings = settings) => {
     const viewSettings = getViewSettings(bookKey);
     const viewState = getViewState(bookKey);
     if (bookKey && viewSettings && viewSettings[key] !== value) {
@@ -78,7 +84,7 @@ export const saveViewSettings = async <K extends keyof ViewSettings>(
       }
       const config = getConfig(bookKey);
       if (viewState?.isPrimary && config) {
-        await saveConfig(envConfig, bookKey, config, settings);
+        await saveConfig(envConfig, bookKey, config, base);
       }
     }
   };
@@ -91,16 +97,27 @@ export const saveViewSettings = async <K extends keyof ViewSettings>(
     // by setSettings(same_ref) silently bypasses the publish path and
     // whitelisted writes (userStylesheet, userUIStylesheet) only ship
     // on the next unrelated setSettings call.
-    const nextSettings: SystemSettings = {
-      ...settings,
-      globalViewSettings: { ...settings.globalViewSettings, [key]: value },
-    };
+    //
+    // Kalponik: a reading-look field goes into this kind of book's reading
+    // set instead, and only books of that kind follow it.
+    const group = getChangeGroup(bookKey, key as string);
+    const nextSettings: SystemSettings = group
+      ? withSetValue(settings, group, key as string, value)
+      : {
+          ...settings,
+          globalViewSettings: { ...settings.globalViewSettings, [key]: value },
+        };
     setSettings(nextSettings);
 
-    for (const bookKey of bookKeys) {
-      await applyViewSettings(bookKey);
+    for (const openKey of bookKeys) {
+      if (group && getBookGroup(openKey) !== group) continue;
+      // Measured against the new look, so the change isn't kept as the
+      // book's own override.
+      await applyViewSettings(openKey, nextSettings);
     }
     await saveSettings(envConfig, nextSettings);
+    const state = group ? nextSettings.readingSets?.[group] : undefined;
+    if (group && state) publishReadingSet(group, state);
   } else if (bookKey) {
     await applyViewSettings(bookKey);
   }
