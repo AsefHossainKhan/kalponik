@@ -18,8 +18,11 @@ import { useThemeStore } from '@/store/themeStore';
 // stay light.
 export const useReadingSetTheme = () => {
   const { envConfig } = useEnv();
-  const primaryKey = useReaderStore((state) => state.bookKeys[0] ?? '');
-  const loaded = useBookDataStore((state) => !!state.getBookData(primaryKey)?.book);
+  const firstKey = useReaderStore((state) => state.bookKeys[0]);
+  const primaryKey = typeof firstKey === 'string' ? firstKey : '';
+  const loaded = useBookDataStore(
+    (state) => !!primaryKey && !!state.booksData?.[primaryKey.split('-')[0]!]?.book,
+  );
 
   useEffect(() => {
     if (!primaryKey || !loaded) return;

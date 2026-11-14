@@ -246,12 +246,11 @@ export async function loadSettings(ctx: Context): Promise<SystemSettings> {
     platform: getReadingPlatform(),
     readerTheme: readStoredReaderTheme(),
   });
-  if (setsSeeded) await saveSettings(ctx.fs, settings);
 
   const shelvesMigrated = migrateBookshelfSettings(settings);
   // Kalponik: Currently reading on, unless someone turned it off themselves.
   const recentEnabled = enableUntouchedRecentShelf(settings);
-  if (shelvesMigrated || recentEnabled) {
+  if (shelvesMigrated || recentEnabled || setsSeeded) {
     await saveSettings(ctx.fs, settings);
   }
 
