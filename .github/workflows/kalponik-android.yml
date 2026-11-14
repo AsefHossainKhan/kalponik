@@ -13,8 +13,17 @@
 # and each release's notes). Write release notes as one change per line.
 #
 # This is the only workflow here; upstream's are deleted to save Actions
-# minutes. It runs only when a release is published (about 30-40 minutes on a
-# Linux runner), never on push.
+# minutes. A published release builds, signs and attaches the APK.
+#
+# Caches: a release run's ref is its tag, and GitHub scopes caches to the ref,
+# so caches saved by one release are invisible to the next. Release runs only
+# read caches (Rust target dir, Gradle home, pnpm store); runs on main write
+# them, and a release can read main's. Those main runs build the same unsigned
+# APK and upload nothing: on a push to main that changes the Rust or Gradle
+# dependencies or this file, weekly (GitHub drops caches unused for 7 days and
+# stable Rust moves), or by hand from the Actions tab (workflow_dispatch,
+# which is also how to test a change to this file without a release).
+# Measured 2026-11-14 with no cache: 18-24 minutes, 11-15 of them Rust.
 #
 # Repository secrets it needs: KALPONIK_KEYSTORE_BASE64, KALPONIK_KEYSTORE_PASSWORD,
 # KALPONIK_KEY_ALIAS, KALPONIK_SUPABASE_URL, KALPONIK_SUPABASE_ANON_KEY.
@@ -24,12 +33,24 @@ name: Kalponik Android release
 on:
   release:
     types: [published]
+  # The cache-warming runs (see above). They never touch a release.
+  workflow_dispatch:
+  schedule:
+    - cron: '17 3 * * 1'
+  push:
+    branches: [main]
+    paths:
+      - 'Cargo.lock'
+      - '**/Cargo.toml'
+      - 'apps/kalponik-app/src-tauri/gen/android/**/*.gradle*'
+      - 'apps/kalponik-app/src-tauri/gen/android/gradle/**'
+      - '.github/workflows/kalponik-android.yml'
 
 permissions:
   contents: write
 
 concurrency:
-  group: kalponik-android-${{ github.event.release.tag_name }}
+  group: kalponik-android-${{ github.event.release.tag_name || github.ref }}
   cancel-in-progress: true
 
 env:
@@ -37,11 +58,14 @@ env:
 
 jobs:
   apk:
-    if: startsWith(github.event.release.tag_name, 'kalponik-v')
+    if: >-
+      (github.event_name == 'release' && startsWith(github.event.release.tag_name, 'kalponik-v'))
+      || (github.event_name != 'release' && github.ref == 'refs/heads/main')
     runs-on: ubuntu-latest
     timeout-minutes: 100
     steps:
       - name: Read the version from the tag
+        if: github.event_name == 'release'
         id: version
         env:
           TAG: ${{ github.event.release.tag_name }}
@@ -67,13 +91,36 @@ jobs:
         uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v6
         with:
           node-version: 24
-          cache: pnpm
+          package-manager-cache: false
+
+      # Restored here, saved at the end only on main (setup-node's own cache
+      # would also save from release runs, where nothing can read it back).
+      - name: Find the pnpm store
+        id: pnpm-store
+        run: echo "path=$(pnpm store path --silent)" >> "$GITHUB_OUTPUT"
+
+      - name: Restore the pnpm store
+        id: pnpm-cache
+        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ${{ steps.pnpm-store.outputs.path }}
+          key: pnpm-store-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
+          restore-keys: pnpm-store-${{ runner.os }}-
 
       - name: Set up Java
         uses: actions/setup-java@b843ebf9b913146b38da2eaa7aeddf76074ae1ad # v6.1.0
         with:
           distribution: 'zulu'
           java-version: '17'
+
+      # Gradle home (the Gradle distribution and Android/Kotlin dependencies).
+      # 'basic' is the open-source GitHub Actions cache; the default 'enhanced'
+      # is a commercial component.
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@8da46b539cd8fe6ab27ca75128919a18d757604c # v6.4.1
+        with:
+          cache-provider: basic
+          cache-read-only: ${{ github.ref != 'refs/heads/main' }}
 
       - name: Set up Android SDK
         uses: android-actions/setup-android@be39fa834029ff78f1a44aa3bb0819b8fc2bd8fd # v4
@@ -91,6 +138,7 @@ jobs:
       - uses: Swatinem/rust-cache@c8037a86dde8214a8310e9f54a8fc61ab362aa31 # v2
         with:
           key: kalponik-android-arm64
+          save-if: ${{ github.ref == 'refs/heads/main' }}
 
       - name: Install dependencies
         run: |
@@ -129,6 +177,7 @@ jobs:
           test -f "$res/mipmap-anydpi-v26/ic_launcher_round.xml"
 
       - name: Set the version from the tag
+        if: github.event_name == 'release'
         working-directory: apps/kalponik-app
         env:
           VERSION: ${{ steps.version.outputs.version }}
@@ -137,6 +186,7 @@ jobs:
           grep '"version"' package.json
 
       - name: Install the signing key
+        if: github.event_name == 'release'
         working-directory: apps/kalponik-app/src-tauri/gen/android
         env:
           KEYSTORE_BASE64: ${{ secrets.KALPONIK_KEYSTORE_BASE64 }}
@@ -157,7 +207,15 @@ jobs:
           NDK_HOME: ${{ env.ANDROID_HOME }}/ndk/28.2.13676358
         run: npx dotenv -e .env.tauri -- pnpm tauri android build --apk -t aarch64
 
+      - name: Save the pnpm store (main only)
+        if: github.ref == 'refs/heads/main' && steps.pnpm-cache.outputs.cache-hit != 'true'
+        uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ${{ steps.pnpm-store.outputs.path }}
+          key: pnpm-store-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
+
       - name: Attach the APK to the release
+        if: github.event_name == 'release'
         working-directory: apps/kalponik-app
         env:
           GH_TOKEN: ${{ github.token }}
@@ -181,6 +239,7 @@ jobs:
       # the APK and hands it to Android's installer, which checks that it is
       # signed with the same release key as the installed app.
       - name: Attach the update manifest (latest.json, release-notes.json)
+        if: github.event_name == 'release'
         working-directory: apps/kalponik-app
         env:
           GH_TOKEN: ${{ github.token }}
