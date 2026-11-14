@@ -168,6 +168,10 @@ export interface Book {
   // an unopened book can show and sort by it (#6662). Like `hasNarration`, it is
   // re-derived on every import; once opened, `progress[1]` holds the same total.
   pageCount?: number;
+  // Kalponik: 'public' when this is a public-shelf book. Its file is the shared
+  // copy (never uploaded from here); progress, status and notes are this
+  // account's own. Absent for private books.
+  shelf?: 'public';
   duration?: number; // total audio length in seconds (ABS audiobooks)
   // Marks this ABS stub as a podcast show or ebook rather than an audiobook.
   // Audio books remain unmarked (absMediaType undefined).

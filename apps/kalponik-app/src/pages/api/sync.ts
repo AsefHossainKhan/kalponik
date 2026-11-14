@@ -927,6 +927,12 @@ export async function POST(req: NextRequest) {
               clientBook.group_updated_at = group.group_updated_at;
               clientBook.page_count = pageCount;
               clientBook.original_filename = originalFilename;
+              // Kalponik: the server sets a sharer's shelf; a device that
+              // hasn't pulled it yet sends no shelf and must not clear it.
+              const serverShelf = (serverBook as { shelf?: DBBook['shelf'] }).shelf;
+              if (clientBook.shelf === undefined && serverShelf !== undefined) {
+                clientBook.shelf = serverShelf;
+              }
               toUpdate.push(clientBook);
             } else {
               // Only rewrite when a resolved field VALUE differs from the

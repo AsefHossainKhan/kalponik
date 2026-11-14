@@ -19,6 +19,8 @@ export interface DBBook {
   cover_hash?: string | null;
   cover_updated_at?: string | null;
   page_count?: number | null;
+  /** Kalponik (migration 037): 'public' when this is the reader's row for a public-shelf book. */
+  shelf?: 'public' | null;
 
   metadata?: string | null;
   metadata_updated_at?: string | null;

@@ -130,6 +130,9 @@ export const transformBookToDB = (book: unknown, userId: string): DBBook => {
     updated_at: new Date(updatedAt ?? Date.now()).toISOString(),
     deleted_at: deletedAt ? new Date(deletedAt).toISOString() : null,
     uploaded_at: uploadedAt ? new Date(uploadedAt).toISOString() : null,
+    // Only when set, so a server without the column (before migration 037)
+    // still accepts private books, and the server keeps a shelf it set.
+    ...((book as Book).shelf ? { shelf: (book as Book).shelf } : {}),
   };
 };
 
@@ -189,6 +192,10 @@ export const transformBookFromDB = (dbBook: DBBook): Book => {
   // merge's `{ ...local, ...remote }` spread.
   if (page_count != null) book.pageCount = page_count;
   if (original_filename != null) book.originalFilename = original_filename;
+  // Kalponik: set the key whenever the server has the column, even to
+  // undefined, so a book taken off the shelf (or returned to its sharer)
+  // overwrites the local 'public' in the pull merge's spread.
+  if ('shelf' in dbBook) book.shelf = dbBook.shelf === 'public' ? 'public' : undefined;
   // Native cloud DBBook has no `url` column; a feed book carries its feed URL in
   // metadata so the reader can rebuild the feed:// descriptor here.
   if (!book.url && book.metadata?.feedUrl) {

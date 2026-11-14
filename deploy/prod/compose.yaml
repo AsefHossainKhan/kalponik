@@ -55,6 +55,10 @@ services:
       # minute after start, then every interval (src/libs/supabaseKeepAlive.ts).
       KALPONIK_KEEPALIVE: ${KALPONIK_KEEPALIVE:-on}
       KALPONIK_KEEPALIVE_INTERVAL_HOURS: ${KALPONIK_KEEPALIVE_INTERVAL_HOURS:-24}
+      # The public shelf: total size of all public books, and the largest one
+      # book may be. Public books don't count against anyone's own quota.
+      KALPONIK_PUBLIC_SHELF_QUOTA_GB: ${KALPONIK_PUBLIC_SHELF_QUOTA_GB:-50}
+      KALPONIK_PUBLIC_BOOK_MAX_MB: ${KALPONIK_PUBLIC_BOOK_MAX_MB:-300}
     depends_on:
       - garage
     networks:

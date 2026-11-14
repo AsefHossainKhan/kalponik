@@ -4,6 +4,8 @@ import { corsAllMethods, runMiddleware } from '@/utils/cors';
 import { getDownloadSignedUrl } from '@/utils/object';
 import { validateUserAndToken } from '@/utils/access';
 import { parseBookFileKey } from '@/utils/bookFileKey';
+import { SHARED_BOOKS_PREFIX, isReadableSharedKey } from '@/libs/publicShelf';
+import { createSupabaseShelfStore } from '@/libs/publicShelfStore';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   await runMiddleware(req, res, corsAllMethods);
@@ -71,6 +73,35 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 }
 
 async function processFileKeys(
+  fileKeys: string[],
+  userId: string,
+): Promise<Record<string, string | undefined>> {
+  // Kalponik: a public book's file and cover are stored once under
+  // shared/Kalponik/Books/<hash>/ and any signed-in account may read them
+  // while the book is on the public shelf.
+  const isShared = (key: string) => key.startsWith(`${SHARED_BOOKS_PREFIX}/`);
+  const sharedKeys = fileKeys.filter(isShared);
+  if (sharedKeys.length > 0) {
+    const shelf = createSupabaseShelfStore();
+    const shared = await Promise.all(
+      sharedKeys.map(async (key) => {
+        try {
+          if (!(await isReadableSharedKey(shelf, key))) return [key, undefined] as const;
+          return [key, await getDownloadSignedUrl(key, 1800)] as const;
+        } catch (error) {
+          console.error('Error signing shared file %s:', key, error);
+          return [key, undefined] as const;
+        }
+      }),
+    );
+    const ownKeys = fileKeys.filter((key) => !isShared(key));
+    const own = ownKeys.length > 0 ? await processOwnFileKeys(ownKeys, userId) : {};
+    return { ...own, ...Object.fromEntries(shared) };
+  }
+  return processOwnFileKeys(fileKeys, userId);
+}
+
+async function processOwnFileKeys(
   fileKeys: string[],
   userId: string,
 ): Promise<Record<string, string | undefined>> {
