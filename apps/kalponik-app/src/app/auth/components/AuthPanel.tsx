@@ -2,10 +2,9 @@ import { withBasePath } from '@/utils/basePath';
 import { useRef } from 'react';
 import Image from 'next/image';
 import type { SupabaseClient } from '@supabase/supabase-js';
-import { FcGoogle } from 'react-icons/fc';
-import { FaApple, FaGithub, FaDiscord } from 'react-icons/fa';
 import { useTranslation } from '@/hooks/useTranslation';
 import { ProviderLogin, type OAuthProvider } from './ProviderLogin';
+import { ENABLED_OAUTH_PROVIDERS, OAUTH_PROVIDER_BUTTONS } from './oauthProviders';
 import EmailPasswordAuth from './EmailPasswordAuth';
 import KalponikCloudOptIn from './KalponikCloudOptIn';
 
@@ -54,30 +53,17 @@ export default function AuthPanel({
         </div>
       </div>
       <div className='flex w-full flex-col gap-2.5'>
-        <ProviderLogin
-          provider='google'
-          handleSignIn={handleProviderSignIn}
-          Icon={FcGoogle}
-          label={_('Sign in with {{provider}}', { provider: 'Google' })}
-        />
-        <ProviderLogin
-          provider='apple'
-          handleSignIn={handleProviderSignIn}
-          Icon={FaApple}
-          label={_('Sign in with {{provider}}', { provider: 'Apple' })}
-        />
-        <ProviderLogin
-          provider='github'
-          handleSignIn={handleProviderSignIn}
-          Icon={FaGithub}
-          label={_('Sign in with {{provider}}', { provider: 'GitHub' })}
-        />
-        <ProviderLogin
-          provider='discord'
-          handleSignIn={handleProviderSignIn}
-          Icon={FaDiscord}
-          label={_('Sign in with {{provider}}', { provider: 'Discord' })}
-        />
+        {OAUTH_PROVIDER_BUTTONS.filter(({ provider }) =>
+          ENABLED_OAUTH_PROVIDERS.includes(provider),
+        ).map(({ provider, name, Icon }) => (
+          <ProviderLogin
+            key={provider}
+            provider={provider}
+            handleSignIn={handleProviderSignIn}
+            Icon={Icon}
+            label={_('Sign in with {{provider}}', { provider: name })}
+          />
+        ))}
       </div>
       <div className='flex w-full items-center gap-3' aria-hidden='true'>
         <hr className='border-base-300 flex-1 border-t' />
