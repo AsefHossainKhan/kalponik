@@ -12,6 +12,7 @@ import { useQuotaStats } from '@/hooks/useQuotaStats';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useUserActions } from '@/hooks/useUserActions';
 import { useAvailablePlans } from '@/hooks/useAvailablePlans';
+import { arePaidPlansOffered } from '@/utils/access';
 import type { PlanType } from '@/types/quota';
 import { navigateBackFromProfile } from '@/utils/nav';
 import { eventDispatcher } from '@/utils/event';
@@ -315,6 +316,8 @@ const ProfilePage = () => {
   const userEmail = user?.email || '';
   const userPlanDetails =
     getPlanDetails(userProfilePlan, availablePlans) || getPlanDetails('free', availablePlans);
+  // Kalponik: one free version, so no plan badge and no plans to compare.
+  const paidPlansOffered = arePaidPlansOffered();
 
   return (
     <div
@@ -353,7 +356,7 @@ const ProfilePage = () => {
                     avatarUrl={avatarUrl}
                     userFullName={userFullName}
                     userEmail={userEmail}
-                    planDetails={userPlanDetails}
+                    planDetails={paidPlansOffered ? userPlanDetails : undefined}
                   />
 
                   <AdminInvitesEntry onOpen={() => router.push('/admin')} />
@@ -380,18 +383,20 @@ const ProfilePage = () => {
                   </div>
                 ) : (
                   <>
-                    <div className='flex flex-col gap-y-8 px-2 sm:px-6'>
-                      <PlansComparison
-                        availablePlans={availablePlans}
-                        userPlan={userProfilePlan}
-                        customizationPurchased={customizationPurchased}
-                        onSubscribe={
-                          appService.hasIAP && iapAvailable
-                            ? handleIAPSubscribe
-                            : handleStripeSubscribe
-                        }
-                      />
-                    </div>
+                    {paidPlansOffered && (
+                      <div className='flex flex-col gap-y-8 px-2 sm:px-6'>
+                        <PlansComparison
+                          availablePlans={availablePlans}
+                          userPlan={userProfilePlan}
+                          customizationPurchased={customizationPurchased}
+                          onSubscribe={
+                            appService.hasIAP && iapAvailable
+                              ? handleIAPSubscribe
+                              : handleStripeSubscribe
+                          }
+                        />
+                      </div>
+                    )}
                     <div className='flex flex-col gap-y-8 px-6'>
                       <AccountActions
                         userEmail={userEmail}

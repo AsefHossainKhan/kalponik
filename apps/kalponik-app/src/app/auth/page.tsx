@@ -22,7 +22,7 @@ import { start, cancel, onUrl, onInvalidUrl } from '@fabianlars/tauri-plugin-oau
 import { openUrl } from '@tauri-apps/plugin-opener';
 import { invoke } from '@tauri-apps/api/core';
 import { handleAuthCallback, parseOAuthCallbackUrl } from '@/helpers/auth';
-import { getUserProfilePlan } from '@/utils/access';
+import { getUserProfilePlan, shouldOfferUpgrade } from '@/utils/access';
 import { getHorizontalInsetStyle } from '@/utils/insets';
 import { getAppleIdAuth, Scope } from './utils/appleIdAuth';
 import { authWithCustomTab, authWithSafari } from './utils/nativeAuth';
@@ -176,7 +176,7 @@ export default function AuthPage() {
     }
     if (accessToken) {
       let nextPath = next ?? '/';
-      if (getUserProfilePlan(accessToken) === 'free') {
+      if (shouldOfferUpgrade(getUserProfilePlan(accessToken))) {
         nextPath = '/user';
       }
       handleAuthCallback({

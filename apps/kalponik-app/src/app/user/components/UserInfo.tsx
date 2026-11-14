@@ -7,7 +7,8 @@ interface UserInfoProps {
   avatarUrl?: string;
   userFullName: string;
   userEmail: string;
-  planDetails: PlanDetails;
+  /** Left out when no plans are offered (Kalponik): then no plan badge. */
+  planDetails?: PlanDetails;
 }
 
 const UserInfo: React.FC<UserInfoProps> = ({ avatarUrl, userFullName, userEmail, planDetails }) => {
@@ -36,13 +37,15 @@ const UserInfo: React.FC<UserInfoProps> = ({ avatarUrl, userFullName, userEmail,
       <div className='grow text-center md:text-left'>
         <h2 className='text-base-content text-xl font-bold md:text-2xl'>{userFullName}</h2>
         <p className='text-base-content/60'>{userEmail}</p>
-        <div className='mt-3'>
-          <span
-            className={`inline-block rounded-full px-3 py-1 text-sm font-medium ${planDetails.color}`}
-          >
-            {_(planDetails.name)}
-          </span>
-        </div>
+        {planDetails && (
+          <div className='mt-3'>
+            <span
+              className={`inline-block rounded-full px-3 py-1 text-sm font-medium ${planDetails.color}`}
+            >
+              {_(planDetails.name)}
+            </span>
+          </div>
+        )}
       </div>
     </div>
   );

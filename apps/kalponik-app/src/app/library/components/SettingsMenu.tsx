@@ -23,6 +23,7 @@ import { useAuth } from '@/context/AuthContext';
 import { useEnv } from '@/context/EnvContext';
 import { useThemeStore } from '@/store/themeStore';
 import { useQuotaStats } from '@/hooks/useQuotaStats';
+import { shouldOfferUpgrade } from '@/utils/access';
 import { useAdminStatus } from '@/hooks/useAdminStatus';
 import { isKalponikCloudEnabled } from '@/services/sync/cloudSyncProvider';
 import { useLibraryStore } from '@/store/libraryStore';
@@ -495,7 +496,7 @@ const SettingsMenu: React.FC<SettingsMenuProps> = ({ onPullLibrary, setIsDropdow
         </ul>
       </MenuItem>
       <hr aria-hidden='true' className='border-base-200 my-1' />
-      {user && userProfilePlan === 'free' && (
+      {user && userProfilePlan && shouldOfferUpgrade(userProfilePlan) && (
         <MenuItem label={_('Upgrade to Kalponik Premium')} onClick={handleUpgrade} />
       )}
       {isWebAppPlatform() && <MenuItem label={_('Download Kalponik')} onClick={downloadKalponik} />}

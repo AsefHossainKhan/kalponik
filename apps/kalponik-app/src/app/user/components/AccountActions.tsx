@@ -2,6 +2,7 @@ import { useEffect, useId, useRef, useState, type ReactNode } from 'react';
 import { useEnv } from '@/context/EnvContext';
 import { useTranslation } from '@/hooks/useTranslation';
 import { UserPlan } from '@/types/quota';
+import { arePaidPlansOffered } from '@/utils/access';
 
 interface DeleteConfirmationModalProps {
   title: string;
@@ -146,6 +147,7 @@ const AccountActions: React.FC<AccountActionsProps> = ({
 }) => {
   const _ = useTranslation();
   const { appService } = useEnv();
+  const paidPlansOffered = arePaidPlansOffered();
   const [pendingAction, setPendingAction] = useState<'account' | 'books' | null>(null);
 
   const confirmations = {
@@ -185,8 +187,8 @@ const AccountActions: React.FC<AccountActionsProps> = ({
               <p className='break-words font-semibold' dir='auto'>
                 {userEmail}
               </p>
-              <p>{planName}</p>
-              {(userPlan !== 'free' || customizationPurchased) && (
+              {paidPlansOffered && <p>{planName}</p>}
+              {paidPlansOffered && (userPlan !== 'free' || customizationPurchased) && (
                 <p className='font-semibold'>{_('This account has a paid plan or purchases.')}</p>
               )}
             </div>
@@ -194,7 +196,7 @@ const AccountActions: React.FC<AccountActionsProps> = ({
         </DeleteConfirmationModal>
       )}
       <div className='flex flex-col gap-4 md:grid md:grid-cols-2 lg:grid-cols-3'>
-        {appService?.hasIAP && iapAvailable ? (
+        {!paidPlansOffered ? null : appService?.hasIAP && iapAvailable ? (
           <button
             onClick={onRestorePurchase}
             className='bg-base-300 hover:bg-base-content/15 text-base-content border-base-content/10 eink-bordered w-full rounded-lg border px-6 py-3 font-medium transition-colors duration-150 md:w-auto'

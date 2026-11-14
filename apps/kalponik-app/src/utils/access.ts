@@ -192,6 +192,17 @@ export const isSelfHosted = (): boolean =>
   (process.env['SELF_HOSTED'] || process.env['NEXT_PUBLIC_SELF_HOSTED']) === 'true';
 
 /**
+ * Kalponik has one version, free, with every feature, so a self-hosted build
+ * (every Kalponik build) offers no plans: no plans page, upgrade prompts or
+ * subscription controls.
+ */
+export const arePaidPlansOffered = (): boolean => !isSelfHosted();
+
+/** Whether to point a signed-in account at the plans page. */
+export const shouldOfferUpgrade = (plan: UserPlan): boolean =>
+  arePaidPlansOffered() && plan === 'free';
+
+/**
  * The single gate for premium features: a self-hosted deployment, a paid
  * subscription, or the Full Customization unlock bought outright.
  */
