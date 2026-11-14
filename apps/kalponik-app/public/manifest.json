@@ -4,7 +4,7 @@
   "start_url": "./",
   "display": "standalone",
   "background_color": "#ffffff",
-  "description": "Your imagination, synced across your devices. Kalponik is a personal ebook reader based on the open-source Readest, for EPUB, PDF and more.",
+  "description": "Your imagination, synced across your devices. Get lost in a book, then pick it up anywhere. Kalponik is a personal ebook reader based on the open-source Readest, for EPUB, PDF and more.",
   "icons": [
     {
       "src": "icon-192.png",

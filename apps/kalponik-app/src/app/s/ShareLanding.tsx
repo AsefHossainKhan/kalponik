@@ -154,7 +154,7 @@ const ShareLanding = () => {
             </a>
           </div>
         </Card>
-        <PageFooter tagline={_('Open-source ebook reader for everyone, on every device.')} />
+        <PageFooter tagline={_('Your imagination, synced across your devices.')} />
       </main>
     );
   }
@@ -172,7 +172,7 @@ const ShareLanding = () => {
             <span className='loading loading-dots loading-md text-primary' aria-hidden='true' />
           </div>
         </Card>
-        <PageFooter tagline={_('Open-source ebook reader for everyone, on every device.')} />
+        <PageFooter tagline={_('Your imagination, synced across your devices.')} />
       </main>
     );
   }
@@ -319,7 +319,7 @@ const ShareLanding = () => {
         </div>
       </div>
 
-      <PageFooter tagline={_('Open-source ebook reader for everyone, on every device.')} />
+      <PageFooter tagline={_('Your imagination, synced across your devices.')} />
     </main>
   );
 };

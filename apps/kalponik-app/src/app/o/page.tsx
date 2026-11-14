@@ -134,7 +134,7 @@ const OpenAnnotationLanding = () => {
             </a>
           </div>
         </Card>
-        <PageFooter tagline={_('Open-source ebook reader for everyone, on every device.')} />
+        <PageFooter tagline={_('Your imagination, synced across your devices.')} />
       </main>
     );
   }
@@ -196,7 +196,7 @@ const OpenAnnotationLanding = () => {
           </p>
         </div>
       </Card>
-      <PageFooter tagline={_('Open-source ebook reader for everyone, on every device.')} />
+      <PageFooter tagline={_('Your imagination, synced across your devices.')} />
     </main>
   );
 };

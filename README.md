@@ -1,7 +1,8 @@
 <div align="center">
   <img src="./apps/kalponik-app/public/icon.png" alt="Kalponik logo" width="20%" />
   <h1>Kalponik · কাল্পনিক</h1>
-  <p><em>Get lost in a story. Your imagination, synced across your devices.</em></p>
+  <p><strong>Your imagination, synced across your devices.</strong><br>
+  <em>Get lost in a book, then pick it up anywhere.</em></p>
 
 Kalponik (Bengali for "imaginary") is a personal, self-hosted ebook reader for
 the web and Android, with your library, highlights and reading position synced
@@ -14,261 +15,97 @@ rewrite of [Foliate](https://github.com/johnfactotum/foliate) on
 [Tauri v2](https://github.com/tauri-apps/tauri). Nearly everything that makes
 it a good reader comes from their work; see [Built on Readest](#built-on-readest).
 
-[![Website][badge-website]][link-website]
-[![Web App][badge-web-app]][link-web-kalponik]
-[![OS][badge-platforms]][link-website]
-<br>
-[![Discord][badge-discord]][link-discord]
-[![Reddit][badge-reddit]][link-reddit]
 [![AGPL Licence][badge-license]](LICENSE)
-[![Language Coverage][badge-language-coverage]][link-locales]
-[![Donate][badge-donate]][link-donate]
 [![Latest release][badge-release]][link-gh-releases]
 [![Last commit][badge-last-commit]][link-gh-commits]
-[![Commits][badge-commit-activity]][link-gh-pulse]
-[![][badge-hellogithub]][link-hellogithub]
-[![Ask DeepWiki][badge-deepwiki]][link-deepwiki]
 
 </div>
 
 <p align="center">
   <a href="#features">Features</a> •
-  <a href="#planned-features">Planned Features</a> •
-  <a href="#screenshots">Screenshots</a> •
-  <a href="#downloads">Downloads</a> •
+  <a href="#get-kalponik">Get Kalponik</a> •
+  <a href="#host-your-own">Host Your Own</a> •
   <a href="#documentation">Documentation</a> •
-  <a href="#getting-started">Getting Started</a> •
-  <a href="./SELF-HOSTING.md">Host Your Own</a> •
-  <a href="#troubleshooting">Troubleshooting</a> •
-  <a href="#support">Support</a> •
+  <a href="#contributing">Contributing</a> •
   <a href="#built-on-readest">Built on Readest</a> •
   <a href="#license">License</a>
 </p>
 
-<div align="center">
-  <a href="https://readest.com" target="_blank">
-    <img src="./data/screenshots/landing_all_platforms.png" alt="Kalponik Banner" width="100%" />
-  </a>
-</div>
-
 ## Features
 
+What Kalponik adds:
+
+| **Feature**                     | **Description**                                                                                              |
+| ------------------------------- | ------------------------------------------------------------------------------------------------------------ |
+| **Self-hosted, for $0**         | A free hosted Supabase project for accounts and sync, and your own S3-compatible storage (such as Garage) for book files. |
+| **Invite-only sign-up**         | People join with an invite link or ask for access; admins approve requests, make invites and add other admins. |
+| **Public and private shelves**  | Your books are yours alone; share one on the public shelf and everyone on your instance can read it.          |
+| **Reading sets**                | Your reader settings per kind of book (text, or PDF and fixed layout), with three saved sets and presets, synced per account. |
+| **Updates from your releases**  | The Android app updates itself from your own GitHub releases.                                                 |
+
+What it keeps from Readest:
 
 | **Feature**                                | **Description**                                                                                                        |
 | ------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------- |
-| **Multi-Format Support**                   | Support EPUB, PDF, MOBI, KF8 (AZW3), FB2, CBZ, TXT, HTML, MD (Markdown)                                                                      |
-| **Scroll/Page View Modes**                 | Switch between scrolling or paginated reading modes.                                                                   |
-| **Full-Text Search**                       | Search inside a book or across the current library shelf to find relevant sections.                                    |
-| **Annotations and Highlighting**           | Add highlights, bookmarks, and notes to enhance your reading experience and use instant mode for quicker interactions. |
+| **Multi-Format Support**                   | EPUB, PDF, MOBI, KF8 (AZW3), FB2, CBZ, TXT, HTML and MD (Markdown).                                                     |
+| **Scroll/Page View Modes**                 | Switch between scrolling and paginated reading.                                                                        |
+| **Full-Text Search**                       | Search inside a book or across the current library shelf.                                                              |
+| **Annotations and Highlighting**           | Highlights, bookmarks and notes, with an instant mode for quicker highlighting.                                         |
 | **Dictionary/Wikipedia Lookup**            | Look up words with built-in sources or import local packs, including Yomitan ZIP/RDICT, from Settings → Custom Dictionaries. |
-| **[Parallel Read][link-parallel-read]**    | Read two books or documents simultaneously in a split-screen view.                                                     |
-| **Customize Font and Layout**              | Adjust font, layout, theme mode, and theme colors for a personalized experience.                                       |
-| **Code Syntax Highlighting**               | Read software manuals with rich coloring of code examples.                                                             |
-| **File Association and Open With**         | Quickly open files in Kalponik in your file browser with one-click.                                                     |
-| **Library Management**                     | Organize, sort, and manage your entire ebook library.                                                                  |
-| **OPDS/Calibre Integration**               | Integrate OPDS/Calibre to access online libraries and catalogs.                                                        |
-| **Web Page Clipping**                      | Open websites, sign in, and clip pages with **From Web Browser**. **From Web Novel** can reuse your browser session to import selected chapters and their images. |
-| **Translate with DeepL and Yandex**        | From a single sentence to the entire book—translate instantly.                                                         |
-| **Audiobook Support**                      | Extend functionality to play and manage audiobooks.                                                        |
-| **Text-to-Speech (TTS) Support**           | Enjoy smooth, multilingual narration—even within a single book.                                                        |
-| [**Read-Along Narration**][link-readalong] | Play embedded EPUB 3 Media Overlays with timed highlighting, or pair a reflowable EPUB locally with DRM-free MP3, M4A, or M4B narration. [Storyteller][link-storyteller] remains an option for generating phrase-aligned EPUBs. |
-| **Sync across Platforms**                  | Synchronize book files, reading progress, notes, and bookmarks across all supported platforms.                         |
-| [**Sync with Koreader**][link-kosync-wiki] | Synchronize reading progress, notes, and bookmarks with [Koreader][link-koreader] devices.                             |
-| **Accessibility**                          | Provides full keyboard navigation and support for screen readers such as VoiceOver, TalkBack, NVDA, and Orca.         |
-| **Visual & Focus Aids**                    | Reading ruler, paragraph-by-paragraph reading mode, and speed reading features.                                        |
+| **Parallel Read**                          | Read two books or documents side by side.                                                                              |
+| **Customize Font and Layout**              | Adjust font, layout, theme mode and theme colors.                                                                      |
+| **Code Syntax Highlighting**               | Read software manuals with colored code examples.                                                                      |
+| **Library Management**                     | Organize, sort and manage your library.                                                                                |
+| **OPDS/Calibre Integration**               | Browse OPDS catalogs and Calibre libraries.                                                                            |
+| **Web Page Clipping**                      | Clip web pages and web-novel chapters into your library.                                                               |
+| **Translation**                            | Translate a sentence or a whole book with Yandex, or with DeepL given your own API key on the server.                  |
+| **Text-to-Speech (TTS) Support**           | Multilingual narration, even within a single book.                                                                     |
+| [**Read-Along Narration**][link-readalong] | Play EPUB 3 Media Overlays with timed highlighting, or pair a reflowable EPUB with DRM-free MP3, M4A or M4B narration.  |
+| **Sync across Devices**                    | Book files, reading progress, notes and bookmarks follow you between the web and Android.                              |
+| **Sync with KOReader**                     | Sync reading progress, notes and bookmarks with [KOReader][link-koreader] devices.                                     |
+| **Accessibility**                          | Full keyboard navigation and screen reader support (TalkBack, VoiceOver, NVDA, Orca).                                  |
+| **Visual & Focus Aids**                    | Reading ruler, paragraph-by-paragraph mode and speed reading.                                                          |
 
-## Planned Features
+## Get Kalponik
 
-<div align="right">🛠 Building  |  🔄 Planned</div>
+Kalponik's own instance is invite-only. If you have an invite:
 
-| **Feature**                     | **Description**                                                            | |
-| ------------------------------- | -------------------------------------------------------------------------- | ------------ |
-| **AI-Powered Summarization**    | Generate summaries of books or chapters using AI for quick insights.       | 🛠           |
-| **Advanced Reading Stats**      | Track reading time, pages read, and more for detailed insights.            | 🛠           |
-| **Handwriting Annotations**     | Add support for handwriting annotations using a pen on compatible devices. | 🔄           |
-
-Stay tuned for continuous improvements and updates! Contributions and suggestions are always welcome—let's build the ultimate reading experience together. 😊
-
-## Screenshots
-
-![Annotations](./data/screenshots/annotations.png)
-
-![TTS](./data/screenshots/tts_speak_aloud.png)
-
-![DeepL](./data/screenshots/deepl.png)
-
-![Footnote](./data/screenshots/footnote_popover.png)
-
-![Wikipedia](./data/screenshots/wikipedia_vertical.png)
-
-![Theming Dark Mode](./data/screenshots/theming_dark_mode.png)
-
----
-
-## Downloads
-
-### Mobile Apps
-
-<div align="center">
-  <a href="https://apps.apple.com/app/id6738622779">
-    <img alt="Download on the App Store" src="https://developer.apple.com/assets/elements/badges/download-on-the-app-store.svg" style="height: 50px;" /></a>&nbsp;&nbsp;&nbsp;&nbsp;
-  <a href="https://play.google.com/store/apps/details?id=com.kalponik.reader">
-    <img alt="Get it on Google Play" src="https://upload.wikimedia.org/wikipedia/commons/7/78/Google_Play_Store_badge_EN.svg" style="height: 50px;" /></a>
-</div>
-
-### Platform-Specific Downloads
-
-- macOS / iOS / iPadOS : Search and install **Kalponik** on the [App Store][link-appstore], _also_ available on TestFlight for beta test (send your Apple ID to <kalponik.reader@gmail.com> to request access).
-- Windows / Linux / Android: Visit and download **Kalponik** at [https://readest.com][link-website] or the [Releases on GitHub][link-gh-releases].
-- Linux users can also install [Kalponik on Flathub][link-flathub].
-- Web: Visit and use **Kalponik for Web** at [https://web.readest.com][link-web-kalponik].
-
-#### Nix
-
-> [!NOTE]
-> The Nix package supports `x86_64-linux` only. nix-darwin is not supported.
-
-Try it without installing. `--accept-flake-config` opts in to the project's
-binary cache; without it Nix builds the whole Rust/Tauri stack from source.
-
-```sh
-nix run --accept-flake-config github:readest/readest
-```
-
-To install it, add the input to your `flake.nix`:
-
-```nix
-# Due to a limitation in how Nix fetches submodules, a regular GitHub input type will fail to evaluate.
-inputs.kalponik = {
-  url = "https://github.com/readest/readest.git";
-  type = "git";
-  submodules = true;
-};
-```
-
-then in `configuration.nix` add the package and the cache. The cache is needed
-here as well because a flake input's own `nixConfig` does not apply to your
-system build:
-
-```nix
-environment.systemPackages = [
-  inputs.kalponik.packages.${pkgs.stdenv.hostPlatform.system}.default
-];
-
-nix.settings = {
-  substituters = [ "https://kalponik.cachix.org" ];
-  trusted-public-keys = [
-    "kalponik.cachix.org-1:KvKAePcZZCZB8ytFIAOGdgN3VRdmFHGRMHqMVckbt5c="
-  ];
-};
-```
-
-## Documentation
-
-Guides, tutorials, and FAQs for installing and using Kalponik live in the official documentation:
-
-📖 **[https://readest.com/docs][link-docs]**
-
-Contributor references live in the repository: [architecture](./apps/kalponik-app/docs/architecture.md),
-[code layout](./apps/kalponik-app/docs/code-layout.md), and
-[testing](./apps/kalponik-app/docs/testing.md).
+- **Android:** install the APK from the [latest release][link-gh-releases]. After that, the app updates itself.
+- **Web:** open the address in your invite and read in any modern browser.
 
 ## Host Your Own
 
-Kalponik's own instance is invite-only. To run your own copy (web app, Android
-app, your own server and a free Supabase project), follow
-**[Host your own Kalponik](./SELF-HOSTING.md)**.
+To run your own copy (the web app, the Android app, your own server and a free
+Supabase project), follow **[Host your own Kalponik](./SELF-HOSTING.md)**.
 
-## Building from Source
+## Documentation
 
-To build Kalponik from the latest commit, see [Getting Started](./CONTRIBUTING.md#getting-started).
+- [Host your own Kalponik](./SELF-HOSTING.md): server, storage, Supabase and the Android build.
+- [Getting Started](./CONTRIBUTING.md#getting-started): building from source.
+- Contributor references: [architecture](./apps/kalponik-app/docs/architecture.md),
+  [code layout](./apps/kalponik-app/docs/code-layout.md) and
+  [testing](./apps/kalponik-app/docs/testing.md).
+- Using the reader: most of [Readest's documentation](https://readest.com/docs)
+  applies, since the reader itself is Readest's.
 
-## Troubleshooting
+## Contributing
 
-### 1. Kalponik Won’t Launch on Windows (Missing Edge WebView2 Runtime)
-
-**Symptom**
-
-- When you double-click kalponik.exe, nothing happens. No window appears, and Task Manager does not show the process.
-- This can affect both the standard installer and the portable version.
-
-**Cause**
-
-- Microsoft Edge WebView2 Runtime is either missing, outdated, or improperly installed on your system. Kalponik depends on WebView2 to render the interface on Windows.
-
-**How to Fix**
-
-1. Check if WebView2 is installed
-   - Open “Add or Remove Programs” (a.k.a. Apps & features) on Windows. Look for “Microsoft Edge WebView2 Runtime.”
-2. Install or Update WebView2
-   - Download the WebView2 Runtime directly from Microsoft: [link](https://developer.microsoft.com/en-us/microsoft-edge/webview2?form=MA13LH).
-   - If you prefer an offline installer, download the offline package and run it as an Administrator.
-3. Re-run Kalponik
-   - After installing/updating WebView2, launch kalponik.exe again.
-   - If you still encounter problems, reboot your PC and try again.
-
-**Additional Tips**
-
-- If reinstalling once doesn’t work, uninstall Edge WebView2 completely, then reinstall it with Administrator privileges.
-- Verify your Windows installation has the latest updates from Microsoft.
-
-**Still Stuck?**
-
-- See Issue [readest/readest#358](https://github.com/readest/readest/issues/358) for further details, or head over to our [Discord][link-discord] server and open a support discussion with detailed logs of your environment and the steps you’ve taken.
-
-### Linux Fails to Launch on Wayland / Niri
-
-Current Linux builds, including Flatpak, use CEF with an X11 window backend.
-Wayland sessions therefore need XWayland. Without a `DISPLAY`, older builds exit
-with `Runtime(CreateWindow)` before opening a window.
-
-On Niri, install `xwayland-satellite` 0.7 or later using your distribution's package manager
-and restart your Niri session. Niri 25.08 and later can start it on demand and
-set `DISPLAY` for applications. See [Niri's XWayland setup instructions](https://niri-wm.github.io/niri/Xwayland.html).
-
-From a terminal in that session, check `printenv DISPLAY`, then launch Kalponik:
-
-```sh
-flatpak run com.kalponik.reader
-```
-
-The Flatpak already requests the X11 socket. If you have customized its sandbox
-permissions, allow that socket as well. Setting `DISPLAY` to an arbitrary value
-does not start XWayland; use the value provided by your session.
-`--ozone-platform=wayland` cannot enable native Wayland support in this runtime,
-and WebKitGTK environment variables do not affect CEF.
-
-## Contributors
-
-Kalponik is open-source, and contributions are welcome! Feel free to open issues, suggest features, or submit pull requests. Please **review our [contributing guidelines](CONTRIBUTING.md) and [Code of Conduct](CODE_OF_CONDUCT.md) before you start**. We also welcome you to join our [Discord][link-discord] community for either support or contributing guidance.
-
-<a href="https://github.com/readest/readest/graphs/contributors">
-  <p align="left">
-    <img width="500" src="https://contrib.rocks/image?repo=readest/readest" alt="A table of avatars from the project's contributors" />
-  </p>
-</a>
-
-## Support
-
-If Kalponik has been useful to you, consider supporting its development at [donate.readest.com](https://donate.readest.com), where you'll find all available donation methods, including GitHub Sponsors, PayPal, card payments, and crypto. Your contribution helps us fix bugs faster, improve performance, and keep building great features.
-
-### Sponsors
-
-<p align="center">
-  <a title="Browser testing via TestMu AI" href="https://www.testmuai.com/?utm_medium=sponsor&utm_source=kalponik" target="_blank">
-    <img src="https://raw.githubusercontent.com/kalponik/kalponik/refs/heads/main/data/sponsors/testmu-ai-logo.png" style="vertical-align: middle;" width="250" />
-  </a>
-</p>
+Issues and pull requests are welcome. Please read the
+[contributing guidelines](CONTRIBUTING.md) and the
+[Code of Conduct](CODE_OF_CONDUCT.md) first. Bugs in the reader itself are
+often Readest's too: check [Readest's issues](https://github.com/readest/readest/issues)
+and consider fixing them there, so everyone benefits.
 
 ## Built on Readest
 
 Kalponik is a fork of [Readest](https://github.com/readest/readest)
 ([readest.com](https://readest.com)). The reader itself, its formats, its
-sync design and most of this repository's history are the Readest team's and
-contributors' work. Kalponik adds self-hosting on a free Supabase project and
-your own S3 storage, invite-only sign-up, public and private shelves, and its
-own name and look. If you want a polished reader with official apps for every
-platform, use and support [Readest](https://readest.com).
+sync design and most of this repository's history are the work of the Readest
+team and [its contributors](https://github.com/readest/readest/graphs/contributors).
+Kalponik adds self-hosting on a free Supabase project and your own S3 storage,
+invite-only sign-up, public and private shelves, reading sets, and its own name
+and look. If you want a polished reader with official apps for every platform,
+use and [support Readest](https://donate.readest.com).
 
 ## License
 
@@ -276,6 +113,7 @@ Kalponik is free software: you can redistribute it and/or modify it under the te
 
 The following libraries and frameworks are used in this software:
 
+- [Readest](https://github.com/readest/readest), which is AGPL-3.0 licensed.
 - [foliate-js](https://github.com/johnfactotum/foliate-js), which is MIT licensed.
 - [zip.js](https://github.com/gildas-lormeau/zip.js), which is licensed under the BSD-3-Clause license.
 - [fflate](https://github.com/101arrowz/fflate), which is MIT licensed.
@@ -295,38 +133,12 @@ We would also like to thank the [Web Chinese Fonts Plan](https://chinese-font.ne
 
 ---
 
-<div align="center" style="color: gray;">Happy reading with Kalponik!</div>
+<div align="center" style="color: gray;">Get lost in a book with Kalponik.</div>
 
-[badge-website]: https://img.shields.io/badge/website-readest.com-orange
-[badge-web-app]: https://img.shields.io/badge/read%20online-web.readest.com-orange
 [badge-license]: https://img.shields.io/badge/license-AGPL--3.0-teal
-[badge-release]: https://img.shields.io/github/v/release/kalponik/kalponik?color=green
-[badge-platforms]: https://img.shields.io/badge/platforms-macOS%2C%20Windows%2C%20Linux%2C%20Android%2C%20iOS%2C%20Web%2C%20PWA-green
-[badge-last-commit]: https://img.shields.io/github/last-commit/kalponik/kalponik?color=blue
-[badge-commit-activity]: https://img.shields.io/github/commit-activity/m/kalponik/kalponik?color=blue
-[badge-discord]: https://img.shields.io/discord/1314226120886976544?color=5865F2&label=discord&labelColor=black&logo=discord&logoColor=white&style=flat-square
-[badge-hellogithub]: https://abroad.hellogithub.com/v1/widgets/recommend.svg?rid=8a5b6ade2aee461a8bd94e59200682a7&claim_uid=eRLUbPOy2qZtDgw&theme=small
-[badge-donate]: https://donate.readest.com/badge.svg
-[badge-deepwiki]: https://img.shields.io/badge/Ask-DeepWiki-blue
-[badge-reddit]: https://img.shields.io/reddit/subreddit-subscribers/kalponik?style=flat&logo=reddit&color=F37E41
-[badge-language-coverage]: https://img.shields.io/badge/coverage-53%25%20population%20🌍-green
-[link-donate]: https://donate.readest.com/?tickers=btc%2Ceth%2Csol%2Cusdc
-[link-appstore]: https://apps.apple.com/app/apple-store/id6738622779?pt=127463130&ct=github&mt=8
-[link-website]: https://readest.com?utm_source=github&utm_medium=referral&utm_campaign=readme
-[link-flathub]: https://flathub.org/en/apps/com.kalponik.reader
-[link-web-kalponik]: https://web.readest.com
-[link-docs]: https://readest.com/docs
-[link-gh-releases]: https://github.com/readest/readest/releases
-[link-gh-commits]: https://github.com/readest/readest/commits/main
-[link-gh-pulse]: https://github.com/readest/readest/pulse
-[link-gh-wiki]: https://github.com/readest/readest/wiki
-[link-discord]: https://discord.gg/gntyVNk3BJ
-[link-parallel-read]: https://readest.com/#parallel-read
+[badge-release]: https://img.shields.io/github/v/release/AsefHossainKhan/kalponik?color=green
+[badge-last-commit]: https://img.shields.io/github/last-commit/AsefHossainKhan/kalponik?color=blue
+[link-gh-releases]: https://github.com/AsefHossainKhan/kalponik/releases/latest
+[link-gh-commits]: https://github.com/AsefHossainKhan/kalponik/commits/main
 [link-koreader]: https://github.com/koreader/koreader
-[link-hellogithub]: https://hellogithub.com/repository/8a5b6ade2aee461a8bd94e59200682a7
-[link-deepwiki]: https://deepwiki.com/kalponik/kalponik
-[link-locales]: https://github.com/readest/readest/tree/main/apps/readest-app/public/locales
-[link-kosync-wiki]: https://github.com/readest/readest/wiki/Sync-with-Koreader-devices
-[link-readalong]: https://github.com/readest/readest/blob/main/apps/readest-app/docs/read-along-narration.md
-[link-storyteller]: https://storyteller-platform.dev/
-[link-reddit]: https://reddit.com/r/kalponik/
+[link-readalong]: ./apps/kalponik-app/docs/read-along-narration.md

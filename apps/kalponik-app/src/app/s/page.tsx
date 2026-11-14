@@ -26,7 +26,7 @@ export async function generateMetadata({ searchParams }: PageProps): Promise<Met
   if (process.env['NEXT_PUBLIC_APP_PLATFORM'] !== 'web') {
     return {
       title: 'Open in Kalponik',
-      description: 'Open-source ebook reader for everyone, on every device.',
+      description: 'Your imagination, synced across your devices.',
     };
   }
 
@@ -37,7 +37,7 @@ export async function generateMetadata({ searchParams }: PageProps): Promise<Met
   if (!token) {
     return {
       title: 'Open in Kalponik',
-      description: 'Open-source ebook reader for everyone, on every device.',
+      description: 'Your imagination, synced across your devices.',
     };
   }
 

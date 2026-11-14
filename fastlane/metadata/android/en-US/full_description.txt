@@ -1,3 +1,6 @@
+<b>Your imagination, synced across your devices.</b>
+Get lost in a book, then pick it up anywhere.
+
 <b>Kalponik</b> is a modern, open-source ebook reader for people who read a lot, and want their books, notes and progress to follow them everywhere.
 
 Open EPUB, PDF, MOBI, AZW3, FB2, CBZ, TXT and Markdown, and tune the reading experience down to the last detail.

@@ -20,7 +20,13 @@ describe('root layout metadata', () => {
   it("uses Kalponik's own tagline, not Readest's slogan", () => {
     const text = JSON.stringify([metadata.title, metadata.description, metadata.openGraph]);
     expect(text).not.toMatch(/Digest and Get Insight/);
-    expect(metadata.description).toMatch(/^Your imagination, synced across your devices\./);
+    expect(metadata.title).toEqual({
+      default: 'Kalponik — Your imagination, synced',
+      template: expect.any(String),
+    });
+    expect(metadata.description).toMatch(
+      /^Your imagination, synced across your devices\. Get lost in a book, then pick it up anywhere\./,
+    );
     expect(metadata.openGraph?.description).toBe(metadata.description);
   });
 
