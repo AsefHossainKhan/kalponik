@@ -14,8 +14,9 @@ if (isDev) {
 }
 
 const exportOutput = appPlatform !== 'web' && !isDev;
-// Kalponik: the web app is served under a sub-path of a shared domain
-// (https://asroy.duckdns.org/kalponik). KALPONIK_BASE_PATH sets it for web
+// Kalponik: the web app can be served under a sub-path of a shared domain
+// (e.g. https://example.com/kalponik); by default it is at the root of its
+// own host (https://kalponik.asroy.duckdns.org). KALPONIK_BASE_PATH sets it for web
 // builds only; the Tauri static export always stays at the root. Code that
 // builds root-relative urls by hand uses withBasePath() (src/utils/basePath.ts),
 // which reads the NEXT_PUBLIC_BASE_PATH set below.

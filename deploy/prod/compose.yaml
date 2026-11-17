@@ -1,11 +1,11 @@
 # Kalponik production stack: the web app + Garage (S3 book storage).
 #
-#   https://example.com/kalponik/          -> web     (Next.js, basePath /kalponik)
-#   https://example.com/kalponik-books/... -> garage  (S3 API, bucket = path)
+#   https://kalponik.example.com/                  -> web     (Next.js, at the root)
+#   https://kalponik.example.com/kalponik-books/... -> garage  (S3 API, bucket = path)
 #
 # Auth + database are the hosted Supabase project. TLS and the public routes
 # belong to your reverse proxy, which reaches these two containers by
-# name over its Docker network (NGINX_PROXY_NETWORK); see nginx-locations.conf
+# name over its Docker network (NGINX_PROXY_NETWORK); see nginx-vhost.conf
 # and SELF-HOSTING.md. Both are also published on 127.0.0.1 for local checks.
 #
 # The web image is built on a PC (a Next.js build wants more memory than a
@@ -23,11 +23,11 @@ services:
     ports:
       - "127.0.0.1:${KALPONIK_WEB_PORT:-47811}:3000"
     environment:
-      # Read at runtime and handed to the browser through /kalponik/runtime-config.js.
+      # Read at runtime and handed to the browser through /runtime-config.js.
       SUPABASE_URL: ${SUPABASE_URL:?set SUPABASE_URL in .env}
       SUPABASE_ANON_KEY: ${SUPABASE_ANON_KEY:?set SUPABASE_ANON_KEY in .env}
       SUPABASE_ADMIN_KEY: ${SUPABASE_ADMIN_KEY:?set SUPABASE_ADMIN_KEY in .env}
-      API_BASE_URL: ${KALPONIK_PUBLIC_ORIGIN:?set KALPONIK_PUBLIC_ORIGIN in .env}/kalponik
+      API_BASE_URL: ${KALPONIK_PUBLIC_ORIGIN:?set KALPONIK_PUBLIC_ORIGIN in .env}
       # Server-side S3 calls go straight to Garage; presigned URLs handed to
       # browsers and the app are signed against the public origin, where
       # nginx forwards /kalponik-books/... unchanged.
@@ -40,7 +40,7 @@ services:
       OBJECT_STORAGE_TYPE: s3
       SELF_HOSTED: "true"
       STORAGE_FIXED_QUOTA: ${STORAGE_FIXED_QUOTA:-107374182400}
-      # Invite-only sign-up: the root admin(s), who can always open /kalponik/admin
+      # Invite-only sign-up: the root admin(s), who can always open /admin
       # (comma-separated emails or user ids). More admins are added in the app.
       KALPONIK_ADMINS: ${KALPONIK_ADMINS:?set KALPONIK_ADMINS in .env}
       # Email for sign-up (verification links, "your account is ready",

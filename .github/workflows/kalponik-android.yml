@@ -59,7 +59,7 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  PUBLIC_URL: https://asroy.duckdns.org/kalponik
+  PUBLIC_URL: https://kalponik.asroy.duckdns.org
 
 jobs:
   apk:

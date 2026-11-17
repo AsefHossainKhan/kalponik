@@ -4,12 +4,12 @@ import { requiresSignIn } from '@/utils/signInGate';
 
 describe('privacyPolicyUrl', () => {
   it("links to Kalponik's own policy in the web app, not Readest's", () => {
-    expect(privacyPolicyUrl(false, 'https://asroy.duckdns.org/kalponik')).toBe('/privacy');
+    expect(privacyPolicyUrl(false, 'https://kalponik.asroy.duckdns.org')).toBe('/privacy');
   });
 
   it('opens the live web page from the Android/desktop app', () => {
-    expect(privacyPolicyUrl(true, 'https://asroy.duckdns.org/kalponik/')).toBe(
-      'https://asroy.duckdns.org/kalponik/privacy',
+    expect(privacyPolicyUrl(true, 'https://kalponik.asroy.duckdns.org/')).toBe(
+      'https://kalponik.asroy.duckdns.org/privacy',
     );
   });
 

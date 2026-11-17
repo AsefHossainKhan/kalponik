@@ -33,7 +33,7 @@ describe('root layout metadata', () => {
   it("serves the preview image from Kalponik's own public folder", () => {
     expect(metadata.openGraph?.images).toEqual(['/images/og-preview.png']);
     expect(metadata.twitter?.images).toEqual(['/images/og-preview.png']);
-    expect(String(metadata.metadataBase)).toBe('https://asroy.duckdns.org/');
+    expect(String(metadata.metadataBase)).toBe('https://kalponik.asroy.duckdns.org/');
   });
 });
 
@@ -47,7 +47,7 @@ describe('root layout metadata under the /kalponik base path', () => {
     const { metadata: prefixed } = await import('@/app/layout');
     vi.unstubAllEnvs();
 
-    expect(String(prefixed.metadataBase)).toBe('https://asroy.duckdns.org/kalponik/');
+    expect(String(prefixed.metadataBase)).toBe('https://kalponik.asroy.duckdns.org/kalponik/');
     expect(prefixed.openGraph?.images).toEqual(['/images/og-preview.png']);
     expect(prefixed.twitter?.images).toEqual(['/images/og-preview.png']);
   });

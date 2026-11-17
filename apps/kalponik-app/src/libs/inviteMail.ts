@@ -15,7 +15,7 @@ export interface MailMessage {
 
 /** Addresses the emails point at. */
 export interface InviteLinks {
-  /** The web app, e.g. https://asroy.duckdns.org/kalponik */
+  /** The web app, e.g. https://kalponik.asroy.duckdns.org */
   webUrl: string;
   /** The newest Android APK. */
   apkUrl: string;

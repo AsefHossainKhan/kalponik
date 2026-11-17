@@ -6,9 +6,9 @@ guide sets up the same stack on your own server, for $0 in hosting fees.
 
 ```
 browser / Android app
-   │  https://example.com/kalponik/          → kalponik-web    (Next.js, basePath /kalponik)
-   │  https://example.com/kalponik-books/... → kalponik-garage (Garage S3 API, bucket = path)
-   │  https://<ref>.supabase.co              → Supabase: accounts + reading data (free tier)
+   │  https://kalponik.example.com/                  → kalponik-web    (Next.js, at the root)
+   │  https://kalponik.example.com/kalponik-books/... → kalponik-garage (Garage S3 API, bucket = path)
+   │  https://<ref>.supabase.co                      → Supabase: accounts + reading data (free tier)
    ▼
 your server: reverse proxy (TLS) ──Docker network──► kalponik-web, kalponik-garage
 ```
@@ -41,10 +41,12 @@ Everything in this guide lives in [`deploy/prod/`](deploy/prod) and
 - **A Linux server with Docker** and Docker Compose v2. About 1.5 GB of free
   RAM is plenty (the compose file caps the web app at 1 GB and Garage at
   512 MB), plus disk space for your books.
-- **A domain name** pointing at it. A free [DuckDNS](https://www.duckdns.org)
-  name (`your-domain.duckdns.org`) works. Kalponik needs no subdomain of its
-  own: it lives under two paths, `/kalponik/` and `/kalponik-books/`, so it can
-  share a domain with other things you host.
+- **A (sub)domain name** for Kalponik, pointing at it. A free
+  [DuckDNS](https://www.duckdns.org) name works, and its subdomains do too:
+  `kalponik.your-domain.duckdns.org`. The app is served at the root of that
+  host and the book files under `/kalponik-books/` on the same host. (To share
+  one host with other things instead, build with a base path such as
+  `/kalponik`; see [§4](#4-build-the-web-image).)
 - **A reverse proxy with TLS** on that server, for example nginx with a
   Let's Encrypt certificate. The examples here are nginx; Caddy or Traefik
   work too if they forward paths unchanged (see [§6](#6-reverse-proxy-routes)).
@@ -120,9 +122,9 @@ SUPABASE_DB_URL='postgresql://postgres.<ref>:<db-password>@aws-0-<region>.pooler
 
 **Authentication > URL Configuration**
 
-- **Site URL:** `https://your-domain.duckdns.org/kalponik`
+- **Site URL:** `https://kalponik.your-domain.duckdns.org`
 - **Redirect URLs:** add
-  - `https://your-domain.duckdns.org/kalponik/**`
+  - `https://kalponik.your-domain.duckdns.org/**`
   - `kalponik://auth-callback` (the Android app's sign-in callback; use your
     own scheme if you change it)
   - for local development, `http://localhost:47811/**`
@@ -150,7 +152,7 @@ Copy the stack to the server. For example, from the repo root on your PC:
 ```bash
 ssh you@your-server 'mkdir -p ~/kalponik'
 scp deploy/prod/compose.yaml deploy/prod/garage.toml deploy/prod/init-garage.sh \
-    deploy/prod/check.sh deploy/prod/.env.example deploy/prod/nginx-locations.conf \
+    deploy/prod/check.sh deploy/prod/.env.example deploy/prod/nginx-vhost.conf \
     you@your-server:~/kalponik/
 ```
 
@@ -175,12 +177,12 @@ Then fill in `.env`. Every key:
 
 | Key | What it is |
 |---|---|
-| `KALPONIK_PUBLIC_ORIGIN` | Your public origin, no path or trailing slash: `https://your-domain.duckdns.org`. The app is served at `<origin>/kalponik`, and book URLs are signed against this origin. |
+| `KALPONIK_PUBLIC_ORIGIN` | Kalponik's public origin, no path or trailing slash: `https://kalponik.your-domain.duckdns.org`. The app is served at the root of it, and book URLs are signed against this origin. |
 | `NGINX_PROXY_NETWORK` | The Docker network your reverse proxy container is on, so it can reach the two Kalponik containers by name. Find it with `docker inspect <proxy> --format '{{json .NetworkSettings.Networks}}'`, or create one with `docker network create proxy` and attach the proxy to it. If your proxy runs on the host, set any existing network and use the `127.0.0.1` ports instead ([§6](#6-reverse-proxy-routes)). |
 | `SUPABASE_URL` | `https://<ref>.supabase.co`. |
 | `SUPABASE_ANON_KEY` | The legacy `anon` key. Public by design: it's handed to browsers, and row-level security protects the data. |
 | `SUPABASE_ADMIN_KEY` | The legacy `service_role` key. **Secret**: full database access. It stays on the server; never put it in an app build. |
-| `KALPONIK_ADMINS` | The root admin(s): comma-separated emails or Supabase user ids. They can always open `/kalponik/admin` to approve access requests, make invite links and add more admins, and can't be removed from the app. Required. |
+| `KALPONIK_ADMINS` | The root admin(s): comma-separated emails or Supabase user ids. They can always open `/admin` to approve access requests, make invite links and add more admins, and can't be removed from the app. Required. |
 | `KALPONIK_SMTP_USER` | The email account Kalponik sends from. Empty = no email at all. See [§8](#8-email-optional). |
 | `KALPONIK_SMTP_PASS` | That account's password (for Gmail, an app password). Empty = no email. |
 | `KALPONIK_SMTP_HOST` | Optional, default `smtp.gmail.com`. |
@@ -210,11 +212,17 @@ On your PC, from the repo root:
 sh deploy/prod/build-web-image.sh
 ```
 
-It builds with basePath `/kalponik` baked in and writes
+It builds the app to be served at the root of its host and writes
 `deploy/prod/dist/kalponik-web-<date>-<commit>.tar.gz`. Nothing else is baked
 in: Supabase, S3 and the public origin are read at runtime from the server's
-`.env` (the browser gets them from `/kalponik/runtime-config.js`), so one
-image works for any domain.
+`.env` (the browser gets them from `/runtime-config.js`), so one image works
+for any domain.
+
+To serve it under a sub-path of a shared host instead, bake the base path in:
+`KALPONIK_BASE_PATH=/kalponik sh deploy/prod/build-web-image.sh`. Then the
+app is at `<origin>/kalponik`, `API_BASE_URL` in `compose.yaml` needs
+`/kalponik` appended, and the proxy routes `/kalponik` (no trailing slash:
+Next.js redirects `/kalponik/` to `/kalponik`) instead of `/`.
 
 Copy it over and load it:
 
@@ -246,8 +254,9 @@ sh init-garage.sh
 
 ## 6. Reverse proxy routes
 
-Paste [`deploy/prod/nginx-locations.conf`](deploy/prod/nginx-locations.conf)
-into the HTTPS `server { }` block for your domain, then check and reload:
+[`deploy/prod/nginx-vhost.conf`](deploy/prod/nginx-vhost.conf) is a
+complete virtual host for Kalponik's subdomain. Set its `server_name` and
+certificate paths, put it in your proxy's `conf.d`, then check and reload:
 
 ```bash
 docker exec <proxy> nginx -t && docker exec <proxy> nginx -s reload
@@ -267,7 +276,7 @@ location /kalponik-books/ {               # book files → Garage
     # … timeouts, see the file
 }
 
-location /kalponik {                      # web app (no trailing slash!)
+location / {                              # web app
     resolver 127.0.0.11 valid=30s;
     set $kalponik_web kalponik-web:3000;
     proxy_pass http://$kalponik_web;
@@ -283,20 +292,19 @@ lines and use `proxy_pass http://127.0.0.1:47812;` and
 
 Two details matter:
 
-- **`location /kalponik` has no trailing slash.** Next.js redirects
-  `/kalponik/` to `/kalponik`, so a proxy rule that redirects the other way
-  loops. `/kalponik-books/` is the longer prefix, so it still wins for books.
+- **`/kalponik-books/` is the longer prefix**, so it wins over `/` for book
+  files.
 - **Why path-style S3 signing works through the proxy.** The web app signs
   book URLs path-style against `KALPONIK_PUBLIC_ORIGIN`, so a book is at
-  `https://your-domain/kalponik-books/<key>?X-Amz-Signature=…`: the bucket
+  `https://kalponik.your-domain/kalponik-books/<key>?X-Amz-Signature=…`: the bucket
   name *is* the path. The signature covers the Host header and the path. As
   long as the proxy forwards the path unchanged (no URI in `proxy_pass`, no
   rewrite) and passes the original `Host`, Garage sees exactly the request
   that was signed, and the signature checks out. Garage has no `root_domain`
-  set, so it only does path-style, and no extra subdomain is needed. Server
+  set, so it only does path-style, and books need no subdomain of their own. Server
   side, the web app talks to Garage directly at `http://garage:3900`.
 
-With Caddy or Traefik, the same rules apply: forward both prefixes without
+With Caddy or Traefik, the same rules apply: forward `/kalponik-books/` and `/` without
 stripping them, and keep the `Host` header.
 
 ## 7. Check it and sign in
@@ -314,7 +322,7 @@ admin account is made by hand:
 1. Supabase: **Authentication > Users > Add user > Create new user**, with the
    address you put in `KALPONIK_ADMINS` and a password, and tick
    **Auto Confirm User**.
-2. Open `https://your-domain.duckdns.org/kalponik/` and sign in with it. The
+2. Open `https://kalponik.your-domain.duckdns.org/` and sign in with it. The
    library menu now has an **Admin** item.
 3. Upload a book and open it. Then invite others from the admin page.
 
@@ -398,8 +406,8 @@ In `apps/kalponik-app`, create `.env.local` (git-ignored) with:
 NEXT_PUBLIC_SUPABASE_URL=https://<ref>.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=<legacy anon key>
 NEXT_PUBLIC_SELF_HOSTED=true
-NEXT_PUBLIC_API_BASE_URL=https://your-domain.duckdns.org/kalponik
-NEXT_PUBLIC_NODE_BASE_URL=https://your-domain.duckdns.org/kalponik
+NEXT_PUBLIC_API_BASE_URL=https://kalponik.your-domain.duckdns.org
+NEXT_PUBLIC_NODE_BASE_URL=https://kalponik.your-domain.duckdns.org
 ```
 
 Never put the `service_role` key in an app build. Then:

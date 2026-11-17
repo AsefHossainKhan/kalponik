@@ -21,21 +21,21 @@ preflight() {
 }
 
 echo "== containers (127.0.0.1)"
-check "web app page"            200 "$(code "$WEB/kalponik/library")"
-check "web runtime config"      200 "$(code "$WEB/kalponik/runtime-config.js")"
-check "pdf.js asset"            200 "$(code "$WEB/kalponik/vendor/pdfjs/pdf.worker.min.mjs")"
+check "web app page"            200 "$(code "$WEB/library")"
+check "web runtime config"      200 "$(code "$WEB/runtime-config.js")"
+check "pdf.js asset"            200 "$(code "$WEB/vendor/pdfjs/pdf.worker.min.mjs")"
 check "Garage CORS preflight"   200 "$(preflight "$S3")"
 
 echo "== public ($ORIGIN, through the reverse proxy)"
-check "app root, no redirect loop" 200 "$(code -L --max-redirs 5 "$ORIGIN/kalponik/")"
-check "web app page"            200 "$(code "$ORIGIN/kalponik/library")"
-check "web runtime config"      200 "$(code "$ORIGIN/kalponik/runtime-config.js")"
+check "app root, no redirect loop" 200 "$(code -L --max-redirs 5 "$ORIGIN/")"
+check "web app page"            200 "$(code "$ORIGIN/library")"
+check "web runtime config"      200 "$(code "$ORIGIN/runtime-config.js")"
 check "Garage CORS preflight"   200 "$(preflight "$ORIGIN")"
 
-if curl -s --max-time 20 "$ORIGIN/kalponik/runtime-config.js" | grep -q "$ORIGIN/kalponik"; then
-  echo "ok    runtime config points at $ORIGIN/kalponik"
+if curl -s --max-time 20 "$ORIGIN/runtime-config.js" | grep -q "$ORIGIN"; then
+  echo "ok    runtime config points at $ORIGIN"
 else
-  echo "FAIL  runtime config does not mention $ORIGIN/kalponik"; fail=1
+  echo "FAIL  runtime config does not mention $ORIGIN"; fail=1
 fi
 
 [ "$fail" = 0 ] && echo "All checks passed." || { echo "Some checks failed."; exit 1; }
