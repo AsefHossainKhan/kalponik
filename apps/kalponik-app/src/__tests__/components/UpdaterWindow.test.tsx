@@ -10,9 +10,12 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, cleanup, fireEvent, waitFor } from '@testing-library/react';
 import type { ReactNode } from 'react';
 
-const { mockInstallNightlyUpdate } = vi.hoisted(() => ({
+const { mockInstallNightlyUpdate, mockRemoveUpdateApks } = vi.hoisted(() => ({
   mockInstallNightlyUpdate: vi.fn(),
+  mockRemoveUpdateApks: vi.fn(),
 }));
+
+vi.mock('@/helpers/updateApkCleanup', () => ({ removeUpdateApks: mockRemoveUpdateApks }));
 
 // ── Locale + translation controls ────────────────────────────────
 let mockLocale = 'en';
@@ -115,6 +118,7 @@ beforeEach(() => {
   vi.mocked(installPackage).mockReset();
   mockTranslate.mockClear();
   mockInstallNightlyUpdate.mockReset();
+  mockRemoveUpdateApks.mockReset().mockResolvedValue([]);
   window.fetch = vi.fn(async () => ({
     ok: true,
     json: async () => RELEASE_NOTES,
@@ -182,6 +186,25 @@ describe('UpdaterContent — auto-translated changelog', () => {
       `https://example.com/Kalponik_0.11.20_${abi}.apk`,
       `/cache/Kalponik_0.11.20_${abi}.apk`,
     ]);
+  });
+
+  it('removes older update APKs from the cache before downloading, keeping the new one', async () => {
+    mockOS = 'android';
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+    vi.mocked(tauriDownload).mockRejectedValueOnce(new Error('stop'));
+    vi.mocked(window.fetch).mockResolvedValueOnce({
+      ok: true,
+      json: async () => SPLIT_MANIFEST,
+    } as Response);
+
+    render(<UpdaterContent latestVersion='0.11.20' />);
+    fireEvent.click(await screen.findByRole('button', { name: 'DOWNLOAD & INSTALL' }));
+
+    await waitFor(() => expect(tauriDownload).toHaveBeenCalledOnce());
+    expect(mockRemoveUpdateApks).toHaveBeenCalledWith({ keep: 'Kalponik_0.11.20_arm64.apk' });
+    expect(mockRemoveUpdateApks.mock.invocationCallOrder[0]!).toBeLessThan(
+      vi.mocked(tauriDownload).mock.invocationCallOrder[0]!,
+    );
   });
 
   it('contains download failures and shows an updater error', async () => {

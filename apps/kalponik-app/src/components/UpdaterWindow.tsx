@@ -22,6 +22,7 @@ import { join } from '@tauri-apps/api/path';
 import { getLocale } from '@/utils/misc';
 import { getAndroidPlatformKey, setLastShownReleaseNotesVersion } from '@/helpers/updater';
 import type { ResolvedNightlyUpdate } from '@/helpers/updater';
+import { removeUpdateApks } from '@/helpers/updateApkCleanup';
 import {
   KALPONIK_UPDATER_FILE,
   KALPONIK_CHANGELOG_FILE,
@@ -139,16 +140,16 @@ export const UpdaterContent = ({
         const platformKey = getAndroidPlatformKey(osArch());
         const arch = platformKey.replace('android-', '');
         const downloadUrl = data.platforms[platformKey]?.url as string;
-        const apkFilePath = await appService.resolveFilePath(
-          `Kalponik_${data.version}_${arch}.apk`,
-          'Cache',
-        );
+        const apkFileName = `Kalponik_${data.version}_${arch}.apk`;
+        const apkFilePath = await appService.resolveFilePath(apkFileName, 'Cache');
         setUpdate({
           currentVersion,
           version: data.version,
           date: data.pub_date,
           body: data.notes,
           downloadAndInstall: async (onEvent) => {
+            // Earlier updates left their APKs in the cache; drop them first.
+            await removeUpdateApks({ keep: apkFileName });
             await new Promise<void>(async (resolve, reject) => {
               let downloaded = 0;
               let total = 0;
@@ -337,6 +338,7 @@ export const UpdaterContent = ({
           const execDir = await invoke<string>('get_executable_dir');
           filePath = await join(execDir, fileName);
         } else {
+          if (n.platformKey.startsWith('android')) await removeUpdateApks({ keep: fileName });
           filePath = await appService!.resolveFilePath(fileName, 'Cache');
         }
         await downloadWithProgress(n.url, filePath, onEvent);

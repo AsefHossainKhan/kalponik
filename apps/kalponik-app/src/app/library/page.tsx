@@ -43,6 +43,8 @@ import {
 import { parseOpenWithFiles } from '@/helpers/openWith';
 import { getInitializedAppService, isTauriAppPlatform } from '@/services/environment';
 import { checkForAppUpdates, checkAppReleaseNotes } from '@/helpers/updater';
+import { removeUpdateApks } from '@/helpers/updateApkCleanup';
+import { getAppVersion } from '@/utils/version';
 import { impactFeedback } from '@tauri-apps/plugin-haptics';
 import { getCurrentWebview } from '@tauri-apps/api/webview';
 
@@ -549,6 +551,11 @@ const LibraryPageContent = ({ searchParams }: { searchParams: ReadonlyURLSearchP
   useEffect(() => {
     if (appService?.isMobileApp) {
       lockScreenOrientation({ orientation: 'auto' });
+    }
+    // The APK an in-app update installed stays in the cache; once this version
+    // runs, it and any older ones are no longer needed.
+    if (appService?.isAndroidApp && appService.hasUpdater) {
+      void removeUpdateApks({ installedVersion: getAppVersion() });
     }
   }, [appService]);
 
