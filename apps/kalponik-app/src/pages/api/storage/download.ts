@@ -4,7 +4,7 @@ import { corsAllMethods, runMiddleware } from '@/utils/cors';
 import { getDownloadSignedUrl } from '@/utils/object';
 import { validateUserAndToken } from '@/utils/access';
 import { parseBookFileKey } from '@/utils/bookFileKey';
-import { SHARED_BOOKS_PREFIX, isReadableSharedKey } from '@/libs/publicShelf';
+import { SHARED_BOOKS_PREFIX, resolveSharedKey } from '@/libs/publicShelf';
 import { createSupabaseShelfStore } from '@/libs/publicShelfStore';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
@@ -86,8 +86,9 @@ async function processFileKeys(
     const shared = await Promise.all(
       sharedKeys.map(async (key) => {
         try {
-          if (!(await isReadableSharedKey(shelf, key))) return [key, undefined] as const;
-          return [key, await getDownloadSignedUrl(key, 1800)] as const;
+          const storedKey = await resolveSharedKey(shelf, key);
+          if (!storedKey) return [key, undefined] as const;
+          return [key, await getDownloadSignedUrl(storedKey, 1800)] as const;
         } catch (error) {
           console.error('Error signing shared file %s:', key, error);
           return [key, undefined] as const;

@@ -3,6 +3,7 @@ import {
   getShelfLimits,
   isReadableSharedKey,
   listPublicBooks,
+  resolveSharedKey,
   shareBook,
   sharedCoverKey,
   sharedFileKey,
@@ -267,6 +268,28 @@ describe('reading the public shelf', () => {
     expect(await isReadableSharedKey(deps.store, `${AMINA}/Kalponik/Books/${HASH}/x.epub`)).toBe(
       false,
     );
+  });
+
+  test('a book file asked for by its title resolves to the stored shared file', async () => {
+    // The Android app has no runtime config and names book files the R2 way,
+    // `<hash>/<title>.<ext>`; the shared copy is stored as `<hash>/<hash>.<ext>`.
+    const w = makeWorld();
+    addPrivateBook(w, AMINA, HASH);
+    const deps = makeDeps(w);
+    const byTitle = `shared/Kalponik/Books/${HASH}/A Book (Second Edition).epub`;
+    expect(await resolveSharedKey(deps.store, byTitle)).toBeNull();
+    await shareBook(deps, AMINA, HASH);
+    expect(await resolveSharedKey(deps.store, byTitle)).toBe(sharedFileKey(HASH, 'epub'));
+    expect(await resolveSharedKey(deps.store, sharedCoverKey(HASH))).toBe(sharedCoverKey(HASH));
+    // Another extension, a deeper path or a book taken off the shelf stays unreadable.
+    expect(
+      await resolveSharedKey(deps.store, `shared/Kalponik/Books/${HASH}/A Book.pdf`),
+    ).toBeNull();
+    expect(
+      await resolveSharedKey(deps.store, `shared/Kalponik/Books/${HASH}/x/A Book.epub`),
+    ).toBeNull();
+    await unshareBook(deps, AMINA, HASH);
+    expect(await resolveSharedKey(deps.store, byTitle)).toBeNull();
   });
 });
 

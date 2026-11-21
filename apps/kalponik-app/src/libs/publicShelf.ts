@@ -284,13 +284,34 @@ export async function listPublicBooks(
   return { books, isAdmin: admin };
 }
 
+/**
+ * The stored key of a public book's file or cover that anyone signed in may
+ * read, for a key a client asked for; null when there is none.
+ *
+ * The shared file is stored as `<hash>/<hash>.<ext>`, but a client names a
+ * book file by the storage type it believes in: the Android app has no
+ * runtime config, so it falls back to R2 naming, `<hash>/<title>.<ext>`. Like
+ * the private-file fallback in the download route, a book file is matched by
+ * its hash and extension.
+ */
+export async function resolveSharedKey(store: ShelfStore, key: string): Promise<string | null> {
+  if (!key.startsWith(`${SHARED_BOOKS_PREFIX}/`)) return null;
+  const parts = key.slice(SHARED_BOOKS_PREFIX.length + 1).split('/');
+  const hash = parts[0];
+  if (!isValidBookHash(hash)) return null;
+  const row = await store.get(hash);
+  if (!row || row.removed_at) return null;
+  if (row.file_key === key || row.cover_key === key) return key;
+  if (parts.length === 2 && !isCover(key)) {
+    const ext = extensionOf(key);
+    if (ext && ext === extensionOf(row.file_key)) return row.file_key;
+  }
+  return null;
+}
+
 /** Whether a storage key is a public book's file or cover that anyone signed in may read. */
 export async function isReadableSharedKey(store: ShelfStore, key: string): Promise<boolean> {
-  if (!key.startsWith(`${SHARED_BOOKS_PREFIX}/`)) return false;
-  const hash = key.slice(SHARED_BOOKS_PREFIX.length + 1).split('/')[0];
-  if (!isValidBookHash(hash)) return false;
-  const row = await store.get(hash);
-  return !!row && !row.removed_at && (row.file_key === key || row.cover_key === key);
+  return (await resolveSharedKey(store, key)) !== null;
 }
 
 /** The HTTP status an API route answers a shelf error with. */
